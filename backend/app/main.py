@@ -57,4 +57,5 @@ app.include_router(mail_templates.router, prefix="/api/v1/mail-templates", tags=
 app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["dashboard"])
 
 # Serve generated PDFs
+(BASE_DIR / "output").mkdir(parents=True, exist_ok=True)
 app.mount("/output", StaticFiles(directory=str(BASE_DIR / "output")), name="output")
