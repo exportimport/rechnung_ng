@@ -8,6 +8,7 @@ import CustomerForm from "./pages/CustomerForm";
 import Contracts from "./pages/Contracts";
 import ContractForm from "./pages/ContractForm";
 import Invoices from "./pages/Invoices";
+import MailTemplates from "./pages/MailTemplates";
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
         <Route path="contracts" element={<Contracts />} />
         <Route path="contracts/:id" element={<ContractForm />} />
         <Route path="invoices" element={<Invoices />} />
+        <Route path="mail-templates" element={<MailTemplates />} />
       </Route>
     </Routes>
   );

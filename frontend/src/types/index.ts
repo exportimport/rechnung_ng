@@ -72,6 +72,13 @@ export interface ContractCreate {
   comment?: string | null;
 }
 
+export interface MailTemplate {
+  id: string;
+  name: string;
+  subject: string;
+  body: string;
+}
+
 export type InvoiceStatus = "draft" | "sent";
 
 export interface Invoice {
