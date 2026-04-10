@@ -43,6 +43,16 @@ export default function Invoices() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => invoicesApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["invoices"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      toast.success("Entwurf gelöscht");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const batchSendMutation = useMutation({
     mutationFn: () => invoicesApi.sendBatch(year, month),
     onSuccess: (data) => {
@@ -86,12 +96,20 @@ export default function Invoices() {
             PDF
           </a>
           {row.status === "draft" && (
-            <button
-              className="text-xs text-green-700 hover:underline"
-              onClick={(e) => { e.stopPropagation(); sendMutation.mutate({ id: row.id as number, template_id: "auto" }); }}
-            >
-              Senden
-            </button>
+            <>
+              <button
+                className="text-xs text-green-700 hover:underline"
+                onClick={(e) => { e.stopPropagation(); sendMutation.mutate({ id: row.id as number, template_id: "auto" }); }}
+              >
+                Senden
+              </button>
+              <button
+                className="text-xs text-red-500 hover:underline"
+                onClick={(e) => { e.stopPropagation(); deleteMutation.mutate(row.id as number); }}
+              >
+                Löschen
+              </button>
+            </>
           )}
         </div>
       ),

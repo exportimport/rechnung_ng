@@ -61,6 +61,19 @@ def download_pdf(invoice_id: int):
     )
 
 
+@router.delete("/{invoice_id}", status_code=204)
+def delete_invoice(invoice_id: int):
+    d = store.get_by_id("invoices", invoice_id)
+    if not d:
+        raise HTTPException(status_code=404, detail="Rechnung nicht gefunden")
+    invoice = Invoice(**d)
+    if invoice.status != InvoiceStatus.draft:
+        raise HTTPException(status_code=409, detail="Nur Entwürfe können gelöscht werden")
+    if invoice.pdf_path and Path(invoice.pdf_path).exists():
+        Path(invoice.pdf_path).unlink()
+    store.delete("invoices", invoice_id)
+
+
 @router.post("/{invoice_id}/send")
 def send_invoice(invoice_id: int, body: SendRequest):
     from app.services.mail_service import send_invoice as do_send
