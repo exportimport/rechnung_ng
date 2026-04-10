@@ -1,6 +1,9 @@
 CLAUDE.md
 CLAUDE(1).md
 
+# Secrets
+backend/.env
+
 # Python
 __pycache__/
 *.pyc
