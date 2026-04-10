@@ -68,8 +68,14 @@ def get_contract(contract_id: int):
 def create_contract(body: ContractCreate):
     if not store.get_by_id("customers", body.customer_id):
         raise HTTPException(status_code=404, detail="Kunde nicht gefunden")
-    if not store.get_by_id("plans", body.plan_id):
+    plan_d = store.get_by_id("plans", body.plan_id)
+    if not plan_d:
         raise HTTPException(status_code=404, detail="Tarif nicht gefunden")
+    if current_price(Plan(**plan_d), body.start_date) is None:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Tarif hat am {body.start_date} keinen gültigen Preis. Bitte zuerst einen Preis mit passendem Gültigkeitsdatum anlegen.",
+        )
     data = body.model_dump(mode="json")
     record = store.create("contracts", data)
     return _enrich(Contract(**record))
@@ -82,8 +88,14 @@ def update_contract(contract_id: int, body: ContractUpdate):
         raise HTTPException(status_code=404, detail="Vertrag nicht gefunden")
     if not store.get_by_id("customers", body.customer_id):
         raise HTTPException(status_code=404, detail="Kunde nicht gefunden")
-    if not store.get_by_id("plans", body.plan_id):
+    plan_d = store.get_by_id("plans", body.plan_id)
+    if not plan_d:
         raise HTTPException(status_code=404, detail="Tarif nicht gefunden")
+    if current_price(Plan(**plan_d), body.start_date) is None:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Tarif hat am {body.start_date} keinen gültigen Preis. Bitte zuerst einen Preis mit passendem Gültigkeitsdatum anlegen.",
+        )
     updated = store.update("contracts", contract_id, body.model_dump(mode="json"))
     return _enrich(Contract(**updated))
 

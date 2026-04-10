@@ -75,8 +75,8 @@ async def test_contract_status_cancelled(client: AsyncClient):
         json={
             "customer_id": cid,
             "plan_id": pid,
-            "start_date": "2020-01-01",
-            "end_date": "2021-01-01",
+            "start_date": "2026-01-01",
+            "end_date": "2026-02-01",
             "billing_cycle": "monthly",
         },
     )
