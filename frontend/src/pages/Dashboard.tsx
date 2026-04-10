@@ -112,7 +112,7 @@ export default function Dashboard() {
                   <td className="px-4 py-3">
                     <button
                       onClick={() =>
-                        sendMutation.mutate({ id: inv.id, template_id: "default" })
+                        sendMutation.mutate({ id: inv.id, template_id: "auto" })
                       }
                       className="text-xs text-indigo-600 hover:underline"
                     >

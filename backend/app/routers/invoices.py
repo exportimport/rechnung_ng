@@ -69,8 +69,10 @@ def send_invoice(invoice_id: int, body: SendRequest):
     if not d:
         raise HTTPException(status_code=404, detail="Rechnung nicht gefunden")
     invoice = Invoice(**d)
+    from app.services.mail_service import select_template
+    template_id = body.template_id if body.template_id != "auto" else select_template(invoice, store)
     try:
-        do_send(invoice, body.template_id, store)
+        do_send(invoice, template_id, store)
     except (smtplib.SMTPException, socket.gaierror, OSError) as e:
         raise HTTPException(status_code=502, detail=f"SMTP-Fehler: {e}")
     updated = store.get_by_id("invoices", invoice_id)
