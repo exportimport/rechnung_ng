@@ -101,7 +101,7 @@ export default function Invoices() {
               className="text-xs text-green-700 hover:underline"
               onClick={(e) => {
                 e.stopPropagation();
-                sendMutation.mutate({ id: row.id as number, template_id: "default" });
+                sendMutation.mutate({ id: row.id as number, template_id: "auto" });
               }}
             >
               Senden
