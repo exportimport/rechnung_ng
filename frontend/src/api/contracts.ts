@@ -17,4 +17,5 @@ export const contractsApi = {
     return api.post<Contract>(`/contracts/${id}/scan`, fd);
   },
   scanUrl: (id: number) => `/api/v1/contracts/${id}/scan`,
+  cancellationPdfUrl: (id: number) => `/api/v1/contracts/${id}/cancellation-pdf`,
 };
