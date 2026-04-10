@@ -22,3 +22,22 @@ export interface AddPriceRequest {
   amount: string;
   valid_from: string;
 }
+
+export interface Customer {
+  id: number;
+  vorname: string;
+  nachname: string;
+  adresse: string;
+  iban: string;
+  email: string;
+  comment?: string | null;
+}
+
+export interface CustomerCreate {
+  vorname: string;
+  nachname: string;
+  adresse: string;
+  iban: string;
+  email: string;
+  comment?: string | null;
+}
