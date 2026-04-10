@@ -36,10 +36,11 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-from app.routers import customers, plans  # noqa: E402
+from app.routers import contracts, customers, plans  # noqa: E402
 
 app.include_router(plans.router, prefix="/api/v1/plans", tags=["plans"])
 app.include_router(customers.router, prefix="/api/v1/customers", tags=["customers"])
+app.include_router(contracts.router, prefix="/api/v1/contracts", tags=["contracts"])
 
 # Serve generated PDFs
 app.mount("/output", StaticFiles(directory=str(BASE_DIR / "output")), name="output")
