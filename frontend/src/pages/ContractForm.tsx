@@ -237,6 +237,19 @@ export default function ContractForm() {
             </div>
           </div>
 
+          {contract.cancellation_pdf && (
+            <div className="bg-white p-4 rounded-lg border border-gray-200">
+              <a
+                href={contractsApi.cancellationPdfUrl(contract.id)}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm text-indigo-600 hover:underline"
+              >
+                Kündigungsdokument herunterladen (PDF)
+              </a>
+            </div>
+          )}
+
           {contract.status !== "cancelled" && (
             <div className="bg-white p-4 rounded-lg border border-gray-200">
               <h2 className="text-sm font-medium text-gray-900 mb-3">Kündigung</h2>
