@@ -13,9 +13,9 @@ const STATUS_LABELS: Record<ContractStatus, string> = {
 };
 
 const STATUS_COLORS: Record<ContractStatus, string> = {
-  active: "bg-green-100 text-green-800",
-  not_yet_active: "bg-yellow-100 text-yellow-800",
-  cancelled: "bg-red-100 text-red-800",
+  active: "bg-green-100 text-green-700",
+  not_yet_active: "bg-amber-100 text-amber-700",
+  cancelled: "bg-red-100 text-red-700",
 };
 
 const columns: Column<Contract & Record<string, unknown>>[] = [
@@ -24,8 +24,7 @@ const columns: Column<Contract & Record<string, unknown>>[] = [
   {
     key: "current_price",
     label: "Preis",
-    render: (row) =>
-      row.current_price != null ? formatEuro(row.current_price as number) : "—",
+    render: (row) => row.current_price != null ? formatEuro(row.current_price as number) : "—",
   },
   {
     key: "start_date",
@@ -44,7 +43,7 @@ const columns: Column<Contract & Record<string, unknown>>[] = [
     render: (row) => {
       const s = row.status as ContractStatus;
       return (
-        <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[s]}`}>
+        <span className={`inline-flex px-3 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[s]}`}>
           {STATUS_LABELS[s]}
         </span>
       );
@@ -61,15 +60,15 @@ export default function Contracts() {
     queryFn: () => contractsApi.list(statusFilter || undefined),
   });
 
-  if (isLoading) return <p className="text-gray-500">Wird geladen…</p>;
+  if (isLoading) return <p className="text-violet-400">Wird geladen…</p>;
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900">Verträge</h1>
+        <h1 className="text-2xl font-bold text-violet-800">Verträge</h1>
         <button
           onClick={() => navigate("/contracts/new")}
-          className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700"
+          className="px-5 py-2 bg-violet-500 text-white text-sm font-medium rounded-full hover:bg-violet-600 shadow-sm transition-colors"
         >
           Neuer Vertrag
         </button>
@@ -79,7 +78,7 @@ export default function Contracts() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as ContractStatus | "")}
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none"
+          className="rounded-full border border-white/60 bg-white/70 backdrop-blur-sm px-4 py-2 text-sm shadow-sm focus:border-violet-400 focus:outline-none"
         >
           <option value="">Alle Status</option>
           <option value="active">Aktiv</option>

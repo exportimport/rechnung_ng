@@ -11,12 +11,12 @@ const navItems = [
 
 export default function Layout() {
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <aside className="w-56 shrink-0 bg-white border-r border-gray-200 flex flex-col">
-        <div className="px-6 py-5 border-b border-gray-200">
-          <span className="text-lg font-semibold text-gray-900">rechnung_ng</span>
+    <div className="flex min-h-screen bg-gradient-to-br from-violet-200 via-indigo-100 to-blue-200">
+      <aside className="relative w-64 shrink-0 bg-white/30 backdrop-blur-xl flex flex-col">
+        <div className="px-6 py-6">
+          <span className="text-xl font-bold text-violet-800 tracking-tight">rechnung_ng</span>
         </div>
-        <nav className="flex-1 px-3 py-4 space-y-0.5">
+        <nav className="flex-1 px-3 py-2 space-y-1">
           {navItems.map(({ to, label, end }) => (
             <NavLink
               key={to}
@@ -24,10 +24,10 @@ export default function Layout() {
               end={end}
               className={({ isActive }) =>
                 [
-                  "block px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                  "block px-4 py-2.5 rounded-full text-sm font-medium transition-all",
                   isActive
-                    ? "bg-indigo-50 text-indigo-700"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900",
+                    ? "bg-white/70 text-violet-700 shadow-sm"
+                    : "text-violet-900/70 hover:bg-white/40 hover:text-violet-800",
                 ].join(" ")
               }
             >
@@ -35,6 +35,20 @@ export default function Layout() {
             </NavLink>
           ))}
         </nav>
+
+        {/* Wavy right edge — replaces the straight border */}
+        <svg
+          className="absolute top-0 right-0 h-full translate-x-full pointer-events-none"
+          width="28"
+          viewBox="0 0 28 1000"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M0,0 C18,150 -8,300 14,500 C28,650 4,800 0,1000 L0,0 Z"
+            fill="rgba(255,255,255,0.30)"
+          />
+        </svg>
       </aside>
 
       <main className="flex-1 p-8 overflow-auto">
