@@ -1,1 +1,5 @@
 @import "tailwindcss";
+
+body {
+  background-color: #f5f3ff; /* violet-50 */
+}
