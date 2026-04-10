@@ -1,3 +1,5 @@
+import smtplib
+import socket
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
@@ -67,7 +69,10 @@ def send_invoice(invoice_id: int, body: SendRequest):
     if not d:
         raise HTTPException(status_code=404, detail="Rechnung nicht gefunden")
     invoice = Invoice(**d)
-    do_send(invoice, body.template_id, store)
+    try:
+        do_send(invoice, body.template_id, store)
+    except (smtplib.SMTPException, socket.gaierror, OSError) as e:
+        raise HTTPException(status_code=502, detail=f"SMTP-Fehler: {e}")
     updated = store.get_by_id("invoices", invoice_id)
     return _serialize(Invoice(**updated))
 

@@ -25,7 +25,8 @@ class SmtpConfig(BaseModel):
     port: int = 587
     username: str
     password: str = Field(default_factory=lambda: os.environ.get("SMTP_PASSWORD", ""))
-    use_tls: bool = True
+    use_tls: bool = True   # STARTTLS (port 587)
+    use_ssl: bool = False  # SSL/TLS (port 465) — set to true instead of use_tls for port 465
     sender_name: str
     sender_email: str
 
@@ -43,7 +44,7 @@ class AppConfig(BaseModel):
     invoice: InvoiceConfig
 
 
-@lru_cache
+@lru_cache(maxsize=1)
 def get_config() -> AppConfig:
     config_path = DATA_DIR / "config.yaml"
     with open(config_path) as f:
