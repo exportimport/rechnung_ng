@@ -71,3 +71,22 @@ export interface ContractCreate {
   billing_cycle: BillingCycle;
   comment?: string | null;
 }
+
+export type InvoiceStatus = "draft" | "sent";
+
+export interface Invoice {
+  id: number;
+  contract_id: number;
+  customer_id: number;
+  invoice_number: string;
+  year: number;
+  month: number;
+  amount: number;
+  period_start: string;
+  period_end: string;
+  status: InvoiceStatus;
+  pdf_path?: string | null;
+  mail_template?: string | null;
+  created_at: string;
+  sent_at?: string | null;
+}
