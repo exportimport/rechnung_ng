@@ -40,7 +40,7 @@ export default function Plans() {
         <h1 className="text-2xl font-semibold text-gray-900">Tarife</h1>
         <button
           onClick={() => navigate("/plans/new")}
-          className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700"
+          className="px-4 py-2 bg-violet-500 text-white text-sm font-medium rounded-md hover:bg-violet-600"
         >
           Neuer Tarif
         </button>

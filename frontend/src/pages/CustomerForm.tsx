@@ -87,7 +87,7 @@ export default function CustomerForm() {
 
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-4 bg-white p-6 rounded-lg border border-gray-200"
+        className="space-y-4 bg-white p-6 rounded-lg border border-violet-100 shadow-sm"
       >
         <div className="grid grid-cols-2 gap-4">
           <TextField
@@ -132,7 +132,7 @@ export default function CustomerForm() {
         <div className="flex items-center justify-between pt-2">
           <button
             type="submit"
-            className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700"
+            className="px-4 py-2 bg-violet-500 text-white text-sm font-medium rounded-md hover:bg-violet-600"
           >
             {isNew ? "Erstellen" : "Speichern"}
           </button>

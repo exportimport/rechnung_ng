@@ -69,7 +69,7 @@ export default function Contracts() {
         <h1 className="text-2xl font-semibold text-gray-900">Verträge</h1>
         <button
           onClick={() => navigate("/contracts/new")}
-          className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700"
+          className="px-4 py-2 bg-violet-500 text-white text-sm font-medium rounded-md hover:bg-violet-600"
         >
           Neuer Vertrag
         </button>
@@ -79,7 +79,7 @@ export default function Contracts() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as ContractStatus | "")}
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none"
+          className="rounded-md border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-violet-400 focus:outline-none"
         >
           <option value="">Alle Status</option>
           <option value="active">Aktiv</option>

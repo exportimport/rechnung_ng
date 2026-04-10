@@ -50,16 +50,16 @@ export default function Dashboard() {
       <h1 className="text-2xl font-semibold text-gray-900 mb-6">Dashboard</h1>
 
       <div className="grid grid-cols-2 gap-4 mb-8 max-w-lg">
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <p className="text-sm text-gray-500">Offene Rechnungen</p>
-          <p className="text-3xl font-bold text-gray-900 mt-1">{data.draft_count}</p>
+        <div className="bg-sky-50 rounded-lg border border-sky-200 p-4">
+          <p className="text-sm text-sky-600">Offene Rechnungen</p>
+          <p className="text-3xl font-bold text-sky-700 mt-1">{data.draft_count}</p>
         </div>
         <div
           className={[
             "rounded-lg border p-4",
             data.overdue_count > 0
               ? "bg-red-50 border-red-200"
-              : "bg-white border-gray-200",
+              : "bg-white border-violet-100",
           ].join(" ")}
         >
           <p className="text-sm text-gray-500">Überfällig</p>
@@ -77,7 +77,7 @@ export default function Dashboard() {
       {data.draft_invoices.length === 0 ? (
         <p className="text-gray-400">Keine offenen Rechnungen.</p>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+        <div className="overflow-x-auto rounded-lg border border-violet-100 bg-white shadow-sm">
           <table className="min-w-full divide-y divide-gray-200 text-sm">
             <thead className="bg-gray-50">
               <tr>
@@ -114,7 +114,7 @@ export default function Dashboard() {
                       onClick={() =>
                         sendMutation.mutate({ id: inv.id, template_id: "auto" })
                       }
-                      className="text-xs text-indigo-600 hover:underline"
+                      className="text-xs text-violet-600 hover:underline"
                     >
                       Senden
                     </button>

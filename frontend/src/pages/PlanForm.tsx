@@ -91,7 +91,7 @@ export default function PlanForm() {
         </h1>
       </div>
 
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 bg-white p-6 rounded-lg border border-gray-200">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 bg-white p-6 rounded-lg border border-violet-100 shadow-sm">
         <TextField
           label="Tarifname"
           registration={form.register("name", { required: "Pflichtfeld" })}
@@ -117,7 +117,7 @@ export default function PlanForm() {
         <div className="pt-2">
           <button
             type="submit"
-            className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700"
+            className="px-4 py-2 bg-violet-500 text-white text-sm font-medium rounded-md hover:bg-violet-600"
           >
             {isNew ? "Erstellen" : "Speichern"}
           </button>
@@ -127,7 +127,7 @@ export default function PlanForm() {
       {!isNew && plan && (
         <div className="mt-8">
           <h2 className="text-lg font-medium text-gray-900 mb-3">Preisverlauf</h2>
-          <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-100 mb-4">
+          <div className="bg-white rounded-lg border border-violet-100 divide-y divide-gray-100 mb-4 shadow-sm">
             {plan.price_history.map((entry, i) => (
               <div key={i} className="flex justify-between px-4 py-3 text-sm">
                 <span className="text-gray-500">ab {formatDate(entry.valid_from)}</span>
@@ -141,7 +141,7 @@ export default function PlanForm() {
           <h3 className="text-sm font-medium text-gray-700 mb-3">Neuen Preis hinzufügen</h3>
           <form
             onSubmit={addPriceForm.handleSubmit((d) => addPriceMutation.mutate(d))}
-            className="flex gap-3 items-end bg-white p-4 rounded-lg border border-gray-200"
+            className="flex gap-3 items-end bg-white p-4 rounded-lg border border-violet-100 shadow-sm"
           >
             <div className="flex-1">
               <TextField
@@ -161,7 +161,7 @@ export default function PlanForm() {
             </div>
             <button
               type="submit"
-              className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 h-[38px]"
+              className="px-4 py-2 bg-violet-500 text-white text-sm font-medium rounded-md hover:bg-violet-600 h-[38px]"
             >
               Hinzufügen
             </button>

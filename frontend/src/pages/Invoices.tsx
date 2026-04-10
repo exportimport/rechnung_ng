@@ -74,7 +74,7 @@ export default function Invoices() {
         <span
           className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
             row.status === "draft"
-              ? "bg-yellow-100 text-yellow-800"
+              ? "bg-amber-100 text-amber-800"
               : "bg-green-100 text-green-800"
           }`}
         >
@@ -91,7 +91,7 @@ export default function Invoices() {
             href={invoicesApi.pdfUrl(row.id as number)}
             target="_blank"
             rel="noreferrer"
-            className="text-xs text-indigo-600 hover:underline"
+            className="text-xs text-violet-600 hover:underline"
             onClick={(e) => e.stopPropagation()}
           >
             PDF
@@ -120,7 +120,7 @@ export default function Invoices() {
           {draftCount > 0 && (
             <button
               onClick={() => batchSendMutation.mutate()}
-              className="px-4 py-2 text-sm font-medium text-green-700 border border-green-300 rounded-md hover:bg-green-50"
+              className="px-4 py-2 text-sm font-medium text-violet-700 border border-violet-300 rounded-md hover:bg-violet-50"
             >
               Alle {draftCount} Entwürfe senden
             </button>
@@ -128,7 +128,7 @@ export default function Invoices() {
           <button
             onClick={() => generateMutation.mutate()}
             disabled={generateMutation.isPending}
-            className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 disabled:opacity-50"
+            className="px-4 py-2 bg-violet-500 text-white text-sm font-medium rounded-md hover:bg-violet-600 disabled:opacity-50"
           >
             Rechnungen generieren
           </button>
@@ -139,7 +139,7 @@ export default function Invoices() {
         <select
           value={month}
           onChange={(e) => setMonth(Number(e.target.value))}
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+          className="rounded-md border border-gray-200 px-3 py-2 text-sm"
         >
           {MONTHS.map((m, i) => (
             <option key={i + 1} value={i + 1}>{m}</option>
@@ -148,7 +148,7 @@ export default function Invoices() {
         <select
           value={year}
           onChange={(e) => setYear(Number(e.target.value))}
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+          className="rounded-md border border-gray-200 px-3 py-2 text-sm"
         >
           {YEARS.map((y) => (
             <option key={y} value={y}>{y}</option>
