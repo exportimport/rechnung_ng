@@ -8,7 +8,7 @@ interface BaseProps {
 }
 
 const inputClass =
-  "block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
+  "block w-full rounded-md border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-violet-400 focus:outline-none focus:ring-1 focus:ring-violet-400";
 const errorClass = "mt-1 text-xs text-red-600";
 const labelClass = "block text-sm font-medium text-gray-700 mb-1";
 
