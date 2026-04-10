@@ -7,8 +7,11 @@ __pycache__/
 *.pyo
 *.egg-info/
 backend/.venv/
-backend/data/*.yaml
 backend/data/*.bak
+backend/data/customers.yaml
+backend/data/contracts.yaml
+backend/data/plans.yaml
+backend/data/invoices.yaml
 backend/output/
 backend/uploads/
 

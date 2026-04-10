@@ -36,7 +36,7 @@
       </tr>
       <tr>
         <td>Rechnungsdatum:</td>
-        <td>{% set d = invoice.created_at[:10].split('-') %}{{ d[2] }}.{{ d[1] }}.{{ d[0] }}</td>
+        <td>{{ invoice.created_at.strftime('%d.%m.%Y') }}</td>
       </tr>
       <tr>
         <td>Fällig bis:</td>
