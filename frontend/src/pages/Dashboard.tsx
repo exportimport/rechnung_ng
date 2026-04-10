@@ -42,78 +42,62 @@ export default function Dashboard() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  if (isLoading) return <p className="text-gray-500">Wird geladen…</p>;
+  if (isLoading) return <p className="text-violet-400">Wird geladen…</p>;
   if (!data) return null;
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-gray-900 mb-6">Dashboard</h1>
+      <h1 className="text-2xl font-bold text-violet-800 mb-6">Dashboard</h1>
 
       <div className="grid grid-cols-2 gap-4 mb-8 max-w-lg">
-        <div className="bg-sky-50 rounded-lg border border-sky-200 p-4">
-          <p className="text-sm text-sky-600">Offene Rechnungen</p>
-          <p className="text-3xl font-bold text-sky-700 mt-1">{data.draft_count}</p>
+        <div className="bg-sky-100/60 backdrop-blur-sm rounded-2xl border border-white/60 shadow-lg p-5">
+          <p className="text-sm text-sky-600 font-medium">Offene Rechnungen</p>
+          <p className="text-4xl font-bold text-sky-700 mt-1">{data.draft_count}</p>
         </div>
         <div
           className={[
-            "rounded-lg border p-4",
-            data.overdue_count > 0
-              ? "bg-red-50 border-red-200"
-              : "bg-white border-violet-100",
+            "backdrop-blur-sm rounded-2xl border border-white/60 shadow-lg p-5",
+            data.overdue_count > 0 ? "bg-red-100/60" : "bg-white/50",
           ].join(" ")}
         >
-          <p className="text-sm text-gray-500">Überfällig</p>
-          <p
-            className={[
-              "text-3xl font-bold mt-1",
-              data.overdue_count > 0 ? "text-red-700" : "text-gray-900",
-            ].join(" ")}
-          >
+          <p className="text-sm text-gray-500 font-medium">Überfällig</p>
+          <p className={["text-4xl font-bold mt-1", data.overdue_count > 0 ? "text-red-600" : "text-gray-700"].join(" ")}>
             {data.overdue_count}
           </p>
         </div>
       </div>
 
       {data.draft_invoices.length === 0 ? (
-        <p className="text-gray-400">Keine offenen Rechnungen.</p>
+        <p className="text-violet-400">Keine offenen Rechnungen.</p>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-violet-100 bg-white shadow-sm">
-          <table className="min-w-full divide-y divide-gray-200 text-sm">
-            <thead className="bg-gray-50">
+        <div className="overflow-x-auto rounded-2xl border border-white/60 bg-white/70 backdrop-blur-sm shadow-lg">
+          <table className="min-w-full divide-y divide-white/40 text-sm">
+            <thead className="bg-white/40">
               <tr>
                 {["Rechnungsnummer", "Kunde", "Betrag", "Erstellt", "Fällig", ""].map((h) => (
                   <th
                     key={h}
-                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-4 py-3 text-left text-xs font-semibold text-violet-700 uppercase tracking-wider"
                   >
                     {h}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-white/40">
               {data.draft_invoices.map((inv) => (
-                <tr key={inv.id} className={inv.overdue ? "bg-red-50" : ""}>
-                  <td className="px-4 py-3 font-mono text-xs text-gray-700">
-                    {inv.invoice_number}
-                  </td>
+                <tr key={inv.id} className={inv.overdue ? "bg-red-50/50" : ""}>
+                  <td className="px-4 py-3 font-mono text-xs text-gray-600">{inv.invoice_number}</td>
                   <td className="px-4 py-3 text-gray-700">{inv.customer_name}</td>
                   <td className="px-4 py-3 text-gray-700">{formatEuro(inv.amount)}</td>
                   <td className="px-4 py-3 text-gray-500">{formatDate(inv.created_at)}</td>
-                  <td
-                    className={[
-                      "px-4 py-3",
-                      inv.overdue ? "text-red-700 font-medium" : "text-gray-500",
-                    ].join(" ")}
-                  >
+                  <td className={["px-4 py-3", inv.overdue ? "text-red-600 font-medium" : "text-gray-500"].join(" ")}>
                     {formatDate(inv.due_date)}
                     {inv.overdue && " ⚠"}
                   </td>
                   <td className="px-4 py-3">
                     <button
-                      onClick={() =>
-                        sendMutation.mutate({ id: inv.id, template_id: "auto" })
-                      }
+                      onClick={() => sendMutation.mutate({ id: inv.id, template_id: "auto" })}
                       className="text-xs text-violet-600 hover:underline"
                     >
                       Senden

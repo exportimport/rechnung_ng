@@ -8,9 +8,9 @@ interface BaseProps {
 }
 
 const inputClass =
-  "block w-full rounded-md border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-violet-400 focus:outline-none focus:ring-1 focus:ring-violet-400";
+  "block w-full rounded-xl border border-white/60 bg-white/70 backdrop-blur-sm px-3 py-2 text-sm shadow-sm focus:border-violet-400 focus:outline-none focus:ring-1 focus:ring-violet-400";
 const errorClass = "mt-1 text-xs text-red-600";
-const labelClass = "block text-sm font-medium text-gray-700 mb-1";
+const labelClass = "block text-sm font-medium text-violet-900/80 mb-1";
 
 export function TextField({
   label,

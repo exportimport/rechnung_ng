@@ -83,15 +83,15 @@ export default function PlanForm() {
   return (
     <div className="max-w-lg">
       <div className="flex items-center gap-4 mb-6">
-        <button onClick={() => navigate("/plans")} className="text-sm text-gray-500 hover:text-gray-700">
+        <button onClick={() => navigate("/plans")} className="text-sm text-violet-500 hover:text-violet-700">
           ← Zurück
         </button>
-        <h1 className="text-2xl font-semibold text-gray-900">
+        <h1 className="text-2xl font-bold text-violet-800">
           {isNew ? "Neuer Tarif" : "Tarif bearbeiten"}
         </h1>
       </div>
 
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 bg-white p-6 rounded-lg border border-violet-100 shadow-sm">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 bg-white/70 backdrop-blur-sm p-6 rounded-2xl border border-white/60 shadow-lg">
         <TextField
           label="Tarifname"
           registration={form.register("name", { required: "Pflichtfeld" })}
@@ -117,7 +117,7 @@ export default function PlanForm() {
         <div className="pt-2">
           <button
             type="submit"
-            className="px-4 py-2 bg-violet-500 text-white text-sm font-medium rounded-md hover:bg-violet-600"
+            className="px-5 py-2 bg-violet-500 text-white text-sm font-medium rounded-full hover:bg-violet-600 shadow-sm transition-colors"
           >
             {isNew ? "Erstellen" : "Speichern"}
           </button>
@@ -126,22 +126,20 @@ export default function PlanForm() {
 
       {!isNew && plan && (
         <div className="mt-8">
-          <h2 className="text-lg font-medium text-gray-900 mb-3">Preisverlauf</h2>
-          <div className="bg-white rounded-lg border border-violet-100 divide-y divide-gray-100 mb-4 shadow-sm">
+          <h2 className="text-lg font-semibold text-violet-800 mb-3">Preisverlauf</h2>
+          <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/60 divide-y divide-white/40 mb-4 shadow-lg">
             {plan.price_history.map((entry, i) => (
               <div key={i} className="flex justify-between px-4 py-3 text-sm">
                 <span className="text-gray-500">ab {formatDate(entry.valid_from)}</span>
-                <span className="font-medium text-gray-900">
-                  {formatEuro(parseFloat(entry.amount))}
-                </span>
+                <span className="font-medium text-gray-700">{formatEuro(parseFloat(entry.amount))}</span>
               </div>
             ))}
           </div>
 
-          <h3 className="text-sm font-medium text-gray-700 mb-3">Neuen Preis hinzufügen</h3>
+          <h3 className="text-sm font-medium text-violet-700 mb-3">Neuen Preis hinzufügen</h3>
           <form
             onSubmit={addPriceForm.handleSubmit((d) => addPriceMutation.mutate(d))}
-            className="flex gap-3 items-end bg-white p-4 rounded-lg border border-violet-100 shadow-sm"
+            className="flex gap-3 items-end bg-white/70 backdrop-blur-sm p-4 rounded-2xl border border-white/60 shadow-lg"
           >
             <div className="flex-1">
               <TextField
@@ -161,7 +159,7 @@ export default function PlanForm() {
             </div>
             <button
               type="submit"
-              className="px-4 py-2 bg-violet-500 text-white text-sm font-medium rounded-md hover:bg-violet-600 h-[38px]"
+              className="px-5 py-2 bg-violet-500 text-white text-sm font-medium rounded-full hover:bg-violet-600 shadow-sm transition-colors h-[38px]"
             >
               Hinzufügen
             </button>

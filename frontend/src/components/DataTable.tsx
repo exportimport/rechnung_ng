@@ -44,16 +44,16 @@ export default function DataTable<T extends Record<string, unknown>>({
     : data;
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-violet-100 bg-white shadow-sm">
-      <table className="min-w-full divide-y divide-gray-200 text-sm">
-        <thead className="bg-gray-50">
+    <div className="overflow-x-auto rounded-2xl border border-white/60 bg-white/70 backdrop-blur-sm shadow-lg">
+      <table className="min-w-full divide-y divide-white/40 text-sm">
+        <thead className="bg-white/40">
           <tr>
             {columns.map((col) => (
               <th
                 key={col.key}
                 className={[
-                  "px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider text-xs",
-                  col.sortable ? "cursor-pointer select-none hover:text-gray-700" : "",
+                  "px-4 py-3 text-left font-semibold text-violet-700 uppercase tracking-wider text-xs",
+                  col.sortable ? "cursor-pointer select-none hover:text-violet-900" : "",
                 ].join(" ")}
                 onClick={col.sortable ? () => handleSort(col.key) : undefined}
               >
@@ -65,10 +65,10 @@ export default function DataTable<T extends Record<string, unknown>>({
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-100">
+        <tbody className="divide-y divide-white/40">
           {sorted.length === 0 ? (
             <tr>
-              <td colSpan={columns.length} className="px-4 py-8 text-center text-gray-400">
+              <td colSpan={columns.length} className="px-4 py-8 text-center text-violet-400">
                 {emptyMessage}
               </td>
             </tr>
@@ -77,7 +77,7 @@ export default function DataTable<T extends Record<string, unknown>>({
               <tr
                 key={i}
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
-                className={onRowClick ? "cursor-pointer hover:bg-gray-50" : ""}
+                className={onRowClick ? "cursor-pointer hover:bg-white/50 transition-colors" : ""}
               >
                 {columns.map((col) => (
                   <td key={col.key} className="px-4 py-3 text-gray-700">

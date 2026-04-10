@@ -44,15 +44,15 @@ export default function Customers() {
     },
   });
 
-  if (isLoading) return <p className="text-gray-500">Wird geladen…</p>;
+  if (isLoading) return <p className="text-violet-400">Wird geladen…</p>;
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900">Kunden</h1>
+        <h1 className="text-2xl font-bold text-violet-800">Kunden</h1>
         <button
           onClick={() => navigate("/customers/new")}
-          className="px-4 py-2 bg-violet-500 text-white text-sm font-medium rounded-md hover:bg-violet-600"
+          className="px-5 py-2 bg-violet-500 text-white text-sm font-medium rounded-full hover:bg-violet-600 shadow-sm transition-colors"
         >
           Neuer Kunde
         </button>
@@ -64,7 +64,7 @@ export default function Customers() {
           placeholder="Suche nach Name oder E-Mail…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-72 rounded-md border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-violet-400 focus:outline-none focus:ring-1 focus:ring-violet-400"
+          className="w-72 rounded-full border border-white/60 bg-white/70 backdrop-blur-sm px-4 py-2 text-sm shadow-sm focus:border-violet-400 focus:outline-none focus:ring-1 focus:ring-violet-400"
         />
       </div>
 
@@ -76,22 +76,20 @@ export default function Customers() {
       />
 
       {confirmDelete !== null && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-xl">
-            <h2 className="text-lg font-medium text-gray-900 mb-2">Kunde löschen?</h2>
-            <p className="text-sm text-gray-500 mb-4">
-              Diese Aktion kann nicht rückgängig gemacht werden.
-            </p>
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white/80 backdrop-blur-md rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-white/60">
+            <h2 className="text-lg font-semibold text-violet-800 mb-2">Kunde löschen?</h2>
+            <p className="text-sm text-gray-500 mb-4">Diese Aktion kann nicht rückgängig gemacht werden.</p>
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => setConfirmDelete(null)}
-                className="px-4 py-2 text-sm text-gray-700 border border-gray-200 rounded-md hover:bg-gray-50"
+                className="px-4 py-2 text-sm text-gray-600 border border-white/60 bg-white/60 rounded-full hover:bg-white/80"
               >
                 Abbrechen
               </button>
               <button
                 onClick={() => deleteMutation.mutate(confirmDelete)}
-                className="px-4 py-2 text-sm text-white bg-red-600 rounded-md hover:bg-red-700"
+                className="px-4 py-2 text-sm text-white bg-red-500 rounded-full hover:bg-red-600"
               >
                 Löschen
               </button>

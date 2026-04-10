@@ -109,18 +109,11 @@ export default function ContractForm() {
       reference: data.reference || null,
       comment: data.comment || null,
     };
-    if (isNew) {
-      createMutation.mutate(payload);
-    } else {
-      updateMutation.mutate(payload);
-    }
+    if (isNew) createMutation.mutate(payload);
+    else updateMutation.mutate(payload);
   }
 
-  const customerOptions = customers.map((c) => ({
-    value: c.id,
-    label: `${c.nachname}, ${c.vorname}`,
-  }));
-
+  const customerOptions = customers.map((c) => ({ value: c.id, label: `${c.nachname}, ${c.vorname}` }));
   const planOptions = plans.map((p) => ({
     value: p.id,
     label: `${p.name}${p.current_price != null ? ` (${formatEuro(p.current_price)})` : ""}`,
@@ -129,71 +122,41 @@ export default function ContractForm() {
   return (
     <div className="max-w-lg">
       <div className="flex items-center gap-4 mb-6">
-        <button
-          onClick={() => navigate("/contracts")}
-          className="text-sm text-gray-500 hover:text-gray-700"
-        >
+        <button onClick={() => navigate("/contracts")} className="text-sm text-violet-500 hover:text-violet-700">
           ← Zurück
         </button>
-        <h1 className="text-2xl font-semibold text-gray-900">
+        <h1 className="text-2xl font-bold text-violet-800">
           {isNew ? "Neuer Vertrag" : "Vertrag bearbeiten"}
         </h1>
       </div>
 
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-4 bg-white p-6 rounded-lg border border-violet-100 shadow-sm"
+        className="space-y-4 bg-white/70 backdrop-blur-sm p-6 rounded-2xl border border-white/60 shadow-lg"
       >
-        <SelectField
-          label="Kunde"
-          registration={form.register("customer_id", { required: "Pflichtfeld", valueAsNumber: true })}
-          error={form.formState.errors.customer_id}
-          options={customerOptions}
-          required
-        />
-        <SelectField
-          label="Tarif"
-          registration={form.register("plan_id", { required: "Pflichtfeld", valueAsNumber: true })}
-          error={form.formState.errors.plan_id}
-          options={planOptions}
-          required
-        />
+        <SelectField label="Kunde" registration={form.register("customer_id", { required: "Pflichtfeld", valueAsNumber: true })} error={form.formState.errors.customer_id} options={customerOptions} required />
+        <SelectField label="Tarif" registration={form.register("plan_id", { required: "Pflichtfeld", valueAsNumber: true })} error={form.formState.errors.plan_id} options={planOptions} required />
         <div className="grid grid-cols-2 gap-4">
-          <DateField
-            label="Vertragsbeginn"
-            registration={form.register("start_date", { required: "Pflichtfeld" })}
-            error={form.formState.errors.start_date}
-            required
-          />
-          <DateField
-            label="Vertragsende (optional)"
-            registration={form.register("end_date")}
-          />
+          <DateField label="Vertragsbeginn" registration={form.register("start_date", { required: "Pflichtfeld" })} error={form.formState.errors.start_date} required />
+          <DateField label="Vertragsende (optional)" registration={form.register("end_date")} />
         </div>
-        <TextField
-          label="Referenz / Aktenzeichen (optional)"
-          registration={form.register("reference")}
-        />
+        <TextField label="Referenz / Aktenzeichen (optional)" registration={form.register("reference")} />
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Abrechnungszyklus</label>
+          <label className="block text-sm font-medium text-violet-900/80 mb-1">Abrechnungszyklus</label>
           <div className="flex gap-4">
             {(["monthly", "quarterly"] as const).map((v) => (
-              <label key={v} className="flex items-center gap-2 text-sm text-gray-700">
+              <label key={v} className="flex items-center gap-2 text-sm text-gray-600">
                 <input type="radio" value={v} {...form.register("billing_cycle")} />
                 {v === "monthly" ? "Monatlich" : "Quartalsweise"}
               </label>
             ))}
           </div>
         </div>
-        <TextAreaField
-          label="Kommentar (optional)"
-          registration={form.register("comment")}
-          rows={2}
-        />
+        <TextAreaField label="Kommentar (optional)" registration={form.register("comment")} rows={2} />
         <div className="pt-2">
           <button
             type="submit"
-            className="px-4 py-2 bg-violet-500 text-white text-sm font-medium rounded-md hover:bg-violet-600"
+            className="px-5 py-2 bg-violet-500 text-white text-sm font-medium rounded-full hover:bg-violet-600 shadow-sm transition-colors"
           >
             {isNew ? "Erstellen" : "Speichern"}
           </button>
@@ -202,35 +165,23 @@ export default function ContractForm() {
 
       {!isNew && contract && (
         <div className="mt-6 space-y-4">
-          <div className="bg-white p-4 rounded-lg border border-violet-100 shadow-sm">
-            <h2 className="text-sm font-medium text-gray-900 mb-3">Vertragsscan</h2>
+          <div className="bg-white/70 backdrop-blur-sm p-4 rounded-2xl border border-white/60 shadow-lg">
+            <h2 className="text-sm font-semibold text-violet-700 mb-3">Vertragsscan</h2>
             {contract.scan_file ? (
-              <a
-                href={contractsApi.scanUrl(contract.id)}
-                target="_blank"
-                rel="noreferrer"
-                className="text-sm text-violet-600 hover:underline"
-              >
+              <a href={contractsApi.scanUrl(contract.id)} target="_blank" rel="noreferrer" className="text-sm text-violet-600 hover:underline">
                 Scan herunterladen (PDF)
               </a>
             ) : (
               <p className="text-sm text-gray-400 mb-2">Kein Scan vorhanden.</p>
             )}
             <div className="mt-2">
-              <input
-                type="file"
-                accept=".pdf"
-                ref={fileRef}
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) uploadMutation.mutate(file);
-                }}
+              <input type="file" accept=".pdf" ref={fileRef} className="hidden"
+                onChange={(e) => { const file = e.target.files?.[0]; if (file) uploadMutation.mutate(file); }}
               />
               <button
                 type="button"
                 onClick={() => fileRef.current?.click()}
-                className="px-3 py-1.5 text-sm border border-gray-200 rounded-md hover:bg-violet-50"
+                className="px-4 py-1.5 text-sm border border-white/60 bg-white/60 rounded-full hover:bg-white/80 transition-colors"
               >
                 {contract.scan_file ? "Scan ersetzen" : "Scan hochladen"}
               </button>
@@ -238,51 +189,46 @@ export default function ContractForm() {
           </div>
 
           {contract.cancellation_pdf && (
-            <div className="bg-white p-4 rounded-lg border border-violet-100 shadow-sm">
-              <a
-                href={contractsApi.cancellationPdfUrl(contract.id)}
-                target="_blank"
-                rel="noreferrer"
-                className="text-sm text-violet-600 hover:underline"
-              >
+            <div className="bg-white/70 backdrop-blur-sm p-4 rounded-2xl border border-white/60 shadow-lg">
+              <a href={contractsApi.cancellationPdfUrl(contract.id)} target="_blank" rel="noreferrer" className="text-sm text-violet-600 hover:underline">
                 Kündigungsdokument herunterladen (PDF)
               </a>
             </div>
           )}
 
           {contract.status !== "cancelled" && (
-            <div className="bg-white p-4 rounded-lg border border-violet-100 shadow-sm">
-              <h2 className="text-sm font-medium text-gray-900 mb-3">Kündigung</h2>
+            <div className="bg-white/70 backdrop-blur-sm p-4 rounded-2xl border border-white/60 shadow-lg">
+              <h2 className="text-sm font-semibold text-violet-700 mb-3">Kündigung</h2>
               {!showCancelForm ? (
                 <button
                   type="button"
                   onClick={() => setShowCancelForm(true)}
-                  className="px-3 py-1.5 text-sm text-red-600 border border-red-300 rounded-md hover:bg-red-50"
+                  className="px-4 py-1.5 text-sm text-red-600 border border-red-300 rounded-full hover:bg-red-50 transition-colors"
                 >
                   Vertrag kündigen
                 </button>
               ) : (
                 <div className="flex gap-3 items-end">
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Kündigungsdatum</label>
+                    <label className="block text-xs font-medium text-violet-700 mb-1">Kündigungsdatum</label>
                     <input
                       type="date"
                       value={cancelDate}
                       onChange={(e) => setCancelDate(e.target.value)}
-                      className="rounded-md border border-gray-200 px-3 py-2 text-sm"
+                      className="rounded-xl border border-white/60 bg-white/70 backdrop-blur-sm px-3 py-2 text-sm"
                     />
                   </div>
                   <button
                     type="button"
                     onClick={() => cancelDate && cancelMutation.mutate(cancelDate)}
-                    className="px-3 py-2 text-sm text-white bg-red-600 rounded-md hover:bg-red-700"
+                    className="px-4 py-2 text-sm text-white bg-red-500 rounded-full hover:bg-red-600 transition-colors"
                   >
                     Bestätigen
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowCancelForm(false)}
-                    className="px-3 py-2 text-sm text-gray-600 border border-gray-200 rounded-md hover:bg-gray-50"
+                    className="px-4 py-2 text-sm text-gray-600 border border-white/60 bg-white/60 rounded-full hover:bg-white/80 transition-colors"
                   >
                     Abbrechen
                   </button>

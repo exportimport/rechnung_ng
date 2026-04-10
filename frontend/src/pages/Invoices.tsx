@@ -56,28 +56,17 @@ export default function Invoices() {
 
   const columns: Column<Invoice & Record<string, unknown>>[] = [
     { key: "invoice_number", label: "Rechnungsnummer", sortable: true },
-    {
-      key: "amount",
-      label: "Betrag",
-      render: (row) => formatEuro(row.amount as number),
-    },
+    { key: "amount", label: "Betrag", render: (row) => formatEuro(row.amount as number) },
     {
       key: "period_start",
       label: "Zeitraum",
-      render: (row) =>
-        `${formatDate(row.period_start as string)} – ${formatDate(row.period_end as string)}`,
+      render: (row) => `${formatDate(row.period_start as string)} – ${formatDate(row.period_end as string)}`,
     },
     {
       key: "status",
       label: "Status",
       render: (row) => (
-        <span
-          className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
-            row.status === "draft"
-              ? "bg-amber-100 text-amber-800"
-              : "bg-green-100 text-green-800"
-          }`}
-        >
+        <span className={`inline-flex px-3 py-0.5 rounded-full text-xs font-medium ${row.status === "draft" ? "bg-amber-100 text-amber-700" : "bg-green-100 text-green-700"}`}>
           {row.status === "draft" ? "Entwurf" : "Versendet"}
         </span>
       ),
@@ -99,10 +88,7 @@ export default function Invoices() {
           {row.status === "draft" && (
             <button
               className="text-xs text-green-700 hover:underline"
-              onClick={(e) => {
-                e.stopPropagation();
-                sendMutation.mutate({ id: row.id as number, template_id: "auto" });
-              }}
+              onClick={(e) => { e.stopPropagation(); sendMutation.mutate({ id: row.id as number, template_id: "auto" }); }}
             >
               Senden
             </button>
@@ -115,12 +101,12 @@ export default function Invoices() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900">Rechnungen</h1>
+        <h1 className="text-2xl font-bold text-violet-800">Rechnungen</h1>
         <div className="flex gap-2">
           {draftCount > 0 && (
             <button
               onClick={() => batchSendMutation.mutate()}
-              className="px-4 py-2 text-sm font-medium text-violet-700 border border-violet-300 rounded-md hover:bg-violet-50"
+              className="px-5 py-2 text-sm font-medium text-violet-700 border border-violet-300 rounded-full hover:bg-white/60 backdrop-blur-sm transition-colors"
             >
               Alle {draftCount} Entwürfe senden
             </button>
@@ -128,7 +114,7 @@ export default function Invoices() {
           <button
             onClick={() => generateMutation.mutate()}
             disabled={generateMutation.isPending}
-            className="px-4 py-2 bg-violet-500 text-white text-sm font-medium rounded-md hover:bg-violet-600 disabled:opacity-50"
+            className="px-5 py-2 bg-violet-500 text-white text-sm font-medium rounded-full hover:bg-violet-600 shadow-sm disabled:opacity-50 transition-colors"
           >
             Rechnungen generieren
           </button>
@@ -139,25 +125,21 @@ export default function Invoices() {
         <select
           value={month}
           onChange={(e) => setMonth(Number(e.target.value))}
-          className="rounded-md border border-gray-200 px-3 py-2 text-sm"
+          className="rounded-full border border-white/60 bg-white/70 backdrop-blur-sm px-4 py-2 text-sm"
         >
-          {MONTHS.map((m, i) => (
-            <option key={i + 1} value={i + 1}>{m}</option>
-          ))}
+          {MONTHS.map((m, i) => <option key={i + 1} value={i + 1}>{m}</option>)}
         </select>
         <select
           value={year}
           onChange={(e) => setYear(Number(e.target.value))}
-          className="rounded-md border border-gray-200 px-3 py-2 text-sm"
+          className="rounded-full border border-white/60 bg-white/70 backdrop-blur-sm px-4 py-2 text-sm"
         >
-          {YEARS.map((y) => (
-            <option key={y} value={y}>{y}</option>
-          ))}
+          {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
         </select>
       </div>
 
       {isLoading ? (
-        <p className="text-gray-500">Wird geladen…</p>
+        <p className="text-violet-400">Wird geladen…</p>
       ) : (
         <DataTable
           columns={columns}
