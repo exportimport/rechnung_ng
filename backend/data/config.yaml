@@ -1,0 +1,27 @@
+company:
+  name: "Meine Firma GmbH"
+  address: |
+    Firmenstraße 1
+    04103 Leipzig
+  email: info@meinefirma.de
+  phone: "+49 341 1234567"
+  tax_id: "DE123456789"
+  bank_name: "Sparkasse Leipzig"
+  iban: "DE89370400440532013000"
+  bic: "COBADEFFXXX"
+  logo: "assets/logo.png"
+
+smtp:
+  host: "smtp.example.com"
+  port: 587
+  username: "rechnung@example.com"
+  password: ""
+  use_tls: true
+  sender_name: "Meine Firma GmbH"
+  sender_email: "rechnung@example.com"
+
+invoice:
+  number_format: "{customer_id}-{contract_id}-{year}-{month:02d}-{seq:04d}"
+  payment_terms_days: 14
+  vat_rate: 0.19
+  currency: "EUR"
