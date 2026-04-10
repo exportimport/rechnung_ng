@@ -1,0 +1,62 @@
+- id: default
+  name: Standard
+  subject: "Rechnung {{ invoice.invoice_number }}"
+  body: |
+    Sehr geehrte/r {{ customer.vorname }} {{ customer.nachname }},
+
+    anbei erhalten Sie Ihre Rechnung Nr. {{ invoice.invoice_number }}
+    für den Zeitraum {{ invoice.period_start }} bis {{ invoice.period_end }}.
+
+    Betrag: {{ "%.2f"|format(invoice.amount) }} €
+
+    Bitte überweisen Sie den Betrag innerhalb von 14 Tagen.
+
+    Mit freundlichen Grüßen
+
+- id: new_customer
+  name: Neukunde
+  subject: "Willkommen – Ihre erste Rechnung {{ invoice.invoice_number }}"
+  body: |
+    Sehr geehrte/r {{ customer.vorname }} {{ customer.nachname }},
+
+    herzlich willkommen! Anbei erhalten Sie Ihre erste Rechnung Nr. {{ invoice.invoice_number }}
+    für den Zeitraum {{ invoice.period_start }} bis {{ invoice.period_end }}.
+
+    Betrag: {{ "%.2f"|format(invoice.amount) }} €
+
+    Bitte überweisen Sie den Betrag innerhalb von 14 Tagen.
+
+    Bei Fragen stehen wir Ihnen gerne zur Verfügung.
+
+    Mit freundlichen Grüßen
+
+- id: price_increase
+  name: Preiserhöhung
+  subject: "Rechnung {{ invoice.invoice_number }} – Neuer Preis ab diesem Monat"
+  body: |
+    Sehr geehrte/r {{ customer.vorname }} {{ customer.nachname }},
+
+    anbei erhalten Sie Ihre Rechnung Nr. {{ invoice.invoice_number }}.
+
+    Bitte beachten Sie, dass ab diesem Monat ein neuer Preis gilt.
+    Neuer Betrag: {{ "%.2f"|format(invoice.amount) }} €
+
+    Bitte überweisen Sie den Betrag innerhalb von 14 Tagen.
+
+    Mit freundlichen Grüßen
+
+- id: cancellation
+  name: Kündigung
+  subject: "Bestätigung Ihrer Kündigung"
+  body: |
+    Sehr geehrte/r {{ customer.vorname }} {{ customer.nachname }},
+
+    wir bestätigen den Eingang Ihrer Kündigung.
+    Ihr Vertrag endet zum vereinbarten Datum.
+
+    Anbei erhalten Sie Ihre letzte Rechnung Nr. {{ invoice.invoice_number }}
+    für den Zeitraum {{ invoice.period_start }} bis {{ invoice.period_end }}.
+
+    Betrag: {{ "%.2f"|format(invoice.amount) }} €
+
+    Mit freundlichen Grüßen

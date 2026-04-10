@@ -12,10 +12,10 @@ company:
   logo: "assets/logo.png"
 
 smtp:
-  host: "smtp.example.com"
-  port: 587
-  username: "rechnung@example.com"
-  password: ""
+  host: "smtp.mailbox.org"
+  port: 467
+  username: "florian@maeschle.org"
+  password: "nV6uSVXKFjvnnXgjUyeMOrZ3onKJ6Da6SKxyhDdMclUUA8LcPlgN7EeG6BI8MSNe98KYFWmpWWkGif2U8gGx8xtsBLJ7GZsHAT6n"
   use_tls: true
   sender_name: "Meine Firma GmbH"
   sender_email: "rechnung@example.com"

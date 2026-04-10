@@ -57,12 +57,18 @@ def send_invoice(invoice: Invoice, template_id: str, s: YamlStore) -> None:
                 filename=f"{invoice.invoice_number}.pdf",
             )
 
-    with smtplib.SMTP(config.smtp.host, config.smtp.port) as smtp:
-        if config.smtp.use_tls:
-            smtp.starttls()
-        if config.smtp.username and config.smtp.password:
-            smtp.login(config.smtp.username, config.smtp.password)
-        smtp.send_message(msg)
+    if config.smtp.use_ssl:
+        with smtplib.SMTP_SSL(config.smtp.host, config.smtp.port) as smtp:
+            if config.smtp.username and config.smtp.password:
+                smtp.login(config.smtp.username, config.smtp.password)
+            smtp.send_message(msg)
+    else:
+        with smtplib.SMTP(config.smtp.host, config.smtp.port) as smtp:
+            if config.smtp.use_tls:
+                smtp.starttls()
+            if config.smtp.username and config.smtp.password:
+                smtp.login(config.smtp.username, config.smtp.password)
+            smtp.send_message(msg)
 
     s.update(
         "invoices",
