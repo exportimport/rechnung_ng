@@ -5,6 +5,8 @@ import Plans from "./pages/Plans";
 import PlanForm from "./pages/PlanForm";
 import Customers from "./pages/Customers";
 import CustomerForm from "./pages/CustomerForm";
+import Contracts from "./pages/Contracts";
+import ContractForm from "./pages/ContractForm";
 
 export default function App() {
   return (
@@ -15,6 +17,8 @@ export default function App() {
         <Route path="plans/:id" element={<PlanForm />} />
         <Route path="customers" element={<Customers />} />
         <Route path="customers/:id" element={<CustomerForm />} />
+        <Route path="contracts" element={<Contracts />} />
+        <Route path="contracts/:id" element={<ContractForm />} />
       </Route>
     </Routes>
   );

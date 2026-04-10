@@ -41,3 +41,33 @@ export interface CustomerCreate {
   email: string;
   comment?: string | null;
 }
+
+export type BillingCycle = "monthly" | "quarterly";
+export type ContractStatus = "active" | "not_yet_active" | "cancelled";
+
+export interface Contract {
+  id: number;
+  customer_id: number;
+  plan_id: number;
+  start_date: string;
+  end_date?: string | null;
+  reference?: string | null;
+  billing_cycle: BillingCycle;
+  scan_file?: string | null;
+  cancellation_pdf?: string | null;
+  comment?: string | null;
+  status: ContractStatus;
+  customer_name: string;
+  plan_name: string;
+  current_price?: number | null;
+}
+
+export interface ContractCreate {
+  customer_id: number;
+  plan_id: number;
+  start_date: string;
+  end_date?: string | null;
+  reference?: string | null;
+  billing_cycle: BillingCycle;
+  comment?: string | null;
+}
