@@ -1,5 +1,7 @@
 import { NavLink, Outlet } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import logo from "../assets/logo.png";
+import { settingsApi } from "../api/settings";
 
 const navItems = [
   { to: "/", label: "Dashboard", end: true },
@@ -8,16 +10,24 @@ const navItems = [
   { to: "/contracts", label: "Verträge" },
   { to: "/invoices", label: "Rechnungen" },
   { to: "/mail-templates", label: "Mail-Vorlagen" },
+  { to: "/settings", label: "Einstellungen" },
 ];
 
 export default function Layout() {
+  const { data: settings } = useQuery({ queryKey: ["settings"], queryFn: settingsApi.get });
+
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-violet-200 via-indigo-100 to-blue-200">
       <aside className="relative w-64 shrink-0 bg-white/30 backdrop-blur-xl flex flex-col">
-        <div className="px-4 py-4">
+        <div className="px-4 py-4 space-y-2">
           <div className="bg-white/80 rounded-2xl px-3 py-2 shadow-sm">
             <img src={logo} alt="rechnung_ng" className="h-16 w-auto" />
           </div>
+          {settings?.company.name && (
+            <p className="text-xs font-medium text-violet-700/80 text-center truncate px-1">
+              {settings.company.name}
+            </p>
+          )}
         </div>
         <nav className="flex-1 px-3 py-2 space-y-1">
           {navItems.map(({ to, label, end }) => (

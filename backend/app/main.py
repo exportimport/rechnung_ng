@@ -47,7 +47,7 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-from app.routers import contracts, customers, dashboard, invoices, mail_templates, plans  # noqa: E402
+from app.routers import contracts, customers, dashboard, invoices, mail_templates, plans, settings  # noqa: E402
 
 app.include_router(plans.router, prefix="/api/v1/plans", tags=["plans"])
 app.include_router(customers.router, prefix="/api/v1/customers", tags=["customers"])
@@ -55,6 +55,7 @@ app.include_router(contracts.router, prefix="/api/v1/contracts", tags=["contract
 app.include_router(invoices.router, prefix="/api/v1/invoices", tags=["invoices"])
 app.include_router(mail_templates.router, prefix="/api/v1/mail-templates", tags=["mail-templates"])
 app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["dashboard"])
+app.include_router(settings.router, prefix="/api/v1/settings", tags=["settings"])
 
 # Serve generated PDFs
 (BASE_DIR / "output").mkdir(parents=True, exist_ok=True)

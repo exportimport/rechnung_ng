@@ -9,6 +9,7 @@ import Contracts from "./pages/Contracts";
 import ContractForm from "./pages/ContractForm";
 import Invoices from "./pages/Invoices";
 import MailTemplates from "./pages/MailTemplates";
+import Settings from "./pages/Settings";
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
         <Route path="contracts/:id" element={<ContractForm />} />
         <Route path="invoices" element={<Invoices />} />
         <Route path="mail-templates" element={<MailTemplates />} />
+        <Route path="settings" element={<Settings />} />
       </Route>
     </Routes>
   );
