@@ -20,7 +20,7 @@ export default function Layout() {
     <div className="flex min-h-screen bg-gradient-to-br from-violet-200 via-indigo-100 to-blue-200">
       <aside className="relative w-64 shrink-0 bg-white/30 backdrop-blur-xl flex flex-col">
         <div className="px-4 py-5 space-y-2">
-          <img src={logo} alt="rechnung_ng" className="h-16 w-auto" />
+          <img src={logo} alt="rechnung_ng" className="h-32 w-auto" />
           {settings?.company.name && (
             <p className="text-xs font-medium text-violet-700/80 text-center truncate px-1">
               {settings.company.name}
@@ -62,7 +62,7 @@ export default function Layout() {
         </svg>
       </aside>
 
-      <main className="flex-1 p-8 overflow-auto">
+      <main className="flex-1 px-8 pt-36 pb-8 overflow-auto">
         <Outlet />
       </main>
     </div>
