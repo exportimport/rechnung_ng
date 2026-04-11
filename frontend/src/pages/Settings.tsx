@@ -116,14 +116,12 @@ export default function SettingsPage() {
       <h1 className="text-2xl font-bold text-violet-900">Einstellungen</h1>
 
       <Section title="Unternehmen">
-        <Field label="Firmenname" value={form.company.name} onChange={set("company", "name")} />
+        <Field label="Firmenname" value={form.company.name} onChange={set("company", "name")} full />
+        <Field label="Straße" value={form.company.street} onChange={set("company", "street")} />
+        <Field label="Hausnummer" value={form.company.house_number} onChange={set("company", "house_number")} />
+        <Field label="PLZ" value={form.company.postcode} onChange={set("company", "postcode")} />
+        <Field label="Stadt" value={form.company.city} onChange={set("company", "city")} />
         <Field label="E-Mail" value={form.company.email} onChange={set("company", "email")} />
-        <Field
-          label="Adresse"
-          value={form.company.address}
-          onChange={set("company", "address")}
-          full
-        />
         <Field label="Telefon" value={form.company.phone} onChange={set("company", "phone")} />
         <Field label="Steuernummer / USt-ID" value={form.company.tax_id} onChange={set("company", "tax_id")} />
         <Field label="Bank" value={form.company.bank_name} onChange={set("company", "bank_name")} />

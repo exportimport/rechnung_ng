@@ -27,7 +27,10 @@ export interface Customer {
   id: number;
   vorname: string;
   nachname: string;
-  adresse: string;
+  street: string;
+  house_number: string;
+  postcode: string;
+  city: string;
   iban: string;
   email: string;
   comment?: string | null;
@@ -36,7 +39,10 @@ export interface Customer {
 export interface CustomerCreate {
   vorname: string;
   nachname: string;
-  adresse: string;
+  street: string;
+  house_number: string;
+  postcode: string;
+  city: string;
   iban: string;
   email: string;
   comment?: string | null;

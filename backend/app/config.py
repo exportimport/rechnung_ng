@@ -13,7 +13,10 @@ DATA_DIR = Path(__file__).parent.parent / "data"
 
 class CompanyConfig(BaseModel):
     name: str
-    address: str
+    street: str
+    house_number: str
+    postcode: str
+    city: str
     email: str
     phone: str = ""
     tax_id: str = ""

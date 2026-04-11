@@ -11,7 +11,8 @@
   <header class="header">
     <div class="company-info">
       <strong>{{ company.name }}</strong><br>
-      {{ company.address | replace('\n', '<br>') | safe }}<br>
+      {{ company.street }} {{ company.house_number }}<br>
+      {{ company.postcode }} {{ company.city }}<br>
       {{ company.email }}<br>
       {{ company.phone }}
     </div>
@@ -25,7 +26,8 @@
 
   <div class="recipient">
     <strong>{{ customer.vorname }} {{ customer.nachname }}</strong><br>
-    {{ customer.adresse | replace('\n', '<br>') | safe }}
+    {{ customer.street }} {{ customer.house_number }}<br>
+    {{ customer.postcode }} {{ customer.city }}
   </div>
 
   <div class="invoice-meta">
@@ -97,7 +99,7 @@
   </div>
 
   <footer class="footer">
-    <p>{{ company.name }} · {{ company.address | replace('\n', ' · ') }} · {{ company.email }}</p>
+    <p>{{ company.name }} · {{ company.street }} {{ company.house_number }} · {{ company.postcode }} {{ company.city }} · {{ company.email }}</p>
   </footer>
 </div>
 

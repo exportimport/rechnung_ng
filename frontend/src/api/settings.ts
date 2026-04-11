@@ -3,7 +3,10 @@ import { api } from "./client";
 export interface Settings {
   company: {
     name: string;
-    address: string;
+    street: string;
+    house_number: string;
+    postcode: string;
+    city: string;
     email: string;
     phone: string;
     tax_id: string;

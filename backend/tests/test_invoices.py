@@ -15,7 +15,10 @@ from app.services.invoice_generator import _next_seq, _period_end_quarterly, gen
 CUSTOMER = {
     "vorname": "Max",
     "nachname": "Mustermann",
-    "adresse": "Straße 1\n04103 Leipzig",
+    "street": "Straße",
+    "house_number": "1",
+    "postcode": "04103",
+    "city": "Leipzig",
     "iban": "DE89370400440532013000",
     "email": "max@example.com",
 }

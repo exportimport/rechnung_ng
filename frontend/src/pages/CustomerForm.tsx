@@ -20,7 +20,7 @@ export default function CustomerForm() {
   });
 
   const form = useForm<CustomerCreate>({
-    defaultValues: { vorname: "", nachname: "", adresse: "", iban: "", email: "", comment: "" },
+    defaultValues: { vorname: "", nachname: "", street: "", house_number: "", postcode: "", city: "", iban: "", email: "", comment: "" },
   });
 
   useEffect(() => {
@@ -80,7 +80,18 @@ export default function CustomerForm() {
           <TextField label="Vorname" registration={form.register("vorname", { required: "Pflichtfeld" })} error={form.formState.errors.vorname} required />
           <TextField label="Nachname" registration={form.register("nachname", { required: "Pflichtfeld" })} error={form.formState.errors.nachname} required />
         </div>
-        <TextAreaField label="Adresse" registration={form.register("adresse", { required: "Pflichtfeld" })} error={form.formState.errors.adresse} required rows={3} />
+        <div className="grid grid-cols-3 gap-4">
+          <div className="col-span-2">
+            <TextField label="Straße" registration={form.register("street", { required: "Pflichtfeld" })} error={form.formState.errors.street} required />
+          </div>
+          <TextField label="Nr." registration={form.register("house_number", { required: "Pflichtfeld" })} error={form.formState.errors.house_number} required />
+        </div>
+        <div className="grid grid-cols-3 gap-4">
+          <TextField label="PLZ" registration={form.register("postcode", { required: "Pflichtfeld" })} error={form.formState.errors.postcode} required />
+          <div className="col-span-2">
+            <TextField label="Stadt" registration={form.register("city", { required: "Pflichtfeld" })} error={form.formState.errors.city} required />
+          </div>
+        </div>
         <TextField label="IBAN" registration={form.register("iban", { required: "Pflichtfeld" })} error={form.formState.errors.iban} required />
         <TextField label="E-Mail" type="email" registration={form.register("email", { required: "Pflichtfeld" })} error={form.formState.errors.email} required />
         <TextAreaField label="Kommentar (optional)" registration={form.register("comment")} rows={2} />

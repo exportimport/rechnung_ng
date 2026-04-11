@@ -5,7 +5,10 @@ class Customer(BaseModel):
     id: int
     vorname: str
     nachname: str
-    adresse: str
+    street: str
+    house_number: str
+    postcode: str
+    city: str
     iban: str
     email: EmailStr
     comment: str | None = None
@@ -14,7 +17,10 @@ class Customer(BaseModel):
 class CustomerCreate(BaseModel):
     vorname: str
     nachname: str
-    adresse: str
+    street: str
+    house_number: str
+    postcode: str
+    city: str
     iban: str
     email: EmailStr
     comment: str | None = None
