@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { settingsApi, Settings } from "../api/settings";
+import { settingsApi } from "../api/settings";
+import type { Settings } from "../api/settings";
 import { ApiError } from "../api/client";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -100,81 +101,73 @@ export default function SettingsPage() {
     return <div className="text-violet-700 animate-pulse">Lade Einstellungen…</div>;
   }
 
-  const set = <K extends keyof Settings>(section: K) =>
-    (field: keyof Settings[K]) =>
-    (value: string) => {
-      setForm((f) => {
-        if (!f) return f;
-        return { ...f, [section]: { ...f[section], [field]: value } };
-      });
-    };
+  function set(section: keyof Settings, field: string) {
+    return (value: string) =>
+      setForm((f) => f && { ...f, [section]: { ...(f[section] as object), [field]: value } });
+  }
 
-  const setNum = <K extends keyof Settings>(section: K) =>
-    (field: keyof Settings[K]) =>
-    (value: string) => {
-      setForm((f) => {
-        if (!f) return f;
-        return { ...f, [section]: { ...f[section], [field]: Number(value) } };
-      });
-    };
+  function setNum(section: keyof Settings, field: string) {
+    return (value: string) =>
+      setForm((f) => f && { ...f, [section]: { ...(f[section] as object), [field]: Number(value) } });
+  }
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-violet-900">Einstellungen</h1>
 
       <Section title="Unternehmen">
-        <Field label="Firmenname" value={form.company.name} onChange={set("company")("name")} />
-        <Field label="E-Mail" value={form.company.email} onChange={set("company")("email")} />
+        <Field label="Firmenname" value={form.company.name} onChange={set("company", "name")} />
+        <Field label="E-Mail" value={form.company.email} onChange={set("company", "email")} />
         <Field
           label="Adresse"
           value={form.company.address}
-          onChange={set("company")("address")}
+          onChange={set("company", "address")}
           full
         />
-        <Field label="Telefon" value={form.company.phone} onChange={set("company")("phone")} />
-        <Field label="Steuernummer / USt-ID" value={form.company.tax_id} onChange={set("company")("tax_id")} />
-        <Field label="Bank" value={form.company.bank_name} onChange={set("company")("bank_name")} />
-        <Field label="IBAN" value={form.company.iban} onChange={set("company")("iban")} />
-        <Field label="BIC" value={form.company.bic} onChange={set("company")("bic")} />
+        <Field label="Telefon" value={form.company.phone} onChange={set("company", "phone")} />
+        <Field label="Steuernummer / USt-ID" value={form.company.tax_id} onChange={set("company", "tax_id")} />
+        <Field label="Bank" value={form.company.bank_name} onChange={set("company", "bank_name")} />
+        <Field label="IBAN" value={form.company.iban} onChange={set("company", "iban")} />
+        <Field label="BIC" value={form.company.bic} onChange={set("company", "bic")} />
       </Section>
 
       <Section title="Rechnungen">
         <Field
           label="Nummernformat"
           value={form.invoice.number_format}
-          onChange={set("invoice")("number_format")}
+          onChange={set("invoice", "number_format")}
           hint="Variablen: {customer_id} {contract_id} {year} {month:02d} {seq:04d}"
           full
         />
         <Field
           label="Zahlungsziel (Tage)"
           value={form.invoice.payment_terms_days}
-          onChange={setNum("invoice")("payment_terms_days")}
+          onChange={setNum("invoice", "payment_terms_days")}
           type="number"
         />
         <Field
           label="MwSt-Satz"
           value={form.invoice.vat_rate}
-          onChange={setNum("invoice")("vat_rate")}
+          onChange={setNum("invoice", "vat_rate")}
           type="number"
           hint="z.B. 0.19 für 19%"
         />
-        <Field label="Währung" value={form.invoice.currency} onChange={set("invoice")("currency")} />
+        <Field label="Währung" value={form.invoice.currency} onChange={set("invoice", "currency")} />
       </Section>
 
       <Section title="E-Mail / SMTP">
-        <Field label="SMTP-Host" value={form.smtp.host} onChange={set("smtp")("host")} />
-        <Field label="Port" value={form.smtp.port} onChange={setNum("smtp")("port")} type="number" />
-        <Field label="Benutzername" value={form.smtp.username} onChange={set("smtp")("username")} />
+        <Field label="SMTP-Host" value={form.smtp.host} onChange={set("smtp", "host")} />
+        <Field label="Port" value={form.smtp.port} onChange={setNum("smtp", "port")} type="number" />
+        <Field label="Benutzername" value={form.smtp.username} onChange={set("smtp", "username")} />
         <Field
           label="Absender-Name"
           value={form.smtp.sender_name}
-          onChange={set("smtp")("sender_name")}
+          onChange={set("smtp", "sender_name")}
         />
         <Field
           label="Absender-E-Mail"
           value={form.smtp.sender_email}
-          onChange={set("smtp")("sender_email")}
+          onChange={set("smtp", "sender_email")}
         />
         <div className="sm:col-span-2 flex gap-6 mt-1">
           <Toggle
