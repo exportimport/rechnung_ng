@@ -78,7 +78,7 @@ def delete_invoice(invoice_id: int):
 def bulk_delete_invoices(body: BulkDeleteRequest):
     id_set = set(body.ids)
     all_records = store.load("invoices")
-    to_delete = {Invoice(**d) for d in all_records if d.get("id") in id_set}
+    to_delete = [Invoice(**d) for d in all_records if d.get("id") in id_set]
 
     non_drafts = [i for i in to_delete if i.status != InvoiceStatus.draft]
     if non_drafts:
