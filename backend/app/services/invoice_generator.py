@@ -1,5 +1,4 @@
 import calendar
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, datetime
 from decimal import Decimal
 from pathlib import Path
@@ -95,6 +94,7 @@ def generate_invoices(year: int, month: int, s: YamlStore) -> list[Invoice]:
     plans = {p["id"]: p for p in s.load("plans")}
 
     seq = _next_seq(all_invoices, year, month)
+    new_records: list[dict] = []
     pending: list[tuple[Invoice, Contract, Plan, Customer]] = []
 
     for contract in active:
@@ -123,9 +123,12 @@ def generate_invoices(year: int, month: int, s: YamlStore) -> list[Invoice]:
             if contract.billing_cycle == BillingCycle.quarterly
             else last_day
         )
+        existing_ids = [r["id"] for r in all_invoices + new_records if isinstance(r.get("id"), int)]
+        new_id = max(existing_ids, default=0) + 1
         invoice_number = f"{contract.customer_id}-{contract.id}-{year}-{month:02d}-{seq:04d}"
 
         data = {
+            "id": new_id,
             "contract_id": contract.id,
             "customer_id": contract.customer_id,
             "invoice_number": invoice_number,
@@ -140,22 +143,32 @@ def generate_invoices(year: int, month: int, s: YamlStore) -> list[Invoice]:
             "created_at": datetime.now().isoformat(),
             "sent_at": None,
         }
-        inv_dict = s.create("invoices", data)
-        invoice = Invoice(**inv_dict)
-        pending.append((invoice, contract, plan, customer))
+        new_records.append(data)
+        pending.append((Invoice(**data), contract, plan, customer))
         seq += 1
 
-    # Render PDFs in parallel
-    def render_and_update(args: tuple[Invoice, Contract, Plan, Customer]) -> Invoice:
-        invoice, contract, plan, customer = args
-        pdf_path = render_invoice_pdf(invoice, contract, plan, customer, s)
-        inv_dict = s.update("invoices", invoice.id, {"pdf_path": str(pdf_path)})
-        return Invoice(**inv_dict)
+    if not pending:
+        return []
 
+    # Batch-write all new invoice records in one go
+    s.save("invoices", all_invoices + new_records)
+
+    # Render PDFs sequentially (WeasyPrint is not thread-safe)
     results: list[Invoice] = []
-    with ThreadPoolExecutor(max_workers=4) as executor:
-        futures = {executor.submit(render_and_update, args): args for args in pending}
-        for future in as_completed(futures):
-            results.append(future.result())
+    pdf_updates: dict[int, str] = {}
+    for invoice, contract, plan, customer in pending:
+        pdf_path = render_invoice_pdf(invoice, contract, plan, customer, s)
+        pdf_updates[invoice.id] = str(pdf_path)
+
+    # Batch-write all pdf_path updates in one go
+    all_saved = s.load("invoices")
+    for record in all_saved:
+        if record.get("id") in pdf_updates:
+            record["pdf_path"] = pdf_updates[record["id"]]
+    s.save("invoices", all_saved)
+
+    for record in all_saved:
+        if record.get("id") in pdf_updates:
+            results.append(Invoice(**record))
 
     return results
