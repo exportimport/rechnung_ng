@@ -1,6 +1,8 @@
 import calendar
+import os
 from datetime import date, datetime
 from decimal import Decimal
+from multiprocessing import Pool, get_context
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
@@ -8,7 +10,7 @@ from weasyprint import HTML
 
 from app.config import get_config
 from app.db.yaml_store import YamlStore
-from app.models.contract import BillingCycle, Contract, compute_status, ContractStatus
+from app.models.contract import BillingCycle, Contract
 from app.models.customer import Customer
 from app.models.invoice import Invoice, InvoiceStatus
 from app.models.plan import Plan, current_price
@@ -39,13 +41,14 @@ def _next_seq(all_invoices: list[dict], year: int, month: int) -> int:
     return max(seqs, default=0) + 1
 
 
-def render_invoice_pdf(
-    invoice: Invoice,
-    contract: Contract,
-    plan: Plan,
-    customer: Customer,
-    s: YamlStore,
-) -> Path:
+def _render_worker(args: tuple) -> tuple[int, str]:
+    """Module-level function required for multiprocessing pickling."""
+    invoice_dict, contract_dict, plan_dict, customer_dict = args
+    invoice = Invoice(**invoice_dict)
+    contract = Contract(**contract_dict)
+    plan = Plan(**plan_dict)
+    customer = Customer(**customer_dict)
+
     config = get_config()
     gross = Decimal(str(invoice.amount))
     net = gross / Decimal("1.19")
@@ -68,7 +71,23 @@ def render_invoice_pdf(
     output_path = OUTPUT_DIR / "invoices" / f"{invoice.invoice_number}.pdf"
     output_path.parent.mkdir(parents=True, exist_ok=True)
     HTML(string=html_str, base_url=str(ASSETS_DIR)).write_pdf(str(output_path))
-    return output_path
+    return invoice.id, str(output_path)
+
+
+def render_invoice_pdf(
+    invoice: Invoice,
+    contract: Contract,
+    plan: Plan,
+    customer: Customer,
+    s: YamlStore,
+) -> Path:
+    _, path_str = _render_worker((
+        invoice.model_dump(mode="json"),
+        contract.model_dump(mode="json"),
+        plan.model_dump(mode="json"),
+        customer.model_dump(mode="json"),
+    ))
+    return Path(path_str)
 
 
 def generate_invoices(year: int, month: int, s: YamlStore) -> list[Invoice]:
@@ -89,13 +108,12 @@ def generate_invoices(year: int, month: int, s: YamlStore) -> list[Invoice]:
         if inv.get("year") == year and inv.get("month") == month
     }
 
-    # Load lookups once
     customers = {c["id"]: c for c in s.load("customers")}
     plans = {p["id"]: p for p in s.load("plans")}
 
     seq = _next_seq(all_invoices, year, month)
     new_records: list[dict] = []
-    pending: list[tuple[Invoice, Contract, Plan, Customer]] = []
+    worker_args: list[tuple] = []
 
     for contract in active:
         if contract.id in existing_contract_ids:
@@ -144,31 +162,37 @@ def generate_invoices(year: int, month: int, s: YamlStore) -> list[Invoice]:
             "sent_at": None,
         }
         new_records.append(data)
-        pending.append((Invoice(**data), contract, plan, customer))
+        invoice = Invoice(**data)
+        worker_args.append((
+            invoice.model_dump(mode="json"),
+            contract.model_dump(mode="json"),
+            plan.model_dump(mode="json"),
+            customer.model_dump(mode="json"),
+        ))
         seq += 1
 
-    if not pending:
-        return []
+    if not worker_args:
+        yield ("done", [])
+        return
 
-    # Batch-write all new invoice records in one go
+    # Batch-write all invoice records before rendering
     s.save("invoices", all_invoices + new_records)
 
-    # Render PDFs sequentially (WeasyPrint is not thread-safe)
-    results: list[Invoice] = []
+    # Render PDFs in parallel, yielding progress as each completes
+    workers = min(os.cpu_count() or 1, 4)
+    ctx = get_context("fork")
     pdf_updates: dict[int, str] = {}
-    for invoice, contract, plan, customer in pending:
-        pdf_path = render_invoice_pdf(invoice, contract, plan, customer, s)
-        pdf_updates[invoice.id] = str(pdf_path)
+    with ctx.Pool(processes=workers) as pool:
+        for invoice_id, pdf_path in pool.imap_unordered(_render_worker, worker_args):
+            pdf_updates[invoice_id] = pdf_path
+            yield ("progress", len(pdf_updates), len(worker_args))
 
-    # Batch-write all pdf_path updates in one go
+    # Batch-write all pdf_paths in one go
     all_saved = s.load("invoices")
     for record in all_saved:
         if record.get("id") in pdf_updates:
             record["pdf_path"] = pdf_updates[record["id"]]
     s.save("invoices", all_saved)
 
-    for record in all_saved:
-        if record.get("id") in pdf_updates:
-            results.append(Invoice(**record))
-
-    return results
+    results = [Invoice(**r) for r in all_saved if r.get("id") in pdf_updates]
+    yield ("done", results)

@@ -21,6 +21,7 @@ export default function Invoices() {
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [progress, setProgress] = useState<{ current: number; total: number } | null>(null);
 
   const { data: invoices = [], isLoading } = useQuery({
     queryKey: ["invoices", year, month],
@@ -28,12 +29,13 @@ export default function Invoices() {
   });
 
   const generateMutation = useMutation({
-    mutationFn: () => invoicesApi.generate(year, month),
-    onSuccess: (data) => {
+    mutationFn: () => invoicesApi.generate(year, month, (current, total) => setProgress({ current, total })),
+    onSuccess: (count) => {
       queryClient.invalidateQueries({ queryKey: ["invoices"] });
-      toast.success(`${data.length} Rechnung(en) erstellt`);
+      setProgress(null);
+      toast.success(`${count} Rechnung(en) erstellt`);
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => { setProgress(null); toast.error(e.message); },
   });
 
   const sendMutation = useMutation({
@@ -125,9 +127,11 @@ export default function Invoices() {
           <button
             onClick={() => generateMutation.mutate()}
             disabled={generateMutation.isPending}
-            className="px-5 py-2 bg-violet-500 text-white text-sm font-medium rounded-full hover:bg-violet-600 shadow-sm disabled:opacity-50 transition-colors"
+            className="px-5 py-2 bg-violet-500 text-white text-sm font-medium rounded-full hover:bg-violet-600 shadow-sm disabled:opacity-50 transition-colors min-w-48 text-center"
           >
-            Rechnungen generieren
+            {progress
+              ? `${progress.current} / ${progress.total} erstellt…`
+              : "Rechnungen generieren"}
           </button>
         </div>
       </div>

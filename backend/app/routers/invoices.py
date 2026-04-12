@@ -1,9 +1,10 @@
+import json
 import smtplib
 import socket
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 
 from app.db.yaml_store import store
 from app.models.invoice import BulkDeleteRequest, GenerateRequest, Invoice, InvoiceStatus, SendRequest
@@ -40,10 +41,18 @@ def get_invoice(invoice_id: int):
     return _serialize(Invoice(**d))
 
 
-@router.post("/generate", status_code=201)
+@router.post("/generate")
 def generate(body: GenerateRequest):
-    created = generate_invoices(body.year, body.month, store)
-    return [_serialize(i) for i in created]
+    def event_stream():
+        for event in generate_invoices(body.year, body.month, store):
+            if event[0] == "progress":
+                _, current, total = event
+                yield f"data: {json.dumps({'current': current, 'total': total})}\n\n"
+            elif event[0] == "done":
+                _, results = event
+                yield f"data: {json.dumps({'done': True, 'count': len(results)})}\n\n"
+
+    return StreamingResponse(event_stream(), media_type="text/event-stream")
 
 
 @router.get("/{invoice_id}/pdf")
