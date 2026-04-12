@@ -1,3 +1,4 @@
+import json
 from datetime import date
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -11,6 +12,20 @@ from app.main import app
 from app.models.contract import BillingCycle
 from app.models.plan import Plan, current_price
 from app.services.invoice_generator import _next_seq, _period_end_quarterly, generate_invoices
+
+
+def _parse_sse(response) -> list[dict]:
+    events = []
+    for line in response.text.splitlines():
+        if line.startswith("data: "):
+            events.append(json.loads(line[6:]))
+    return events
+
+
+def _sse_invoices(response) -> list[dict]:
+    """Return the invoice list from the final 'done' SSE event."""
+    done = next((e for e in _parse_sse(response) if e.get("done")), None)
+    return done.get("invoices", []) if done else []
 
 CUSTOMER = {
     "vorname": "Max",
@@ -103,8 +118,8 @@ async def test_generate_basic(mock_render: MagicMock, client: AsyncClient, tmp_p
     await _seed(client)
 
     res = await client.post("/api/v1/invoices/generate", json={"year": 2026, "month": 4})
-    assert res.status_code == 201
-    data = res.json()
+    assert res.status_code == 200
+    data = _sse_invoices(res)
     assert len(data) == 1
     assert data[0]["invoice_number"].startswith("1-1-2026-04-")
     assert data[0]["status"] == "draft"
@@ -118,7 +133,7 @@ async def test_generate_skips_existing(mock_render: MagicMock, client: AsyncClie
 
     await client.post("/api/v1/invoices/generate", json={"year": 2026, "month": 4})
     res2 = await client.post("/api/v1/invoices/generate", json={"year": 2026, "month": 4})
-    assert len(res2.json()) == 0
+    assert len(_sse_invoices(res2)) == 0
 
 
 @patch("app.services.invoice_generator.render_invoice_pdf")
@@ -138,11 +153,10 @@ async def test_quarterly_only_in_quarter_start(mock_render: MagicMock, client: A
             "billing_cycle": "quarterly",
         },
     )
-    # February — should produce nothing
     res_feb = await client.post("/api/v1/invoices/generate", json={"year": 2026, "month": 2})
-    assert len(res_feb.json()) == 0
+    assert len(_sse_invoices(res_feb)) == 0
 
-    # April — quarter start — should generate with amount × 3
     res_apr = await client.post("/api/v1/invoices/generate", json={"year": 2026, "month": 4})
-    assert len(res_apr.json()) == 1
-    assert res_apr.json()[0]["amount"] == pytest.approx(150.0, rel=1e-3)
+    invoices_apr = _sse_invoices(res_apr)
+    assert len(invoices_apr) == 1
+    assert invoices_apr[0]["amount"] == pytest.approx(150.0, rel=1e-3)

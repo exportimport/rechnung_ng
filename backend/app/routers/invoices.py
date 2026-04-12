@@ -50,7 +50,7 @@ def generate(body: GenerateRequest):
                 yield f"data: {json.dumps({'current': current, 'total': total})}\n\n"
             elif event[0] == "done":
                 _, results = event
-                yield f"data: {json.dumps({'done': True, 'count': len(results)})}\n\n"
+                yield f"data: {json.dumps({'done': True, 'count': len(results), 'invoices': [_serialize(i) for i in results]})}\n\n"
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 

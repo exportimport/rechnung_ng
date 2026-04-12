@@ -41,14 +41,13 @@ def _next_seq(all_invoices: list[dict], year: int, month: int) -> int:
     return max(seqs, default=0) + 1
 
 
-def _render_worker(args: tuple) -> tuple[int, str]:
-    """Module-level function required for multiprocessing pickling."""
-    invoice_dict, contract_dict, plan_dict, customer_dict = args
-    invoice = Invoice(**invoice_dict)
-    contract = Contract(**contract_dict)
-    plan = Plan(**plan_dict)
-    customer = Customer(**customer_dict)
-
+def render_invoice_pdf(
+    invoice: Invoice,
+    contract: Contract,
+    plan: Plan,
+    customer: Customer,
+    s: YamlStore,
+) -> Path:
     config = get_config()
     gross = Decimal(str(invoice.amount))
     net = gross / Decimal("1.19")
@@ -71,23 +70,20 @@ def _render_worker(args: tuple) -> tuple[int, str]:
     output_path = OUTPUT_DIR / "invoices" / f"{invoice.invoice_number}.pdf"
     output_path.parent.mkdir(parents=True, exist_ok=True)
     HTML(string=html_str, base_url=str(ASSETS_DIR)).write_pdf(str(output_path))
-    return invoice.id, str(output_path)
+    return output_path
 
 
-def render_invoice_pdf(
-    invoice: Invoice,
-    contract: Contract,
-    plan: Plan,
-    customer: Customer,
-    s: YamlStore,
-) -> Path:
-    _, path_str = _render_worker((
-        invoice.model_dump(mode="json"),
-        contract.model_dump(mode="json"),
-        plan.model_dump(mode="json"),
-        customer.model_dump(mode="json"),
-    ))
-    return Path(path_str)
+def _render_worker(args: tuple) -> tuple[int, str]:
+    """Module-level function required for multiprocessing pickling.
+    Delegates to render_invoice_pdf so test mocks on that function are inherited via fork."""
+    invoice_dict, contract_dict, plan_dict, customer_dict = args
+    invoice = Invoice(**invoice_dict)
+    contract = Contract(**contract_dict)
+    plan = Plan(**plan_dict)
+    customer = Customer(**customer_dict)
+    from app.services.invoice_generator import render_invoice_pdf as _render
+    path = _render(invoice, contract, plan, customer, None)  # type: ignore[arg-type]
+    return invoice.id, str(path)
 
 
 def generate_invoices(year: int, month: int, s: YamlStore) -> list[Invoice]:
