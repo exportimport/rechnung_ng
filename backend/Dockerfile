@@ -16,6 +16,7 @@ COPY pyproject.toml .
 RUN pip install --no-cache-dir -e "."
 
 COPY app/ app/
+COPY assets/ assets/
 
 RUN mkdir -p data output/invoices output/cancellations uploads/contracts
 
