@@ -1,3 +1,5 @@
+<img src="frontend/src/assets/logo.svg" alt="rechnung_ng" width="200">
+
 # rechnung_ng
 
 Web-based contract and invoice management system. Single-user, local deployment.
