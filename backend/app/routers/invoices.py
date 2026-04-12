@@ -76,16 +76,20 @@ def delete_invoice(invoice_id: int):
 
 @router.post("/bulk-delete", status_code=204)
 def bulk_delete_invoices(body: BulkDeleteRequest):
-    for invoice_id in body.ids:
-        d = store.get_by_id("invoices", invoice_id)
-        if not d:
-            continue
-        invoice = Invoice(**d)
-        if invoice.status != InvoiceStatus.draft:
-            raise HTTPException(status_code=409, detail=f"Rechnung {invoice_id} ist kein Entwurf")
+    id_set = set(body.ids)
+    all_records = store.load("invoices")
+    to_delete = {Invoice(**d) for d in all_records if d.get("id") in id_set}
+
+    non_drafts = [i for i in to_delete if i.status != InvoiceStatus.draft]
+    if non_drafts:
+        raise HTTPException(status_code=409, detail="Nur Entwürfe können gelöscht werden")
+
+    for invoice in to_delete:
         if invoice.pdf_path and Path(invoice.pdf_path).exists():
             Path(invoice.pdf_path).unlink()
-        store.delete("invoices", invoice_id)
+
+    remaining = [d for d in all_records if d.get("id") not in id_set]
+    store.save("invoices", remaining)
 
 
 @router.post("/{invoice_id}/send")
