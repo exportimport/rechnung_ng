@@ -33,3 +33,7 @@ class GenerateRequest(BaseModel):
 
 class SendRequest(BaseModel):
     template_id: str
+
+
+class BulkDeleteRequest(BaseModel):
+    ids: list[int]

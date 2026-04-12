@@ -18,5 +18,6 @@ export const invoicesApi = {
   sendBatch: (year: number, month: number) =>
     api.post<Invoice[]>("/invoices/send-batch", { year, month }),
   delete: (id: number) => api.delete(`/invoices/${id}`),
+  bulkDelete: (ids: number[]) => api.post<void>("/invoices/bulk-delete", { ids }),
   pdfUrl: (id: number) => `/api/v1/invoices/${id}/pdf`,
 };

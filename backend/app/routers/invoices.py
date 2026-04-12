@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 
 from app.db.yaml_store import store
-from app.models.invoice import GenerateRequest, Invoice, InvoiceStatus, SendRequest
+from app.models.invoice import BulkDeleteRequest, GenerateRequest, Invoice, InvoiceStatus, SendRequest
 from app.services.invoice_generator import generate_invoices
 
 router = APIRouter()
@@ -72,6 +72,20 @@ def delete_invoice(invoice_id: int):
     if invoice.pdf_path and Path(invoice.pdf_path).exists():
         Path(invoice.pdf_path).unlink()
     store.delete("invoices", invoice_id)
+
+
+@router.post("/bulk-delete", status_code=204)
+def bulk_delete_invoices(body: BulkDeleteRequest):
+    for invoice_id in body.ids:
+        d = store.get_by_id("invoices", invoice_id)
+        if not d:
+            continue
+        invoice = Invoice(**d)
+        if invoice.status != InvoiceStatus.draft:
+            raise HTTPException(status_code=409, detail=f"Rechnung {invoice_id} ist kein Entwurf")
+        if invoice.pdf_path and Path(invoice.pdf_path).exists():
+            Path(invoice.pdf_path).unlink()
+        store.delete("invoices", invoice_id)
 
 
 @router.post("/{invoice_id}/send")
