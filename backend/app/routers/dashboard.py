@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, timedelta
 
 from fastapi import APIRouter
 
@@ -18,19 +18,22 @@ def get_dashboard():
     all_invoices = [Invoice(**d) for d in store.load("invoices")]
     drafts = [i for i in all_invoices if i.status == InvoiceStatus.draft]
 
+    # Load lookups once
+    customers = {c["id"]: c for c in store.load("customers")}
+    contracts = {c["id"]: c for c in store.load("contracts")}
+    plans = {p["id"]: p for p in store.load("plans")}
+
     enriched = []
     for inv in drafts:
-        customer_d = store.get_by_id("customers", inv.customer_id)
-        contract_d = store.get_by_id("contracts", inv.contract_id)
+        customer_d = customers.get(inv.customer_id)
+        contract_d = contracts.get(inv.contract_id)
         plan_name = ""
         if contract_d:
-            plan_d = store.get_by_id("plans", contract_d["plan_id"])
+            plan_d = plans.get(contract_d["plan_id"])
             plan_name = plan_d["name"] if plan_d else ""
 
-        created = datetime.fromisoformat(inv.created_at.isoformat() if hasattr(inv.created_at, 'isoformat') else inv.created_at)
-        due_date = date(created.year, created.month, created.day)
-        from datetime import timedelta
-        due_date = due_date + timedelta(days=payment_terms)
+        created = inv.created_at if isinstance(inv.created_at, date) else inv.created_at.date()
+        due_date = created + timedelta(days=payment_terms)
         overdue = due_date < today
 
         enriched.append({
