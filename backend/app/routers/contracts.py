@@ -22,16 +22,20 @@ UPLOADS_DIR = Path(__file__).parent.parent.parent / "uploads" / "contracts"
 router = APIRouter()
 
 
-def _enrich(contract: Contract) -> dict:
+def _enrich(
+    contract: Contract,
+    customers: dict[int, dict],
+    plans: dict[int, dict],
+) -> dict:
     today = date.today()
     status = compute_status(contract.start_date, contract.end_date, today)
 
-    customer_d = store.get_by_id("customers", contract.customer_id)
+    customer_d = customers.get(contract.customer_id)
     customer_name = (
         f"{customer_d['vorname']} {customer_d['nachname']}" if customer_d else "Unbekannt"
     )
 
-    plan_d = store.get_by_id("plans", contract.plan_id)
+    plan_d = plans.get(contract.plan_id)
     plan_name = plan_d["name"] if plan_d else "Unbekannt"
     price: float | None = None
     if plan_d:
@@ -47,10 +51,17 @@ def _enrich(contract: Contract) -> dict:
     return data
 
 
+def _load_lookups() -> tuple[dict[int, dict], dict[int, dict]]:
+    customers = {c["id"]: c for c in store.load("customers")}
+    plans = {p["id"]: p for p in store.load("plans")}
+    return customers, plans
+
+
 @router.get("")
 def list_contracts(status: ContractStatus | None = None):
     contracts = [Contract(**d) for d in store.load("contracts")]
-    enriched = [_enrich(c) for c in contracts]
+    customers, plans = _load_lookups()
+    enriched = [_enrich(c, customers, plans) for c in contracts]
     if status:
         enriched = [c for c in enriched if c["status"] == status.value]
     return enriched
@@ -61,7 +72,8 @@ def get_contract(contract_id: int):
     d = store.get_by_id("contracts", contract_id)
     if not d:
         raise HTTPException(status_code=404, detail="Vertrag nicht gefunden")
-    return _enrich(Contract(**d))
+    customers, plans = _load_lookups()
+    return _enrich(Contract(**d), customers, plans)
 
 
 @router.post("", status_code=201)
@@ -78,7 +90,8 @@ def create_contract(body: ContractCreate):
         )
     data = body.model_dump(mode="json")
     record = store.create("contracts", data)
-    return _enrich(Contract(**record))
+    customers, plans = _load_lookups()
+    return _enrich(Contract(**record), customers, plans)
 
 
 @router.put("/{contract_id}")
@@ -97,7 +110,8 @@ def update_contract(contract_id: int, body: ContractUpdate):
             detail=f"Tarif hat am {body.start_date} keinen gültigen Preis. Bitte zuerst einen Preis mit passendem Gültigkeitsdatum anlegen.",
         )
     updated = store.update("contracts", contract_id, body.model_dump(mode="json"))
-    return _enrich(Contract(**updated))
+    customers, plans = _load_lookups()
+    return _enrich(Contract(**updated), customers, plans)
 
 
 @router.delete("/{contract_id}", status_code=204)
@@ -169,4 +183,5 @@ def cancel_contract(contract_id: int, body: CancelRequest):
         updated = store.update("contracts", contract_id, {"cancellation_pdf": str(pdf_path)})
     except Exception:
         pass  # PDF generation failure should not block the cancellation
-    return _enrich(Contract(**updated))
+    customers, plans = _load_lookups()
+    return _enrich(Contract(**updated), customers, plans)

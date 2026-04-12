@@ -1,4 +1,5 @@
 import calendar
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, datetime
 from decimal import Decimal
 from pathlib import Path
@@ -89,18 +90,21 @@ def generate_invoices(year: int, month: int, s: YamlStore) -> list[Invoice]:
         if inv.get("year") == year and inv.get("month") == month
     }
 
+    # Load lookups once
+    customers = {c["id"]: c for c in s.load("customers")}
+    plans = {p["id"]: p for p in s.load("plans")}
+
     seq = _next_seq(all_invoices, year, month)
-    results: list[Invoice] = []
+    pending: list[tuple[Invoice, Contract, Plan, Customer]] = []
 
     for contract in active:
         if contract.id in existing_contract_ids:
             continue
-
         if contract.billing_cycle == BillingCycle.quarterly:
             if month not in (1, 4, 7, 10):
                 continue
 
-        plan_d = s.get_by_id("plans", contract.plan_id)
+        plan_d = plans.get(contract.plan_id)
         if not plan_d:
             continue
         plan = Plan(**plan_d)
@@ -108,13 +112,17 @@ def generate_invoices(year: int, month: int, s: YamlStore) -> list[Invoice]:
         if price is None:
             continue
 
+        customer_d = customers.get(contract.customer_id)
+        if not customer_d:
+            continue
+        customer = Customer(**customer_d)
+
         amount = float(price * 3 if contract.billing_cycle == BillingCycle.quarterly else price)
-
-        if contract.billing_cycle == BillingCycle.quarterly:
-            period_end = _period_end_quarterly(year, month)
-        else:
-            period_end = last_day
-
+        period_end = (
+            _period_end_quarterly(year, month)
+            if contract.billing_cycle == BillingCycle.quarterly
+            else last_day
+        )
         invoice_number = f"{contract.customer_id}-{contract.id}-{year}-{month:02d}-{seq:04d}"
 
         data = {
@@ -134,15 +142,20 @@ def generate_invoices(year: int, month: int, s: YamlStore) -> list[Invoice]:
         }
         inv_dict = s.create("invoices", data)
         invoice = Invoice(**inv_dict)
-
-        customer_d = s.get_by_id("customers", contract.customer_id)
-        if customer_d:
-            customer = Customer(**customer_d)
-            pdf_path = render_invoice_pdf(invoice, contract, plan, customer, s)
-            inv_dict = s.update("invoices", invoice.id, {"pdf_path": str(pdf_path)})
-            invoice = Invoice(**inv_dict)
-
+        pending.append((invoice, contract, plan, customer))
         seq += 1
-        results.append(invoice)
+
+    # Render PDFs in parallel
+    def render_and_update(args: tuple[Invoice, Contract, Plan, Customer]) -> Invoice:
+        invoice, contract, plan, customer = args
+        pdf_path = render_invoice_pdf(invoice, contract, plan, customer, s)
+        inv_dict = s.update("invoices", invoice.id, {"pdf_path": str(pdf_path)})
+        return Invoice(**inv_dict)
+
+    results: list[Invoice] = []
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        futures = {executor.submit(render_and_update, args): args for args in pending}
+        for future in as_completed(futures):
+            results.append(future.result())
 
     return results
