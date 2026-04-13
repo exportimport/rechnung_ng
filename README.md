@@ -1,6 +1,11 @@
 <img src="frontend/src/assets/logo.svg" alt="rechnung_ng" width="200">
 Web-based contract and invoice management system. Single-user, local deployment.
 
+## Screenshots
+
+![Rechnungen](example/invoice_example.png)
+![Verträge](example/contract_example.png)
+
 ## Features
 
 - Customer, contract, and plan management
