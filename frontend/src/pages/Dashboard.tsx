@@ -19,7 +19,31 @@ interface DashboardInvoice {
 interface DashboardData {
   draft_count: number;
   overdue_count: number;
+  customer_count: number;
+  last_month_revenue: number;
+  last_quarter_revenue: number;
   draft_invoices: DashboardInvoice[];
+}
+
+interface StatCardProps {
+  label: string;
+  value: string | number;
+  highlight?: "blue" | "red" | "green" | "violet";
+}
+
+function StatCard({ label, value, highlight = "blue" }: StatCardProps) {
+  const colors: Record<string, string> = {
+    blue: "bg-sky-100/60 text-sky-700",
+    red: "bg-red-100/60 text-red-600",
+    green: "bg-emerald-100/60 text-emerald-700",
+    violet: "bg-violet-100/60 text-violet-700",
+  };
+  return (
+    <div className={`${colors[highlight]} backdrop-blur-sm rounded-2xl border border-white/60 shadow-lg p-5`}>
+      <p className="text-sm font-medium opacity-70">{label}</p>
+      <p className="text-3xl font-bold mt-1">{value}</p>
+    </div>
+  );
 }
 
 export default function Dashboard() {
@@ -49,23 +73,21 @@ export default function Dashboard() {
     <div>
       <h1 className="text-2xl font-bold text-violet-800 mb-6">Dashboard</h1>
 
-      <div className="grid grid-cols-2 gap-4 mb-8 max-w-lg">
-        <div className="bg-sky-100/60 backdrop-blur-sm rounded-2xl border border-white/60 shadow-lg p-5">
-          <p className="text-sm text-sky-600 font-medium">Offene Rechnungen</p>
-          <p className="text-4xl font-bold text-sky-700 mt-1">{data.draft_count}</p>
-        </div>
-        <div
-          className={[
-            "backdrop-blur-sm rounded-2xl border border-white/60 shadow-lg p-5",
-            data.overdue_count > 0 ? "bg-red-100/60" : "bg-white/50",
-          ].join(" ")}
-        >
-          <p className="text-sm text-gray-500 font-medium">Überfällig</p>
-          <p className={["text-4xl font-bold mt-1", data.overdue_count > 0 ? "text-red-600" : "text-gray-700"].join(" ")}>
-            {data.overdue_count}
-          </p>
-        </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+        <StatCard label="Offene Rechnungen" value={data.draft_count} highlight="blue" />
+        <StatCard
+          label="Überfällig"
+          value={data.overdue_count}
+          highlight={data.overdue_count > 0 ? "red" : "blue"}
+        />
+        <StatCard label="Kunden" value={data.customer_count} highlight="violet" />
+        <StatCard label="Umsatz letzter Monat" value={formatEuro(data.last_month_revenue)} highlight="green" />
+        <StatCard label="Umsatz letztes Quartal" value={formatEuro(data.last_quarter_revenue)} highlight="green" />
       </div>
+
+      <h2 className="text-lg font-semibold text-violet-700 mb-3">
+        Versandbereit ({data.draft_count})
+      </h2>
 
       {data.draft_invoices.length === 0 ? (
         <p className="text-violet-400">Keine offenen Rechnungen.</p>
@@ -74,7 +96,7 @@ export default function Dashboard() {
           <table className="min-w-full divide-y divide-white/40 text-sm">
             <thead className="bg-white/40">
               <tr>
-                {["Rechnungsnummer", "Kunde", "Betrag", "Erstellt", "Fällig", ""].map((h) => (
+                {["Rechnungsnummer", "Kunde", "Plan", "Betrag", "Erstellt", "Fällig", ""].map((h) => (
                   <th
                     key={h}
                     className="px-4 py-3 text-left text-xs font-semibold text-violet-700 uppercase tracking-wider"
@@ -89,6 +111,7 @@ export default function Dashboard() {
                 <tr key={inv.id} className={inv.overdue ? "bg-red-50/50" : ""}>
                   <td className="px-4 py-3 font-mono text-xs text-gray-600">{inv.invoice_number}</td>
                   <td className="px-4 py-3 text-gray-700">{inv.customer_name}</td>
+                  <td className="px-4 py-3 text-gray-500 text-xs">{inv.plan_name}</td>
                   <td className="px-4 py-3 text-gray-700">{formatEuro(inv.amount)}</td>
                   <td className="px-4 py-3 text-gray-500">{formatDate(inv.created_at)}</td>
                   <td className={["px-4 py-3", inv.overdue ? "text-red-600 font-medium" : "text-gray-500"].join(" ")}>
