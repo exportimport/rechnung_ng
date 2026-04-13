@@ -1,3 +1,4 @@
+import { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { api } from "../api/client";
@@ -25,29 +26,97 @@ interface DashboardData {
   draft_invoices: DashboardInvoice[];
 }
 
-interface StatCardProps {
+// --- Card definitions ---
+
+type CardId = "draft_count" | "overdue_count" | "customer_count" | "last_month_revenue" | "last_quarter_revenue";
+
+interface CardDef {
+  id: CardId;
   label: string;
-  value: string | number;
-  highlight?: "blue" | "red" | "green" | "violet";
+  highlight: "blue" | "red" | "green" | "violet";
+  format: (data: DashboardData) => string | number;
 }
 
-function StatCard({ label, value, highlight = "blue" }: StatCardProps) {
-  const colors: Record<string, string> = {
-    blue: "bg-sky-100/60 text-sky-700",
-    red: "bg-red-100/60 text-red-600",
-    green: "bg-emerald-100/60 text-emerald-700",
-    violet: "bg-violet-100/60 text-violet-700",
-  };
-  return (
-    <div className={`${colors[highlight]} backdrop-blur-sm rounded-2xl border border-white/60 shadow-lg p-5`}>
-      <p className="text-sm font-medium opacity-70">{label}</p>
-      <p className="text-3xl font-bold mt-1">{value}</p>
-    </div>
-  );
+const CARD_DEFS: CardDef[] = [
+  { id: "draft_count", label: "Offene Rechnungen", highlight: "blue", format: (d) => d.draft_count },
+  {
+    id: "overdue_count",
+    label: "Überfällig",
+    highlight: "red",
+    format: (d) => d.overdue_count,
+  },
+  { id: "customer_count", label: "Kunden", highlight: "violet", format: (d) => d.customer_count },
+  { id: "last_month_revenue", label: "Umsatz letzter Monat", highlight: "green", format: (d) => formatEuro(d.last_month_revenue) },
+  { id: "last_quarter_revenue", label: "Umsatz letztes Quartal", highlight: "green", format: (d) => formatEuro(d.last_quarter_revenue) },
+];
+
+const DEFAULT_ORDER: CardId[] = CARD_DEFS.map((c) => c.id);
+const LS_ORDER = "dashboard_card_order";
+const LS_HIDDEN = "dashboard_card_hidden";
+
+function loadOrder(): CardId[] {
+  try {
+    const raw = localStorage.getItem(LS_ORDER);
+    if (raw) return JSON.parse(raw) as CardId[];
+  } catch {}
+  return DEFAULT_ORDER;
 }
+
+function loadHidden(): Set<CardId> {
+  try {
+    const raw = localStorage.getItem(LS_HIDDEN);
+    if (raw) return new Set(JSON.parse(raw) as CardId[]);
+  } catch {}
+  return new Set();
+}
+
+// --- Highlight styles ---
+
+const HIGHLIGHT_CLASSES: Record<string, string> = {
+  blue: "bg-sky-100/60 text-sky-700",
+  red: "bg-red-100/60 text-red-600",
+  green: "bg-emerald-100/60 text-emerald-700",
+  violet: "bg-violet-100/60 text-violet-700",
+};
+
+// --- Dashboard component ---
 
 export default function Dashboard() {
   const queryClient = useQueryClient();
+
+  const [order, setOrder] = useState<CardId[]>(loadOrder);
+  const [hidden, setHidden] = useState<Set<CardId>>(loadHidden);
+  const [editMode, setEditMode] = useState(false);
+
+  const persist = useCallback((newOrder: CardId[], newHidden: Set<CardId>) => {
+    localStorage.setItem(LS_ORDER, JSON.stringify(newOrder));
+    localStorage.setItem(LS_HIDDEN, JSON.stringify([...newHidden]));
+  }, []);
+
+  const move = (id: CardId, dir: -1 | 1) => {
+    const idx = order.indexOf(id);
+    if (idx < 0) return;
+    const next = [...order];
+    const swap = idx + dir;
+    if (swap < 0 || swap >= next.length) return;
+    [next[idx], next[swap]] = [next[swap], next[idx]];
+    setOrder(next);
+    persist(next, hidden);
+  };
+
+  const hide = (id: CardId) => {
+    const next = new Set(hidden);
+    next.add(id);
+    setHidden(next);
+    persist(order, next);
+  };
+
+  const show = (id: CardId) => {
+    const next = new Set(hidden);
+    next.delete(id);
+    setHidden(next);
+    persist(order, next);
+  };
 
   const { data, isLoading } = useQuery({
     queryKey: ["dashboard"],
@@ -69,22 +138,97 @@ export default function Dashboard() {
   if (isLoading) return <p className="text-violet-400">Wird geladen…</p>;
   if (!data) return null;
 
+  const visibleCards = order.filter((id) => !hidden.has(id));
+  const hiddenCards = order.filter((id) => hidden.has(id));
+
   return (
     <div>
-      <h1 className="text-2xl font-bold text-violet-800 mb-6">Dashboard</h1>
-
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
-        <StatCard label="Offene Rechnungen" value={data.draft_count} highlight="blue" />
-        <StatCard
-          label="Überfällig"
-          value={data.overdue_count}
-          highlight={data.overdue_count > 0 ? "red" : "blue"}
-        />
-        <StatCard label="Kunden" value={data.customer_count} highlight="violet" />
-        <StatCard label="Umsatz letzter Monat" value={formatEuro(data.last_month_revenue)} highlight="green" />
-        <StatCard label="Umsatz letztes Quartal" value={formatEuro(data.last_quarter_revenue)} highlight="green" />
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-violet-800">Dashboard</h1>
+        <button
+          onClick={() => setEditMode((v) => !v)}
+          className={[
+            "text-xs px-3 py-1.5 rounded-lg border transition-colors",
+            editMode
+              ? "bg-violet-600 text-white border-violet-600"
+              : "text-violet-500 border-violet-200 hover:border-violet-400",
+          ].join(" ")}
+        >
+          {editMode ? "Fertig" : "Anpassen"}
+        </button>
       </div>
 
+      {/* Stat cards */}
+      <div className="flex flex-wrap gap-4 mb-8">
+        {visibleCards.map((id, idx) => {
+          const def = CARD_DEFS.find((c) => c.id === id)!;
+          return (
+            <div
+              key={id}
+              className={[
+                "relative backdrop-blur-sm rounded-2xl border border-white/60 shadow-lg p-5 min-w-[140px]",
+                HIGHLIGHT_CLASSES[def.highlight],
+                editMode ? "ring-2 ring-violet-300" : "",
+              ].join(" ")}
+            >
+              <p className="text-sm font-medium opacity-70 pr-4">{def.label}</p>
+              <p className="text-3xl font-bold mt-1">{def.format(data)}</p>
+
+              {editMode && (
+                <div className="absolute top-2 right-2 flex gap-1">
+                  <button
+                    onClick={() => move(id, -1)}
+                    disabled={idx === 0}
+                    className="w-5 h-5 flex items-center justify-center rounded bg-white/70 text-gray-500 hover:text-gray-800 disabled:opacity-30 text-xs"
+                    title="Nach links"
+                  >
+                    ‹
+                  </button>
+                  <button
+                    onClick={() => move(id, 1)}
+                    disabled={idx === visibleCards.length - 1}
+                    className="w-5 h-5 flex items-center justify-center rounded bg-white/70 text-gray-500 hover:text-gray-800 disabled:opacity-30 text-xs"
+                    title="Nach rechts"
+                  >
+                    ›
+                  </button>
+                  <button
+                    onClick={() => hide(id)}
+                    className="w-5 h-5 flex items-center justify-center rounded bg-white/70 text-red-400 hover:text-red-600 text-xs"
+                    title="Ausblenden"
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        {/* Hidden cards shown as ghost tiles in edit mode */}
+        {editMode &&
+          hiddenCards.map((id) => {
+            const def = CARD_DEFS.find((c) => c.id === id)!;
+            return (
+              <div
+                key={id}
+                className="relative backdrop-blur-sm rounded-2xl border border-dashed border-gray-300 bg-white/20 shadow p-5 min-w-[140px] opacity-50"
+              >
+                <p className="text-sm font-medium text-gray-400 pr-6">{def.label}</p>
+                <p className="text-3xl font-bold mt-1 text-gray-300">—</p>
+                <button
+                  onClick={() => show(id)}
+                  className="absolute top-2 right-2 w-5 h-5 flex items-center justify-center rounded bg-white/70 text-green-500 hover:text-green-700 text-xs"
+                  title="Einblenden"
+                >
+                  +
+                </button>
+              </div>
+            );
+          })}
+      </div>
+
+      {/* Invoice table */}
       <h2 className="text-lg font-semibold text-violet-700 mb-3">
         Versandbereit ({data.draft_count})
       </h2>
