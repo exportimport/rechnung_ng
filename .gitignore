@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+
+# Runtime data
+backend/data/*.yaml
+!backend/data/mail_templates.yaml
+backend/output/
+backend/uploads/
+backend/data/config.yaml.bak
+
+# Env
+backend/.env
+!backend/.env.example
+
+# IDE
+.idea/
+.vscode/
+*.swp

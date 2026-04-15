@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="invoice.css">
+  <title>Kündigungsbestätigung</title>
+</head>
+<body>
+<div class="page">
+  <header class="header">
+    <div class="company-info">
+      <strong>{{ company.name }}</strong><br>
+      {{ company.street }} {{ company.house_number }}<br>
+      {{ company.postcode }} {{ company.city }}<br>
+      {{ company.email }}
+    </div>
+    <div class="company-meta">
+      <div>{{ company.tax_id }}</div>
+    </div>
+  </header>
+
+  <div class="recipient">
+    <strong>{{ customer.vorname }} {{ customer.nachname }}</strong><br>
+    {{ customer.street }} {{ customer.house_number }}<br>
+    {{ customer.postcode }} {{ customer.city }}
+  </div>
+
+  <div class="invoice-meta">
+    <table>
+      <tr><td>Datum:</td><td>{{ today.strftime('%d.%m.%Y') }}</td></tr>
+      <tr><td>Vertrags-Nr.:</td><td>{{ contract.id }}</td></tr>
+      {% if contract.reference %}<tr><td>Aktenzeichen:</td><td>{{ contract.reference }}</td></tr>{% endif %}
+    </table>
+  </div>
+
+  <h2 class="invoice-title">Kündigungsbestätigung</h2>
+
+  <p>Sehr geehrte/r {{ customer.vorname }} {{ customer.nachname }},</p>
+
+  <p>
+    hiermit bestätigen wir die Kündigung Ihres Vertrags
+    {% if plan %}<strong>{{ plan.name }}</strong>{% endif %}
+    (Vertrag-Nr. {{ contract.id }}, Beginn: {{ contract.start_date }}).
+  </p>
+
+  <p>
+    Der Vertrag endet zum: <strong>{{ end_date.strftime('%d.%m.%Y') }}</strong>
+  </p>
+
+  <p>Bis zum Vertragsende werden alle vereinbarten Leistungen wie gewohnt erbracht.</p>
+
+  <p>Für Rückfragen stehen wir Ihnen gerne zur Verfügung.</p>
+
+  <p>Mit freundlichen Grüßen<br><br>{{ company.name }}</p>
+
+  <footer class="footer">
+    <p>{{ company.name }} · {{ company.street }} {{ company.house_number }} · {{ company.postcode }} {{ company.city }} · {{ company.email }}</p>
+  </footer>
+</div>
+</body>
+</html>

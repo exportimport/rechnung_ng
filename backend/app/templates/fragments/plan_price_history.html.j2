@@ -1,0 +1,24 @@
+<div class="card__title">Preishistorie</div>
+
+{% if plan.price_history %}
+<div class="table-wrapper mt-1">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Gültig ab</th>
+        <th>Betrag</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for entry in plan.price_history %}
+      <tr>
+        <td>{{ entry.valid_from | date_de if entry.valid_from is not string else entry.valid_from }}</td>
+        <td class="text-right">{{ entry.amount | euro }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+{% include "fragments/plan_price_form.html.j2" %}

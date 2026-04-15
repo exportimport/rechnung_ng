@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="invoice.css">
+  <title>Rechnung {{ invoice.invoice_number }}</title>
+</head>
+<body>
+
+<div class="page">
+  <header class="header">
+    <div class="company-info">
+      <strong>{{ company.name }}</strong><br>
+      {{ company.street }} {{ company.house_number }}<br>
+      {{ company.postcode }} {{ company.city }}<br>
+      {{ company.email }}<br>
+      {{ company.phone }}
+    </div>
+    <div class="company-meta">
+      <div>Steuernummer: {{ company.tax_id }}</div>
+      <div>{{ company.bank_name }}</div>
+      <div>IBAN: {{ company.iban }}</div>
+      <div>BIC: {{ company.bic }}</div>
+    </div>
+  </header>
+
+  <div class="recipient">
+    <strong>{{ customer.vorname }} {{ customer.nachname }}</strong><br>
+    {{ customer.street }} {{ customer.house_number }}<br>
+    {{ customer.postcode }} {{ customer.city }}
+  </div>
+
+  <div class="invoice-meta">
+    <table>
+      <tr>
+        <td>Rechnungsnummer:</td>
+        <td><strong>{{ invoice.invoice_number }}</strong></td>
+      </tr>
+      <tr>
+        <td>Rechnungsdatum:</td>
+        <td>{{ invoice.created_at.strftime('%d.%m.%Y') }}</td>
+      </tr>
+      <tr>
+        <td>Fällig bis:</td>
+        <td>{{ payment_terms_days }} Tage nach Erhalt</td>
+      </tr>
+    </table>
+  </div>
+
+  <h2 class="invoice-title">Rechnung</h2>
+
+  <table class="positions">
+    <thead>
+      <tr>
+        <th class="pos-desc">Beschreibung</th>
+        <th class="pos-period">Zeitraum</th>
+        <th class="pos-amount">Betrag (netto)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{ plan.name }}</td>
+        <td>{% set ps = invoice.period_start|string %}{% set pe = invoice.period_end|string %}{{ ps[8:10] }}.{{ ps[5:7] }}.{{ ps[0:4] }} – {{ pe[8:10] }}.{{ pe[5:7] }}.{{ pe[0:4] }}</td>
+        <td class="amount">{{ "%.2f"|format(net|float) }} €</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="totals">
+    <table>
+      <tr>
+        <td>Nettobetrag:</td>
+        <td class="amount">{{ "%.2f"|format(net|float) }} €</td>
+      </tr>
+      <tr>
+        <td>MwSt. 19 %:</td>
+        <td class="amount">{{ "%.2f"|format(vat|float) }} €</td>
+      </tr>
+      <tr class="total-row">
+        <td><strong>Gesamtbetrag:</strong></td>
+        <td class="amount"><strong>{{ "%.2f"|format(gross|float) }} €</strong></td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="payment-info">
+    <p><strong>Zahlungsinformationen</strong></p>
+    <p>
+      Bitte überweisen Sie den Betrag von <strong>{{ "%.2f"|format(gross|float) }} €</strong>
+      innerhalb von {{ payment_terms_days }} Tagen auf das folgende Konto:
+    </p>
+    <table>
+      <tr><td>Kontoinhaber:</td><td>{{ company.name }}</td></tr>
+      <tr><td>Bank:</td><td>{{ company.bank_name }}</td></tr>
+      <tr><td>IBAN:</td><td>{{ company.iban }}</td></tr>
+      <tr><td>BIC:</td><td>{{ company.bic }}</td></tr>
+      <tr><td>Verwendungszweck:</td><td>{{ invoice.invoice_number }}</td></tr>
+    </table>
+  </div>
+
+  <footer class="footer">
+    <p>{{ company.name }} · {{ company.street }} {{ company.house_number }} · {{ company.postcode }} {{ company.city }} · {{ company.email }}</p>
+  </footer>
+</div>
+
+</body>
+</html>

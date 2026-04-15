@@ -1,0 +1,121 @@
+@page {
+  size: A4;
+  margin: 2cm 2.5cm;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 10pt;
+  color: #222;
+  margin: 0;
+  padding: 0;
+}
+
+.page {
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2cm;
+  font-size: 9pt;
+  color: #444;
+}
+
+.company-meta {
+  text-align: right;
+  line-height: 1.6;
+}
+
+.recipient {
+  margin-bottom: 1cm;
+  line-height: 1.6;
+}
+
+.invoice-meta {
+  margin-bottom: 0.8cm;
+}
+
+.invoice-meta table td {
+  padding: 2px 12px 2px 0;
+}
+
+.invoice-title {
+  font-size: 14pt;
+  margin: 0.5cm 0;
+  border-bottom: 2px solid #222;
+  padding-bottom: 4px;
+}
+
+.positions {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 0.5cm;
+}
+
+.positions th {
+  border-bottom: 1px solid #aaa;
+  padding: 6px 8px;
+  text-align: left;
+  font-size: 9pt;
+  color: #555;
+}
+
+.positions td {
+  padding: 8px 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.pos-amount, .amount {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.totals {
+  margin-top: 0.3cm;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.totals table {
+  min-width: 12cm;
+}
+
+.totals td {
+  padding: 4px 8px;
+}
+
+.total-row td {
+  border-top: 1px solid #aaa;
+  font-size: 11pt;
+  padding-top: 6px;
+}
+
+.payment-info {
+  margin-top: 1cm;
+  padding: 0.5cm;
+  background: #f8f8f8;
+  border: 1px solid #ddd;
+  font-size: 9pt;
+}
+
+.payment-info table td {
+  padding: 2px 10px 2px 0;
+}
+
+.footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  font-size: 8pt;
+  color: #888;
+  text-align: center;
+  border-top: 1px solid #ddd;
+  padding-top: 4px;
+}

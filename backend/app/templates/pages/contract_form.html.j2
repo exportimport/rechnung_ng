@@ -1,0 +1,122 @@
+{% set fd = form_data if form_data is defined else {} %}
+{% set c = contract %}
+
+<div class="page-header">
+  <h1 class="page-title">{% if c %}Vertrag bearbeiten{% else %}Neuer Vertrag{% endif %}</h1>
+  <a href="/contracts" class="btn btn--secondary"
+     hx-get="/contracts" hx-target="#main-content" hx-push-url="true">
+    Zurück
+  </a>
+</div>
+
+<div class="card">
+  <form {% if c %}hx-put="/contracts/{{ c.id }}"{% else %}hx-post="/contracts"{% endif %}
+        hx-target="#main-content" hx-push-url="true">
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label form-label--required" for="customer_id">Kunde</label>
+        <select id="customer_id" name="customer_id" class="form-select {% if errors.customer_id %}form-select--error{% endif %}" required>
+          <option value="">— Bitte wählen —</option>
+          {% for cu in customers %}
+          <option value="{{ cu.id }}"
+            {% if (fd.customer_id and fd.customer_id | int == cu.id) or (c and not fd and c.customer_id == cu.id) %}selected{% endif %}>
+            {{ cu.vorname }} {{ cu.nachname }}
+          </option>
+          {% endfor %}
+        </select>
+        {% if errors.customer_id %}<span class="form-error">{{ errors.customer_id }}</span>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label form-label--required" for="plan_id">Tarif</label>
+        <select id="plan_id" name="plan_id" class="form-select {% if errors.plan_id %}form-select--error{% endif %}" required>
+          <option value="">— Bitte wählen —</option>
+          {% for pl in plans %}
+          <option value="{{ pl.id }}"
+            {% if (fd.plan_id and fd.plan_id | int == pl.id) or (c and not fd and c.plan_id == pl.id) %}selected{% endif %}>
+            {{ pl.name }}
+          </option>
+          {% endfor %}
+        </select>
+        {% if errors.plan_id %}<span class="form-error">{{ errors.plan_id }}</span>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label form-label--required" for="start_date">Startdatum</label>
+        <input id="start_date" name="start_date" type="date"
+               class="form-input {% if errors.start_date %}form-input--error{% endif %}"
+               value="{{ fd.start_date or (c.start_date if c else '') }}" required>
+        {% if errors.start_date %}<span class="form-error">{{ errors.start_date }}</span>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="end_date">Enddatum (optional)</label>
+        <input id="end_date" name="end_date" type="date" class="form-input"
+               value="{{ fd.end_date or (c.end_date if c else '') }}">
+      </div>
+
+      <div class="form-group form-group--full">
+        <label class="form-label" for="notes">Notizen</label>
+        <textarea id="notes" name="notes" class="form-textarea">{{ fd.notes or (c.notes if c else '') }}</textarea>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn--primary">
+        {% if c %}Speichern{% else %}Erstellen{% endif %}
+      </button>
+      <a href="/contracts" class="btn btn--secondary"
+         hx-get="/contracts" hx-target="#main-content" hx-push-url="true">
+        Abbrechen
+      </a>
+    </div>
+  </form>
+</div>
+
+{% if c %}
+<div class="card mt-2">
+  <div class="card__title">Kündigung</div>
+  <form hx-post="/contracts/{{ c.id }}/cancel" hx-target="#main-content" hx-push-url="true"
+        class="form-grid">
+    <div class="form-group">
+      <label class="form-label form-label--required" for="cancel_end_date">Kündigungsdatum</label>
+      <input id="cancel_end_date" name="end_date" type="date" class="form-input"
+             value="{{ c.end_date or '' }}">
+    </div>
+    <div class="form-group" style="align-self:flex-end">
+      <button type="submit" class="btn btn--danger"
+              hx-confirm="Vertrag wirklich kündigen?">
+        Kündigen &amp; PDF erstellen
+      </button>
+    </div>
+  </form>
+  {% if c.cancellation_pdf %}
+  <div class="mt-1">
+    <a href="/contracts/{{ c.id }}/cancellation-pdf" class="btn btn--secondary btn--sm">
+      Kündigungsdokument herunterladen
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+<div class="card mt-2">
+  <div class="card__title">Vertragsscan</div>
+  <form hx-post="/contracts/{{ c.id }}/scan"
+        hx-target="#scan-status"
+        hx-encoding="multipart/form-data">
+    <div class="form-group">
+      <input type="file" name="file" accept="application/pdf" class="form-input" required>
+    </div>
+    <div class="form-actions" style="border:none;margin:0;padding-top:0.5rem">
+      <button type="submit" class="btn btn--secondary btn--sm">Hochladen</button>
+    </div>
+  </form>
+  <div id="scan-status" class="mt-1">
+    {% if c.scan_file %}
+    <span class="text-success">Scan vorhanden</span>
+    <a href="/contracts/{{ c.id }}/scan" class="btn btn--sm btn--secondary">Download</a>
+    {% endif %}
+  </div>
+</div>
+{% endif %}

@@ -1,0 +1,22 @@
+<tr id="invoice-row-{{ invoice.id }}">
+  <td></td>
+  <td class="text-mono">{{ invoice.invoice_number }}</td>
+  <td>{{ invoice.customer_name }}</td>
+  <td>{{ invoice.plan_name }}</td>
+  <td>{{ invoice.period_start }} – {{ invoice.period_end }}</td>
+  <td class="text-right">{{ invoice.amount | euro }}</td>
+  <td>
+    {% if invoice.status == 'sent' %}
+      <span class="badge badge--sent">Versendet</span>
+    {% else %}
+      <span class="badge badge--draft">Entwurf</span>
+    {% endif %}
+  </td>
+  <td>
+    <div class="table__actions">
+      {% if invoice.pdf_path %}
+      <a href="/invoices/{{ invoice.id }}/pdf" class="btn btn--sm btn--secondary">PDF</a>
+      {% endif %}
+    </div>
+  </td>
+</tr>

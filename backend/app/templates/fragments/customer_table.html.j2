@@ -1,0 +1,68 @@
+<div class="page-header">
+  <h1 class="page-title">Kunden</h1>
+  <a href="/customers/new" class="btn btn--primary"
+     hx-get="/customers/new" hx-target="#main-content" hx-push-url="true">
+    + Neuer Kunde
+  </a>
+</div>
+
+<div class="filter-bar">
+  <input type="search" name="q" value="{{ q }}"
+         class="form-input"
+         placeholder="Suchen nach Name, E-Mail…"
+         hx-get="/customers"
+         hx-trigger="input changed delay:300ms, search"
+         hx-target="#customer-table"
+         hx-push-url="true">
+</div>
+
+<div id="customer-table">
+  {% if customers %}
+  <div class="table-wrapper">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>E-Mail</th>
+          <th>IBAN</th>
+          <th>Ort</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in customers %}
+        <tr id="customer-row-{{ c.id }}">
+          <td>{{ c.vorname }} {{ c.nachname }}</td>
+          <td>{{ c.email }}</td>
+          <td class="text-mono">{{ c.iban }}</td>
+          <td>{{ c.postcode }} {{ c.city }}</td>
+          <td>
+            <div class="table__actions">
+              <a href="/customers/{{ c.id }}" class="btn btn--sm btn--secondary"
+                 hx-get="/customers/{{ c.id }}" hx-target="#main-content" hx-push-url="true">
+                Bearbeiten
+              </a>
+              <button class="btn btn--sm btn--danger"
+                      hx-delete="/customers/{{ c.id }}"
+                      hx-confirm="Kunde {{ c.vorname }} {{ c.nachname }} wirklich löschen?"
+                      hx-target="#customer-row-{{ c.id }}"
+                      hx-swap="outerHTML swap:300ms">
+                Löschen
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="table-wrapper">
+    <table class="table">
+      <tbody class="table--empty">
+        <tr><td>Keine Kunden gefunden.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>

@@ -1,0 +1,12 @@
+<div class="page-header">
+  <h1 class="page-title">Mail-Vorlagen</h1>
+</div>
+
+{% for tpl in mail_templates %}
+<div class="card mt-2" id="mail-tpl-{{ tpl.id }}">
+  <div class="card__title">{{ tpl.name if tpl.name is defined else tpl.id }}</div>
+  {% include "fragments/mail_template_form.html.j2" %}
+</div>
+{% else %}
+<div class="card"><p class="text-muted">Keine Vorlagen vorhanden.</p></div>
+{% endfor %}

@@ -1,0 +1,83 @@
+<div class="page-header">
+  <h1 class="page-title">Verträge</h1>
+  <a href="/contracts/new" class="btn btn--primary"
+     hx-get="/contracts/new" hx-target="#main-content" hx-push-url="true">
+    + Neuer Vertrag
+  </a>
+</div>
+
+<div class="filter-bar">
+  <select name="status" class="form-select"
+          hx-get="/contracts"
+          hx-trigger="change"
+          hx-target="#contract-table"
+          hx-push-url="true">
+    <option value="" {% if not status_filter %}selected{% endif %}>Alle Status</option>
+    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Aktiv</option>
+    <option value="not_yet_active" {% if status_filter == 'not_yet_active' %}selected{% endif %}>Noch nicht aktiv</option>
+    <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Gekündigt</option>
+  </select>
+</div>
+
+<div id="contract-table">
+  {% if contracts %}
+  <div class="table-wrapper">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Kunde</th>
+          <th>Tarif</th>
+          <th>Preis</th>
+          <th>Start</th>
+          <th>Ende</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in contracts %}
+        <tr id="contract-row-{{ c.id }}">
+          <td>{{ c.customer_name }}</td>
+          <td>{{ c.plan_name }}</td>
+          <td class="text-right">{{ c.current_price | euro }}</td>
+          <td>{{ c.start_date }}</td>
+          <td>{{ c.end_date or '—' }}</td>
+          <td>
+            {% if c.status == 'active' %}
+              <span class="badge badge--active">Aktiv</span>
+            {% elif c.status == 'not_yet_active' %}
+              <span class="badge badge--pending">Noch nicht aktiv</span>
+            {% else %}
+              <span class="badge badge--cancelled">Gekündigt</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="table__actions">
+              <a href="/contracts/{{ c.id }}" class="btn btn--sm btn--secondary"
+                 hx-get="/contracts/{{ c.id }}" hx-target="#main-content" hx-push-url="true">
+                Bearbeiten
+              </a>
+              <button class="btn btn--sm btn--danger"
+                      hx-delete="/contracts/{{ c.id }}"
+                      hx-confirm="Vertrag wirklich löschen?"
+                      hx-target="#contract-row-{{ c.id }}"
+                      hx-swap="outerHTML swap:300ms">
+                Löschen
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="table-wrapper">
+    <table class="table">
+      <tbody class="table--empty">
+        <tr><td>Keine Verträge gefunden.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
