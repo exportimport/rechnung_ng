@@ -65,9 +65,10 @@ async def create_plan(request: Request, response: Response):
         "price_history": [{"amount": data["initial_price"].strip(), "valid_from": data["valid_from"].strip()}],
     })
     plan = Plan(**record)
-    set_toast(response, f'Tarif "{plan.name}" erstellt.')
-    response.headers["HX-Redirect"] = "/plans"
-    return HTMLResponse("", status_code=200)
+    _r = HTMLResponse("", status_code=200)
+    set_toast(_r, f'Tarif "{plan.name}" erstellt.')
+    _r.headers["HX-Redirect"] = "/plans"
+    return _r
 
 
 @router.put("/{plan_id}")
@@ -93,9 +94,10 @@ async def update_plan(request: Request, response: Response, plan_id: int):
 
     updated = store.update("plans", plan_id, {"name": data["name"].strip()})
     plan = Plan(**updated)
-    set_toast(response, f'Tarif "{plan.name}" aktualisiert.')
-    response.headers["HX-Redirect"] = "/plans"
-    return HTMLResponse("", status_code=200)
+    _r = HTMLResponse("", status_code=200)
+    set_toast(_r, f'Tarif "{plan.name}" aktualisiert.')
+    _r.headers["HX-Redirect"] = "/plans"
+    return _r
 
 
 @router.post("/{plan_id}/price")
@@ -147,8 +149,9 @@ def delete_plan(plan_id: int, response: Response):
     if any(c.get("plan_id") == plan_id for c in contracts):
         raise HTTPException(status_code=409, detail="Tarif wird von einem Vertrag verwendet")
     store.delete("plans", plan_id)
-    set_toast(response, "Tarif gelöscht.")
-    return HTMLResponse("", status_code=200)
+    _r = HTMLResponse("", status_code=200)
+    set_toast(_r, "Tarif gelöscht.")
+    return _r
 
 
 def _validate_plan(data: dict) -> dict:

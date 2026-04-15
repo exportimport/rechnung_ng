@@ -129,11 +129,14 @@ async def create_contract(request: Request, response: Response):
         "plan_id": plan_id,
         "start_date": data["start_date"],
         "end_date": data.get("end_date") or None,
-        "notes": data.get("notes", ""),
+        "billing_cycle": data.get("billing_cycle", "monthly"),
+        "reference": data.get("reference") or None,
+        "comment": data.get("comment") or None,
     })
-    set_toast(response, "Vertrag erstellt.")
-    response.headers["HX-Redirect"] = "/contracts"
-    return HTMLResponse("", status_code=200)
+    _r = HTMLResponse("", status_code=200)
+    set_toast(_r, "Vertrag erstellt.")
+    _r.headers["HX-Redirect"] = "/contracts"
+    return _r
 
 
 @router.put("/{contract_id}")
@@ -163,11 +166,14 @@ async def update_contract(request: Request, response: Response, contract_id: int
         "plan_id": int(data["plan_id"]),
         "start_date": data["start_date"],
         "end_date": data.get("end_date") or None,
-        "notes": data.get("notes", ""),
+        "billing_cycle": data.get("billing_cycle", "monthly"),
+        "reference": data.get("reference") or None,
+        "comment": data.get("comment") or None,
     })
-    set_toast(response, "Vertrag aktualisiert.")
-    response.headers["HX-Redirect"] = "/contracts"
-    return HTMLResponse("", status_code=200)
+    _r = HTMLResponse("", status_code=200)
+    set_toast(_r, "Vertrag aktualisiert.")
+    _r.headers["HX-Redirect"] = "/contracts"
+    return _r
 
 
 @router.delete("/{contract_id}")
@@ -181,8 +187,9 @@ def delete_contract(contract_id: int, response: Response):
     if any(inv.get("contract_id") == contract_id for inv in invoices):
         raise HTTPException(status_code=409, detail="Vertrag hat noch Rechnungen")
     store.delete("contracts", contract_id)
-    set_toast(response, "Vertrag gelöscht.")
-    return HTMLResponse("", status_code=200)
+    _r = HTMLResponse("", status_code=200)
+    set_toast(_r, "Vertrag gelöscht.")
+    return _r
 
 
 @router.post("/{contract_id}/cancel")
@@ -207,9 +214,10 @@ async def cancel_contract(request: Request, response: Response, contract_id: int
     except Exception:
         pass
 
-    set_toast(response, "Vertrag gekündigt.")
-    response.headers["HX-Redirect"] = f"/contracts/{contract_id}"
-    return HTMLResponse("", status_code=200)
+    _r = HTMLResponse("", status_code=200)
+    set_toast(_r, "Vertrag gekündigt.")
+    _r.headers["HX-Redirect"] = f"/contracts/{contract_id}"
+    return _r
 
 
 @router.post("/{contract_id}/scan")
@@ -270,4 +278,6 @@ def _validate_contract(data: dict) -> dict:
         errors["plan_id"] = "Pflichtfeld"
     if not data.get("start_date"):
         errors["start_date"] = "Pflichtfeld"
+    if not data.get("billing_cycle"):
+        errors["billing_cycle"] = "Pflichtfeld"
     return errors

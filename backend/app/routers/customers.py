@@ -67,21 +67,18 @@ async def create_customer(request: Request, response: Response):
     errors = _validate_customer(data)
     if errors:
         html = jinja_env.get_template("pages/customer_form.html.j2").render(
-            request=request,
-            active_page="customers",
-            customer=None,
-            form_data=data,
-            errors=errors,
+            request=request, active_page="customers",
+            customer=None, form_data=data, errors=errors,
+            csrf_token="",
         )
-        response.status_code = 422
-        response.headers["HX-Reswap"] = "innerHTML"
         return HTMLResponse(html, status_code=422)
 
     record = store.create("customers", data)
     customer = _to_customer(record)
-    set_toast(response, f"Kunde {customer.vorname} {customer.nachname} erstellt.")
-    response.headers["HX-Redirect"] = "/customers"
-    return HTMLResponse("", status_code=200)
+    _r = HTMLResponse("", status_code=200)
+    set_toast(_r, f"Kunde {customer.vorname} {customer.nachname} erstellt.")
+    _r.headers["HX-Redirect"] = "/customers"
+    return _r
 
 
 @router.put("/{customer_id}")
@@ -104,14 +101,14 @@ async def update_customer(request: Request, response: Response, customer_id: int
             form_data=data,
             errors=errors,
         )
-        response.status_code = 422
         return HTMLResponse(html, status_code=422)
 
     updated = store.update("customers", customer_id, data)
     customer = _to_customer(updated)
-    set_toast(response, f"Kunde {customer.vorname} {customer.nachname} aktualisiert.")
-    response.headers["HX-Redirect"] = "/customers"
-    return HTMLResponse("", status_code=200)
+    _r = HTMLResponse("", status_code=200)
+    set_toast(_r, f"Kunde {customer.vorname} {customer.nachname} aktualisiert.")
+    _r.headers["HX-Redirect"] = "/customers"
+    return _r
 
 
 @router.delete("/{customer_id}")
@@ -128,8 +125,9 @@ def delete_customer(customer_id: int, response: Response):
             detail="Kunde hat noch Verträge und kann nicht gelöscht werden",
         )
     store.delete("customers", customer_id)
-    set_toast(response, "Kunde gelöscht.")
-    return HTMLResponse("", status_code=200)
+    _r = HTMLResponse("", status_code=200)
+    set_toast(_r, "Kunde gelöscht.")
+    return _r
 
 
 def _validate_customer(data: dict) -> dict:

@@ -145,8 +145,9 @@ def delete_invoice(invoice_id: int, response: Response):
     if invoice.pdf_path and Path(invoice.pdf_path).exists():
         Path(invoice.pdf_path).unlink()
     store.delete("invoices", invoice_id)
-    set_toast(response, "Rechnung gelöscht.")
-    return HTMLResponse("", status_code=200)
+    _r = HTMLResponse("", status_code=200)
+    set_toast(_r, "Rechnung gelöscht.")
+    return _r
 
 
 @router.post("/bulk-delete")
@@ -168,9 +169,10 @@ async def bulk_delete(request: Request, response: Response):
 
     remaining = [d for d in all_records if d.get("id") not in ids]
     store.save("invoices", remaining)
-    set_toast(response, f"{len(to_delete)} Rechnung(en) gelöscht.")
-    response.headers["HX-Redirect"] = "/invoices"
-    return HTMLResponse("", status_code=200)
+    _r = HTMLResponse("", status_code=200)
+    set_toast(_r, f"{len(to_delete)} Rechnung(en) gelöscht.")
+    _r.headers["HX-Redirect"] = "/invoices"
+    return _r
 
 
 @router.post("/{invoice_id}/send")
@@ -223,6 +225,7 @@ async def send_batch(request: Request, response: Response):
         template_id = select_template(invoice, store)
         do_send(invoice, template_id, store)
 
-    set_toast(response, f"{len(invoices)} Rechnung(en) versendet.")
-    response.headers["HX-Redirect"] = "/invoices"
-    return HTMLResponse("", status_code=200)
+    _r = HTMLResponse("", status_code=200)
+    set_toast(_r, f"{len(invoices)} Rechnung(en) versendet.")
+    _r.headers["HX-Redirect"] = "/invoices"
+    return _r
