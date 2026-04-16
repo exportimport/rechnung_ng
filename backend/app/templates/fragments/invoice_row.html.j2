@@ -12,6 +12,7 @@
       <span class="badge badge--draft">Entwurf</span>
     {% endif %}
   </td>
+  <td class="text-muted">{{ invoice.sent_at | date_de }}</td>
   <td>
     <div class="table__actions">
       {% if invoice.pdf_path %}

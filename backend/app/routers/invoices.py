@@ -147,6 +147,37 @@ def delete_invoice(invoice_id: int, response: Response):
     return _r
 
 
+@router.post("/delete-all-drafts")
+async def delete_all_drafts(request: Request):
+    import json as _json
+
+    form = await request.form()
+    year = int(form.get("year", 0))
+    month = int(form.get("month", 0))
+    if not year or not month:
+        raise HTTPException(status_code=422, detail="Jahr und Monat erforderlich")
+
+    all_records = store.load("invoices")
+    to_delete = [
+        Invoice(**d) for d in all_records
+        if d.get("year") == year and d.get("month") == month
+        and d.get("status") == InvoiceStatus.draft
+    ]
+    for inv in to_delete:
+        if inv.pdf_path and Path(inv.pdf_path).exists():
+            Path(inv.pdf_path).unlink()
+
+    ids = {i.id for i in to_delete}
+    store.save("invoices", [d for d in all_records if d.get("id") not in ids])
+
+    _r = HTMLResponse("", status_code=200)
+    _r.headers["HX-Trigger"] = _json.dumps(
+        {"showToast": {"message": f"{len(to_delete)} Entwurf/Entwürfe gelöscht.", "ok": True}}
+    )
+    _r.headers["HX-Redirect"] = f"/invoices?year={year}&month={month}"
+    return _r
+
+
 @router.post("/bulk-delete")
 async def bulk_delete(request: Request, response: Response):
     from app.main import set_toast

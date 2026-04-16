@@ -47,18 +47,21 @@
       hx-push-url="true"
       hx-confirm="Ausgewählte Entwürfe wirklich löschen?">
   {% if invoices %}
-  <div class="table-wrapper mt-2">
+  <div class="bulk-bar mt-1">
+    <button type="submit" class="btn btn--danger btn--sm">Auswahl löschen</button>
+  </div>
+  <div class="table-wrapper mt-1">
     <table class="table">
       <thead>
         <tr>
-          <th><input type="checkbox" class="checkbox" id="select-all"
-                     onclick="document.querySelectorAll('.inv-check').forEach(c => c.checked = this.checked)"></th>
+          <th><input type="checkbox" class="checkbox" id="select-all"></th>
           <th>Nummer</th>
           <th>Kunde</th>
           <th>Tarif</th>
           <th>Zeitraum</th>
           <th>Betrag</th>
           <th>Status</th>
+          <th>Versendet</th>
           <th></th>
         </tr>
       </thead>
@@ -82,6 +85,7 @@
               <span class="badge badge--sent">Versendet</span>
             {% endif %}
           </td>
+          <td class="text-muted">{{ inv.sent_at | date_de }}</td>
           <td>
             <div class="table__actions">
               {% if inv.pdf_path %}
@@ -109,9 +113,6 @@
         {% endfor %}
       </tbody>
     </table>
-  </div>
-  <div class="form-actions mt-1" style="border:none">
-    <button type="submit" class="btn btn--danger btn--sm">Auswahl löschen</button>
   </div>
   {% else %}
   <div class="table-wrapper mt-2">

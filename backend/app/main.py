@@ -33,9 +33,15 @@ templates.filters["euro"] = (
     if v is not None
     else "—"
 )
-templates.filters["date_de"] = (
-    lambda v: v.strftime("%d.%m.%Y") if v else "—"
-)
+def _date_de(v):
+    from datetime import date, datetime
+    if not v:
+        return "—"
+    if isinstance(v, str):
+        v = datetime.fromisoformat(v)
+    return v.strftime("%d.%m.%Y")
+
+templates.filters["date_de"] = _date_de
 templates.filters["month_name"] = lambda v: [
     "", "Januar", "Februar", "März", "April", "Mai", "Juni",
     "Juli", "August", "September", "Oktober", "November", "Dezember",

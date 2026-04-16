@@ -7,12 +7,25 @@ document.querySelectorAll(".sidebar__link").forEach(function(link) {
   });
 });
 
+// Select-all checkbox for invoice bulk actions
+document.body.addEventListener("change", function(e) {
+  if (e.target && e.target.id === "select-all") {
+    document.querySelectorAll(".inv-check").forEach(function(c) {
+      c.checked = e.target.checked;
+    });
+  }
+});
+
+function showToast(message, ok) {
+  var el = document.createElement("div");
+  el.className = "toast " + (ok ? "toast--ok" : "toast--error");
+  el.textContent = message;
+  var container = document.getElementById("toast-container");
+  if (container) { container.appendChild(el); setTimeout(function() { el.remove(); }, 4000); }
+}
+
 document.body.addEventListener("showToast", function(e) {
-  var d = e.detail, el = document.createElement("div");
-  el.className = "toast " + (d.ok ? "toast--ok" : "toast--error");
-  el.textContent = d.message;
-  document.getElementById("toast-container").appendChild(el);
-  setTimeout(function() { el.remove(); }, 4000);
+  showToast(e.detail.message, e.detail.ok);
 });
 
 document.body.addEventListener("htmx:responseError", function(e) {
@@ -21,9 +34,5 @@ document.body.addEventListener("htmx:responseError", function(e) {
     var json = JSON.parse(e.detail.xhr.responseText);
     if (json.detail) msg = json.detail;
   } catch (_) {}
-  var el = document.createElement("div");
-  el.className = "toast toast--error";
-  el.textContent = msg;
-  var container = document.getElementById("toast-container");
-  if (container) { container.appendChild(el); setTimeout(function() { el.remove(); }, 5000); }
+  showToast(msg, false);
 });
