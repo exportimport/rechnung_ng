@@ -1,9 +1,10 @@
 import smtplib
 import socket
+from datetime import date
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Request, Response
-from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
+from fastapi.responses import FileResponse, HTMLResponse
 
 from app.db.yaml_store import store
 from app.models.invoice import Invoice, InvoiceStatus
@@ -67,23 +68,29 @@ def list_invoices(
     request: Request,
     year: int | None = None,
     month: int | None = None,
-    status: InvoiceStatus | None = None,
+    status: str | None = None,
 ):
     from app.main import render
 
-    enriched = _load_invoices(year, month, status)
+    today = date.today()
+    year = year or today.year
+    month = month or today.month
+    status_enum = InvoiceStatus(status) if status else None
+
+    enriched = _load_invoices(year, month, status_enum)
     ctx = {
         "active_page": "invoices",
         "invoices": enriched,
-        "filter_year": year or "",
-        "filter_month": month or "",
-        "filter_status": status.value if status else "",
+        "filter_year": year,
+        "filter_month": month,
+        "filter_status": status_enum.value if status_enum else "",
     }
     return render(request, "base.html.j2", "fragments/invoice_table.html.j2", ctx)
 
 
 @router.post("/generate")
-async def generate(request: Request, response: Response):
+async def generate(request: Request):
+    import json as _json
 
     form = await request.form()
     year = int(form.get("year", 0))
@@ -92,26 +99,19 @@ async def generate(request: Request, response: Response):
     if not year or not month:
         raise HTTPException(status_code=422, detail="Jahr und Monat erforderlich")
 
-    def event_stream():
-        total = 0
-        current = 0
-        for event in generate_invoices(year, month, store):
-            if event[0] == "progress":
-                _, current, total = event
-                pct = int(current / total * 100) if total else 0
-                html = (
-                    f'<div class="progress-wrap">'
-                    f'<div class="progress-bar" style="width:{pct}%">{current}/{total}</div>'
-                    f'</div>'
-                )
-                yield f"event: progress\ndata: {html}\n\n"
-            elif event[0] == "done":
-                _, results = event
-                count = len(results)
-                html = f'<div class="text-success">Fertig — {count} Rechnung(en) generiert.</div>'
-                yield f"event: done\ndata: {html}\n\n"
+    results = []
+    for event in generate_invoices(year, month, store):
+        if event[0] == "done":
+            _, results = event
 
-    return StreamingResponse(event_stream(), media_type="text/event-stream")
+    count = len(results)
+    html = f'<div class="text-success">Fertig — {count} Rechnung(en) generiert.</div>'
+    _r = HTMLResponse(html, status_code=200)
+    _r.headers["HX-Trigger"] = _json.dumps(
+        {"showToast": {"message": f"{count} Rechnung(en) generiert.", "ok": True}}
+    )
+    _r.headers["HX-Redirect"] = f"/invoices?year={year}&month={month}"
+    return _r
 
 
 @router.get("/{invoice_id}/pdf")

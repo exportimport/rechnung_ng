@@ -72,15 +72,7 @@
 
   <div id="toast-container" class="toast-container"></div>
 
-  <script>
-    document.body.addEventListener("showToast", function(e) {
-      var d = e.detail, el = document.createElement("div");
-      el.className = "toast " + (d.ok ? "toast--ok" : "toast--error");
-      el.textContent = d.message;
-      document.getElementById("toast-container").appendChild(el);
-      setTimeout(function() { el.remove(); }, 4000);
-    });
-  </script>
+  <script src="/static/js/app.js" defer></script>
 
 </body>
 </html>

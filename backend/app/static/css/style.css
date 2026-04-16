@@ -400,6 +400,13 @@ input, select, textarea, button { font: inherit; }
   min-width: 160px;
 }
 
+.filter-bar__sep {
+  width: 1px;
+  height: 1.5rem;
+  background: rgba(124, 58, 237, 0.2);
+  margin: 0 0.25rem;
+}
+
 /* ---------------------------------------------------------
    Tables
    --------------------------------------------------------- */

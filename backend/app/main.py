@@ -67,7 +67,7 @@ def render(
     context: dict,
 ) -> HTMLResponse:
     """Returns fragment for HTMX requests, full page for direct browser access."""
-    csrf_token = generate_csrf_token()
+    csrf_token = _get_or_create_csrf(request)
     ctx = {"request": request, "csrf_token": csrf_token, **context}
     is_htmx = request.headers.get("HX-Request") == "true"
     if is_htmx:
@@ -75,7 +75,9 @@ def render(
     else:
         ctx["content_template"] = fragment_template
         html = templates.get_template(page_template).render(**ctx)
-    return HTMLResponse(html)
+    resp = HTMLResponse(html)
+    resp.set_cookie(_CSRF_COOKIE, csrf_token, httponly=False, samesite="strict")
+    return resp
 
 
 def set_toast(response: Response, message: str, ok: bool = True) -> None:
@@ -88,21 +90,20 @@ def set_toast(response: Response, message: str, ok: bool = True) -> None:
 
 
 # ---------------------------------------------------------------------------
-# CSRF
+# CSRF  (double-submit cookie — stateless, survives server restarts)
 # ---------------------------------------------------------------------------
 
-_CSRF_TOKENS: set[str] = set()
+_CSRF_COOKIE = "csrf_token"
 
 
-def generate_csrf_token() -> str:
-    token = secrets.token_hex(32)
-    _CSRF_TOKENS.add(token)
-    return token
+def _get_or_create_csrf(request: Request) -> str:
+    return request.cookies.get(_CSRF_COOKIE) or secrets.token_hex(32)
 
 
 def validate_csrf(request: Request) -> bool:
-    token = request.headers.get("X-CSRF-Token") or ""
-    return token in _CSRF_TOKENS
+    cookie = request.cookies.get(_CSRF_COOKIE, "")
+    header = request.headers.get("X-CSRF-Token", "")
+    return bool(cookie) and cookie == header
 
 
 # ---------------------------------------------------------------------------

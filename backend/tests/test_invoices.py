@@ -38,7 +38,7 @@ async def test_invoices_filter_year_month(client, csrf):
 
 
 @pytest.mark.asyncio
-async def test_generate_invoices_sse(client, csrf):
+async def test_generate_invoices(client, csrf):
     await _seed(client, csrf)
     r = await client.post(
         "/invoices/generate",
@@ -46,9 +46,9 @@ async def test_generate_invoices_sse(client, csrf):
         headers={"HX-Request": "true", "X-CSRF-Token": csrf},
     )
     assert r.status_code == 200
-    assert "text/event-stream" in r.headers["content-type"]
-    body = r.text
-    assert "event: done" in body or "event: progress" in body or "Fertig" in body
+    assert "text/html" in r.headers["content-type"]
+    assert "Fertig" in r.text
+    assert "HX-Trigger" in r.headers
 
 
 @pytest.mark.asyncio
