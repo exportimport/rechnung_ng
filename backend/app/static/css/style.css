@@ -60,15 +60,46 @@
 
 html { font-size: var(--font-size-base); }
 
+/* Easter egg: background gradient very slowly drifts (150 s / cycle).
+   You'd only notice it if you leave the app open for a while. */
+@keyframes bg-drift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 body {
   font-family: var(--font-sans);
-  background: linear-gradient(135deg, #ddd6fe 0%, #e0e7ff 50%, #bfdbfe 100%);
-  /* violet-200 → indigo-100 → blue-200 — matches the React version */
+  background: linear-gradient(-45deg, #ddd6fe, #e0e7ff, #bfdbfe, #ede9f6, #c4b5fd);
+  background-size: 300% 300%;
   background-attachment: fixed;
+  animation: bg-drift 150s ease infinite;
   color: var(--color-text);
   line-height: var(--line-height);
   min-height: 100vh;
   display: flex;
+}
+
+/* Easter egg: barely-visible CRT scanlines. ~1 % opacity — most people never see it. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.013) 2px,
+    rgba(0, 0, 0, 0.013) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Easter egg: selecting text explodes into vivid violet-on-white. */
+::selection {
+  background: rgba(109, 40, 217, 0.55);
+  color: #fff;
 }
 
 a { color: var(--color-text-link); text-decoration: none; }
@@ -79,12 +110,19 @@ input, select, textarea, button { font: inherit; }
 /* ---------------------------------------------------------
    Layout
    --------------------------------------------------------- */
+
+/* Easter egg: sidebar right-edge glow breathes every 8 s. */
+@keyframes sidebar-breathe {
+  0%, 100% { box-shadow: inset -1px 0 0 rgba(167,139,250,0.20); }
+  50%       { box-shadow: inset -1px 0 0 rgba(167,139,250,0.65),
+                          inset -6px 0 18px rgba(148,110,230,0.18); }
+}
+
 .sidebar {
   width: var(--sidebar-width);
   background: var(--color-bg-glass);
   backdrop-filter: var(--blur);
   -webkit-backdrop-filter: var(--blur);
-  border-right: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -93,6 +131,7 @@ input, select, textarea, button { font: inherit; }
   height: 100vh;
   overflow-y: auto;
   z-index: 100;
+  animation: sidebar-breathe 8s ease-in-out infinite;
 }
 
 .main-content {
@@ -195,7 +234,11 @@ input, select, textarea, button { font: inherit; }
   box-shadow: var(--shadow);
 }
 
-.card + .card { margin-top: 1rem; }
+.card:nth-child(even) {
+  border-radius: var(--radius);
+}
+
+.card + .card { margin-top: 1.25rem; }
 
 .card__title {
   font-size: 0.72rem;
@@ -246,6 +289,14 @@ input, select, textarea, button { font: inherit; }
 .stat-card__value--danger  { color: var(--color-danger); }
 .stat-card__value--success { color: var(--color-success); }
 .stat-card__value--violet  { color: var(--color-primary); }
+
+/* Easter egg: each stat card is very slightly off-angle.
+   Just enough that something feels subtly "wrong" about the grid. */
+.stat-card:nth-child(1) { transform: rotate(-2.0deg); }
+.stat-card:nth-child(2) { transform: rotate( 1.5deg); }
+.stat-card:nth-child(3) { transform: rotate(-1.2deg); }
+.stat-card:nth-child(4) { transform: rotate( 2.2deg); }
+.stat-card:nth-child(5) { transform: rotate(-1.7deg); }
 
 /* ---------------------------------------------------------
    Buttons
@@ -417,6 +468,7 @@ input, select, textarea, button { font: inherit; }
   -webkit-backdrop-filter: var(--blur);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
+  padding: 0;
   box-shadow: var(--shadow-sm);
 }
 

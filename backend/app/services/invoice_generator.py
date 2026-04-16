@@ -146,6 +146,8 @@ def generate_invoices(year: int, month: int, s: YamlStore) -> list[Invoice]:
             year=year,
             month=month,
             seq=seq,
+            customer_vorname=customer.vorname,
+            customer_nachname=customer.nachname,
         )
 
         data = {

@@ -10,7 +10,7 @@
   <select name="status" class="form-select"
           hx-get="/contracts"
           hx-trigger="change"
-          hx-target="#contract-table"
+          hx-target="#main-content"
           hx-push-url="true">
     <option value="" {% if not status_filter %}selected{% endif %}>Alle Status</option>
     <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Aktiv</option>
