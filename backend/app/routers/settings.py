@@ -43,7 +43,7 @@ def settings_page(request: Request):
 
 
 @router.put("")
-async def update_settings(request: Request, response: Response):
+async def update_settings(request: Request):
     from app.main import set_toast
     from app.main import templates as jinja_env
 
@@ -95,8 +95,6 @@ async def update_settings(request: Request, response: Response):
     _write_raw(raw)
     get_config.cache_clear()
 
-    set_toast(response, "Einstellungen gespeichert.")
-
     smtp_display = {k: v for k, v in smtp.items() if k != "password"}
     html = jinja_env.get_template("pages/settings.html.j2").render(
         request=request,
@@ -105,5 +103,8 @@ async def update_settings(request: Request, response: Response):
         smtp=smtp_display,
         invoice=invoice,
         errors={},
+        csrf_token="",
     )
-    return HTMLResponse(html, status_code=200)
+    _r = HTMLResponse(html, status_code=200)
+    set_toast(_r, "Einstellungen gespeichert.")
+    return _r

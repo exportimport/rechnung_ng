@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Request, Response
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from jinja2.sandbox import SandboxedEnvironment
 
@@ -19,7 +19,7 @@ def list_templates(request: Request):
 
 
 @router.put("/{template_id}")
-async def update_template(request: Request, response: Response, template_id: str):
+async def update_template(request: Request, template_id: str):
     from app.main import set_toast
 
     d = store.get_by_id("mail_templates", template_id)
@@ -50,12 +50,10 @@ async def update_template(request: Request, response: Response, template_id: str
         return HTMLResponse(html, status_code=422)
 
     updated = store.update("mail_templates", template_id, data)
-    set_toast(response, "Vorlage gespeichert.")
-
     from app.main import templates as jinja_env
     html = jinja_env.get_template("fragments/mail_template_form.html.j2").render(
-        request=request,
-        tpl=updated,
-        errors={},
+        request=request, tpl=updated, errors={},
     )
-    return HTMLResponse(html, status_code=200)
+    _r = HTMLResponse(html, status_code=200)
+    set_toast(_r, "Vorlage gespeichert.")
+    return _r

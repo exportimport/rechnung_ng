@@ -112,7 +112,7 @@ async def update_customer(request: Request, response: Response, customer_id: int
 
 
 @router.delete("/{customer_id}")
-def delete_customer(customer_id: int, response: Response):
+def delete_customer(customer_id: int):
     from app.main import set_toast
 
     d = store.get_by_id("customers", customer_id)

@@ -221,7 +221,7 @@ async def cancel_contract(request: Request, response: Response, contract_id: int
 
 
 @router.post("/{contract_id}/scan")
-async def upload_scan(contract_id: int, response: Response, file: UploadFile):
+async def upload_scan(contract_id: int, file: UploadFile):
     from app.main import set_toast
 
     d = store.get_by_id("contracts", contract_id)
@@ -238,12 +238,13 @@ async def upload_scan(contract_id: int, response: Response, file: UploadFile):
     dest = UPLOADS_DIR / f"{contract_id}.pdf"
     dest.write_bytes(content)
     store.update("contracts", contract_id, {"scan_file": str(dest)})
-    set_toast(response, "Scan hochgeladen.")
-    return HTMLResponse(
+    _r = HTMLResponse(
         f'<span class="text-success">Scan vorhanden</span> '
         f'<a href="/contracts/{contract_id}/scan" class="btn btn--sm btn--secondary">Download</a>',
         status_code=200,
     )
+    set_toast(_r, "Scan hochgeladen.")
+    return _r
 
 
 @router.get("/{contract_id}/scan")

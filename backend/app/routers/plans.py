@@ -139,7 +139,7 @@ async def add_price(request: Request, response: Response, plan_id: int):
 
 
 @router.delete("/{plan_id}")
-def delete_plan(plan_id: int, response: Response):
+def delete_plan(plan_id: int):
     from app.main import set_toast
 
     d = store.get_by_id("plans", plan_id)

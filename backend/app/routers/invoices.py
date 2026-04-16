@@ -196,17 +196,17 @@ async def send_invoice(request: Request, response: Response, invoice_id: int):
         raise HTTPException(status_code=502, detail=f"SMTP-Fehler: {e}")
 
     updated = store.get_by_id("invoices", invoice_id)
-    set_toast(response, f"Rechnung {invoice.invoice_number} versendet.")
-
     from app.main import templates as jinja_env
     html = jinja_env.get_template("fragments/invoice_row.html.j2").render(
-        request=request, invoice=_enrich_invoice(Invoice(**updated))
+        request=request, invoice=_enrich_invoice(Invoice(**updated)), csrf_token=""
     )
-    return HTMLResponse(html, status_code=200)
+    _r = HTMLResponse(html, status_code=200)
+    set_toast(_r, f"Rechnung {invoice.invoice_number} versendet.")
+    return _r
 
 
 @router.post("/send-batch")
-async def send_batch(request: Request, response: Response):
+async def send_batch(request: Request):
     from app.main import set_toast
     from app.services.mail_service import send_invoice as do_send, select_template
 
