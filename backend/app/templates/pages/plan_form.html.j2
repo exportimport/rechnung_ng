@@ -1,0 +1,57 @@
+{% set fd = form_data if form_data is defined else {} %}
+{% set p = plan %}
+
+<div class="page-header">
+  <h1 class="page-title">{% if p %}Tarif bearbeiten{% else %}Neuer Tarif{% endif %}</h1>
+  <a href="/plans" class="btn btn--secondary"
+     hx-get="/plans" hx-target="#main-content" hx-push-url="true">
+    Zurück
+  </a>
+</div>
+
+<div class="card">
+  <form {% if p %}hx-put="/plans/{{ p.id }}"{% else %}hx-post="/plans"{% endif %}
+        hx-target="#main-content" hx-push-url="true">
+
+    <div class="form-grid">
+      <div class="form-group form-group--full">
+        <label class="form-label form-label--required" for="name">Name</label>
+        <input id="name" name="name" type="text" class="form-input {% if errors.name %}form-input--error{% endif %}"
+               value="{{ fd.name or (p.name if p else '') }}" required>
+        {% if errors.name %}<span class="form-error">{{ errors.name }}</span>{% endif %}
+      </div>
+
+      {% if not p %}
+      <div class="form-group">
+        <label class="form-label form-label--required" for="initial_price">Startpreis (€)</label>
+        <input id="initial_price" name="initial_price" type="text" class="form-input {% if errors.initial_price %}form-input--error{% endif %}"
+               value="{{ fd.initial_price or '' }}" placeholder="0,00" required>
+        {% if errors.initial_price %}<span class="form-error">{{ errors.initial_price }}</span>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label form-label--required" for="valid_from">Gültig ab</label>
+        <input id="valid_from" name="valid_from" type="date" class="form-input {% if errors.valid_from %}form-input--error{% endif %}"
+               value="{{ fd.valid_from or '' }}" required>
+        {% if errors.valid_from %}<span class="form-error">{{ errors.valid_from }}</span>{% endif %}
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn--primary">
+        {% if p %}Speichern{% else %}Erstellen{% endif %}
+      </button>
+      <a href="/plans" class="btn btn--secondary"
+         hx-get="/plans" hx-target="#main-content" hx-push-url="true">
+        Abbrechen
+      </a>
+    </div>
+  </form>
+</div>
+
+{% if p %}
+<div class="card mt-2" id="price-history-section">
+  {% include "fragments/plan_price_history.html.j2" %}
+</div>
+{% endif %}

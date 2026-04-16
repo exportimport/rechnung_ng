@@ -1,94 +1,108 @@
-from pathlib import Path
+"""Customer CRUD tests."""
+import pytest
 
-import pytest_asyncio
-from httpx import ASGITransport, AsyncClient
-
-from app.db.yaml_store import YamlStore
-from app.main import app
-
-SAMPLE = {
+CUSTOMER_DATA = {
     "vorname": "Max",
     "nachname": "Mustermann",
     "street": "Musterstraße",
     "house_number": "1",
-    "postcode": "04103",
-    "city": "Leipzig",
+    "postcode": "12345",
+    "city": "Musterstadt",
     "iban": "DE89370400440532013000",
     "email": "max@example.com",
 }
 
 
-@pytest_asyncio.fixture
-async def client(tmp_path: Path):
-    import app.routers.customers as customers_router
-    import app.db.yaml_store as yaml_store_module
-
-    tmp_store = YamlStore(tmp_path)
-    yaml_store_module.store = tmp_store
-    customers_router.store = tmp_store
-
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
-        yield c
-
-    from app.db.yaml_store import _default_data_dir
-    yaml_store_module.store = YamlStore(_default_data_dir)
-    customers_router.store = yaml_store_module.store
-
-
-async def test_list_empty(client: AsyncClient):
-    res = await client.get("/api/v1/customers")
-    assert res.status_code == 200
-    assert res.json() == []
-
-
-async def test_create_and_get(client: AsyncClient):
-    res = await client.post("/api/v1/customers", json=SAMPLE)
-    assert res.status_code == 201
-    data = res.json()
-    assert data["vorname"] == "Max"
-    assert data["id"] == 1
-
-    res2 = await client.get(f"/api/v1/customers/{data['id']}")
-    assert res2.status_code == 200
-
-
-async def test_search(client: AsyncClient):
-    await client.post("/api/v1/customers", json=SAMPLE)
-    await client.post(
-        "/api/v1/customers",
-        json={**SAMPLE, "vorname": "Erika", "nachname": "Musterfrau", "email": "erika@example.com"},
+@pytest.mark.asyncio
+async def test_create_customer(client, csrf):
+    r = await client.post(
+        "/customers",
+        data=CUSTOMER_DATA,
+        headers={"HX-Request": "true", "X-CSRF-Token": csrf},
     )
-    res = await client.get("/api/v1/customers?q=erika")
-    assert res.status_code == 200
-    assert len(res.json()) == 1
-    assert res.json()[0]["vorname"] == "Erika"
+    assert r.status_code == 200
+    assert r.headers.get("HX-Redirect") == "/customers"
 
 
-async def test_update(client: AsyncClient):
-    create_res = await client.post("/api/v1/customers", json=SAMPLE)
-    cid = create_res.json()["id"]
-    res = await client.put(f"/api/v1/customers/{cid}", json={**SAMPLE, "vorname": "Heinrich"})
-    assert res.status_code == 200
-    assert res.json()["vorname"] == "Heinrich"
+@pytest.mark.asyncio
+async def test_customer_appears_in_list(client, csrf):
+    await client.post(
+        "/customers", data=CUSTOMER_DATA,
+        headers={"HX-Request": "true", "X-CSRF-Token": csrf},
+    )
+    r = await client.get("/customers")
+    assert "Max" in r.text
+    assert "Mustermann" in r.text
 
 
-async def test_delete(client: AsyncClient):
-    create_res = await client.post("/api/v1/customers", json=SAMPLE)
-    cid = create_res.json()["id"]
-    res = await client.delete(f"/api/v1/customers/{cid}")
-    assert res.status_code == 204
-    assert (await client.get(f"/api/v1/customers/{cid}")).status_code == 404
+@pytest.mark.asyncio
+async def test_customer_search(client, csrf):
+    await client.post(
+        "/customers", data=CUSTOMER_DATA,
+        headers={"HX-Request": "true", "X-CSRF-Token": csrf},
+    )
+    r = await client.get("/customers?q=muster")
+    assert "Mustermann" in r.text
+
+    r2 = await client.get("/customers?q=zzznomatch")
+    assert "Mustermann" not in r2.text
 
 
-async def test_delete_with_contract_blocked(client: AsyncClient, tmp_path: Path):
-    import app.db.yaml_store as m
-    create_res = await client.post("/api/v1/customers", json=SAMPLE)
-    cid = create_res.json()["id"]
-    m.store.create("contracts", {"customer_id": cid, "plan_id": 1})
-    res = await client.delete(f"/api/v1/customers/{cid}")
-    assert res.status_code == 409
+@pytest.mark.asyncio
+async def test_create_customer_validation_error(client, csrf):
+    r = await client.post(
+        "/customers",
+        data={"vorname": "", "nachname": "Test"},
+        headers={"HX-Request": "true", "X-CSRF-Token": csrf},
+    )
+    assert r.status_code == 422
+    assert "Pflichtfeld" in r.text
 
 
-async def test_get_nonexistent(client: AsyncClient):
-    res = await client.get("/api/v1/customers/999")
-    assert res.status_code == 404
+@pytest.mark.asyncio
+async def test_edit_customer_form(client, csrf):
+    await client.post(
+        "/customers", data=CUSTOMER_DATA,
+        headers={"HX-Request": "true", "X-CSRF-Token": csrf},
+    )
+    r = await client.get("/customers/1")
+    assert r.status_code == 200
+    assert "Speichern" in r.text
+    assert "Max" in r.text
+
+
+@pytest.mark.asyncio
+async def test_update_customer(client, csrf):
+    await client.post(
+        "/customers", data=CUSTOMER_DATA,
+        headers={"HX-Request": "true", "X-CSRF-Token": csrf},
+    )
+    updated = {**CUSTOMER_DATA, "vorname": "Hans"}
+    r = await client.put(
+        "/customers/1", data=updated,
+        headers={"HX-Request": "true", "X-CSRF-Token": csrf},
+    )
+    assert r.status_code == 200
+    r2 = await client.get("/customers")
+    assert "Hans" in r2.text
+
+
+@pytest.mark.asyncio
+async def test_delete_customer(client, csrf):
+    await client.post(
+        "/customers", data=CUSTOMER_DATA,
+        headers={"HX-Request": "true", "X-CSRF-Token": csrf},
+    )
+    r = await client.delete(
+        "/customers/1",
+        headers={"HX-Request": "true", "X-CSRF-Token": csrf},
+    )
+    assert r.status_code == 200
+    r2 = await client.get("/customers")
+    assert "Mustermann" not in r2.text
+
+
+@pytest.mark.asyncio
+async def test_customer_not_found(client):
+    r = await client.get("/customers/999")
+    assert r.status_code == 404

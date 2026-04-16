@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <title>{% block title %}rechnung_ng{% endblock %}</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/static/css/style.css?v=11">
+  <script src="/static/js/htmx.min.js" defer></script>
+  <script src="/static/js/ext/sse.js" defer></script>
+</head>
+<body hx-headers='{"X-CSRF-Token": "{{ csrf_token }}"}'>
+
+  <nav class="sidebar">
+    <div class="sidebar__logo">
+      <img src="/static/img/logo.svg" alt="Logo" class="sidebar__logo-img">
+      <span class="sidebar__logo-text">{{ company_name }}</span>
+    </div>
+    <ul class="sidebar__nav">
+      <li class="sidebar__item">
+        <a href="/" class="sidebar__link {% if active_page == 'dashboard' %}sidebar__link--active{% endif %}"
+           hx-get="/" hx-target="#main-content" hx-push-url="true">
+          Dashboard
+        </a>
+      </li>
+      <li class="sidebar__item">
+        <a href="/customers" class="sidebar__link {% if active_page == 'customers' %}sidebar__link--active{% endif %}"
+           hx-get="/customers" hx-target="#main-content" hx-push-url="true">
+          Kunden
+        </a>
+      </li>
+      <li class="sidebar__item">
+        <a href="/plans" class="sidebar__link {% if active_page == 'plans' %}sidebar__link--active{% endif %}"
+           hx-get="/plans" hx-target="#main-content" hx-push-url="true">
+          Tarife
+        </a>
+      </li>
+      <li class="sidebar__item">
+        <a href="/contracts" class="sidebar__link {% if active_page == 'contracts' %}sidebar__link--active{% endif %}"
+           hx-get="/contracts" hx-target="#main-content" hx-push-url="true">
+          Verträge
+        </a>
+      </li>
+      <li class="sidebar__item">
+        <a href="/invoices" class="sidebar__link {% if active_page == 'invoices' %}sidebar__link--active{% endif %}"
+           hx-get="/invoices" hx-target="#main-content" hx-push-url="true">
+          Rechnungen
+        </a>
+      </li>
+      <li class="sidebar__item">
+        <a href="/mail-templates" class="sidebar__link {% if active_page == 'mail_templates' %}sidebar__link--active{% endif %}"
+           hx-get="/mail-templates" hx-target="#main-content" hx-push-url="true">
+          Mail-Vorlagen
+        </a>
+      </li>
+      <li class="sidebar__item sidebar__item--bottom">
+        <a href="/settings" class="sidebar__link {% if active_page == 'settings' %}sidebar__link--active{% endif %}"
+           hx-get="/settings" hx-target="#main-content" hx-push-url="true">
+          Einstellungen
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <main id="main-content" class="main-content">
+    {% if content_template is defined %}
+      {% include content_template %}
+    {% else %}
+      {% block content %}{% endblock %}
+    {% endif %}
+  </main>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="/static/js/app.js" defer></script>
+
+</body>
+</html>

@@ -1,0 +1,60 @@
+<div class="page-header">
+  <h1 class="page-title">Dashboard</h1>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-card__label">Kunden</div>
+    <div class="stat-card__value">{{ customer_count }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card__label">Rechnungen (Entwurf)</div>
+    <div class="stat-card__value {% if draft_count > 0 %}stat-card__value--warning{% endif %}">
+      {{ draft_count }}
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card__label">Überfällig</div>
+    <div class="stat-card__value {% if overdue_count > 0 %}stat-card__value--danger{% endif %}">
+      {{ overdue_count }}
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card__label">Umsatz letzter Monat</div>
+    <div class="stat-card__value stat-card__value--success">{{ last_month_revenue | euro }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card__label">Umsatz letztes Quartal</div>
+    <div class="stat-card__value stat-card__value--success">{{ last_quarter_revenue | euro }}</div>
+  </div>
+</div>
+
+{% if draft_invoices %}
+<div class="card">
+  <div class="card__title">Offene Rechnungsentwürfe</div>
+  <div class="table-wrapper">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Nummer</th>
+          <th>Kunde</th>
+          <th>Tarif</th>
+          <th>Betrag</th>
+          <th>Fällig</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for inv in draft_invoices %}
+        <tr>
+          <td class="text-mono">{{ inv.invoice_number }}</td>
+          <td>{{ inv.customer_name }}</td>
+          <td>{{ inv.plan_name }}</td>
+          <td class="text-right">{{ inv.amount | euro }}</td>
+          <td class="{% if inv.overdue %}text-error{% endif %}">{{ inv.due_date | date_de }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}

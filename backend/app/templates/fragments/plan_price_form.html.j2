@@ -1,0 +1,28 @@
+{% set fd = form_data if form_data is defined else {} %}
+
+<div class="mt-2">
+  <div class="card__title">Neuen Preis hinzufügen</div>
+  <form hx-post="/plans/{{ plan.id }}/price"
+        hx-target="#price-history-section"
+        hx-swap="innerHTML"
+        class="form-grid mt-1">
+
+    <div class="form-group">
+      <label class="form-label form-label--required" for="amount">Betrag (€)</label>
+      <input id="amount" name="amount" type="text" class="form-input {% if errors and errors.amount %}form-input--error{% endif %}"
+             value="{{ fd.amount or '' }}" placeholder="0,00" required>
+      {% if errors and errors.amount %}<span class="form-error">{{ errors.amount }}</span>{% endif %}
+    </div>
+
+    <div class="form-group">
+      <label class="form-label form-label--required" for="price_valid_from">Gültig ab</label>
+      <input id="price_valid_from" name="valid_from" type="date" class="form-input {% if errors and errors.valid_from %}form-input--error{% endif %}"
+             value="{{ fd.valid_from or '' }}" required>
+      {% if errors and errors.valid_from %}<span class="form-error">{{ errors.valid_from }}</span>{% endif %}
+    </div>
+
+    <div class="form-group" style="align-self:flex-end">
+      <button type="submit" class="btn btn--primary">Hinzufügen</button>
+    </div>
+  </form>
+</div>

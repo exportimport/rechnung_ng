@@ -1,0 +1,90 @@
+{% set fd = form_data if form_data is defined else {} %}
+{% set c = customer %}
+
+<div class="page-header">
+  <h1 class="page-title">{% if c %}Kunde bearbeiten{% else %}Neuer Kunde{% endif %}</h1>
+  <a href="/customers" class="btn btn--secondary"
+     hx-get="/customers" hx-target="#main-content" hx-push-url="true">
+    Zurück
+  </a>
+</div>
+
+<div class="card">
+  <form {% if c %}hx-put="/customers/{{ c.id }}"{% else %}hx-post="/customers"{% endif %}
+        hx-target="#main-content"
+        hx-push-url="true">
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label form-label--required" for="vorname">Vorname</label>
+        <input id="vorname" name="vorname" type="text" class="form-input {% if errors.vorname %}form-input--error{% endif %}"
+               value="{{ fd.vorname or (c.vorname if c else '') }}" required>
+        {% if errors.vorname %}<span class="form-error">{{ errors.vorname }}</span>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label form-label--required" for="nachname">Nachname</label>
+        <input id="nachname" name="nachname" type="text" class="form-input {% if errors.nachname %}form-input--error{% endif %}"
+               value="{{ fd.nachname or (c.nachname if c else '') }}" required>
+        {% if errors.nachname %}<span class="form-error">{{ errors.nachname }}</span>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label form-label--required" for="street">Straße</label>
+        <input id="street" name="street" type="text" class="form-input {% if errors.street %}form-input--error{% endif %}"
+               value="{{ fd.street or (c.street if c else '') }}" required>
+        {% if errors.street %}<span class="form-error">{{ errors.street }}</span>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label form-label--required" for="house_number">Hausnummer</label>
+        <input id="house_number" name="house_number" type="text" class="form-input {% if errors.house_number %}form-input--error{% endif %}"
+               value="{{ fd.house_number or (c.house_number if c else '') }}" required>
+        {% if errors.house_number %}<span class="form-error">{{ errors.house_number }}</span>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label form-label--required" for="postcode">PLZ</label>
+        <input id="postcode" name="postcode" type="text" class="form-input {% if errors.postcode %}form-input--error{% endif %}"
+               value="{{ fd.postcode or (c.postcode if c else '') }}" required>
+        {% if errors.postcode %}<span class="form-error">{{ errors.postcode }}</span>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label form-label--required" for="city">Stadt</label>
+        <input id="city" name="city" type="text" class="form-input {% if errors.city %}form-input--error{% endif %}"
+               value="{{ fd.city or (c.city if c else '') }}" required>
+        {% if errors.city %}<span class="form-error">{{ errors.city }}</span>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label form-label--required" for="email">E-Mail</label>
+        <input id="email" name="email" type="email" class="form-input {% if errors.email %}form-input--error{% endif %}"
+               value="{{ fd.email or (c.email if c else '') }}" required>
+        {% if errors.email %}<span class="form-error">{{ errors.email }}</span>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label form-label--required" for="iban">IBAN</label>
+        <input id="iban" name="iban" type="text" class="form-input text-mono {% if errors.iban %}form-input--error{% endif %}"
+               value="{{ fd.iban or (c.iban if c else '') }}" required>
+        {% if errors.iban %}<span class="form-error">{{ errors.iban }}</span>{% endif %}
+      </div>
+
+      <div class="form-group form-group--full">
+        <label class="form-label" for="comment">Kommentar</label>
+        <textarea id="comment" name="comment" class="form-textarea">{{ fd.comment or (c.comment if c else '') }}</textarea>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn--primary">
+        {% if c %}Speichern{% else %}Erstellen{% endif %}
+      </button>
+      <a href="/customers" class="btn btn--secondary"
+         hx-get="/customers" hx-target="#main-content" hx-push-url="true">
+        Abbrechen
+      </a>
+    </div>
+  </form>
+</div>

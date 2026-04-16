@@ -1,0 +1,142 @@
+<div class="page-header">
+  <h1 class="page-title">Einstellungen</h1>
+</div>
+
+<form hx-put="/settings" hx-target="#main-content" hx-swap="innerHTML">
+
+  <div class="card">
+    <div class="card__title">Unternehmen</div>
+    <div class="form-grid mt-1">
+      <div class="form-group">
+        <label class="form-label" for="company_name">Name</label>
+        <input id="company_name" name="company_name" type="text" class="form-input"
+               value="{{ company.name or '' }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="company_email">E-Mail</label>
+        <input id="company_email" name="company_email" type="email" class="form-input"
+               value="{{ company.email or '' }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="company_phone">Telefon</label>
+        <input id="company_phone" name="company_phone" type="text" class="form-input"
+               value="{{ company.phone or '' }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="company_tax_id">Steuer-ID</label>
+        <input id="company_tax_id" name="company_tax_id" type="text" class="form-input"
+               value="{{ company.tax_id or '' }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="company_street">Straße</label>
+        <input id="company_street" name="company_street" type="text" class="form-input"
+               value="{{ company.street or '' }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="company_house_number">Hausnummer</label>
+        <input id="company_house_number" name="company_house_number" type="text" class="form-input"
+               value="{{ company.house_number or '' }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="company_postcode">PLZ</label>
+        <input id="company_postcode" name="company_postcode" type="text" class="form-input"
+               value="{{ company.postcode or '' }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="company_city">Stadt</label>
+        <input id="company_city" name="company_city" type="text" class="form-input"
+               value="{{ company.city or '' }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="company_bank_name">Bank</label>
+        <input id="company_bank_name" name="company_bank_name" type="text" class="form-input"
+               value="{{ company.bank_name or '' }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="company_iban">IBAN</label>
+        <input id="company_iban" name="company_iban" type="text" class="form-input text-mono"
+               value="{{ company.iban or '' }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="company_bic">BIC</label>
+        <input id="company_bic" name="company_bic" type="text" class="form-input"
+               value="{{ company.bic or '' }}">
+      </div>
+    </div>
+  </div>
+
+  <div class="card mt-2">
+    <div class="card__title">SMTP</div>
+    <div class="form-grid mt-1">
+      <div class="form-group">
+        <label class="form-label" for="smtp_host">Host</label>
+        <input id="smtp_host" name="smtp_host" type="text" class="form-input"
+               value="{{ smtp.host or '' }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="smtp_port">Port</label>
+        <input id="smtp_port" name="smtp_port" type="number" class="form-input" style="width:100px"
+               value="{{ smtp.port or 587 }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="smtp_username">Benutzername</label>
+        <input id="smtp_username" name="smtp_username" type="text" class="form-input"
+               value="{{ smtp.username or '' }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="smtp_sender_name">Absendername</label>
+        <input id="smtp_sender_name" name="smtp_sender_name" type="text" class="form-input"
+               value="{{ smtp.sender_name or '' }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="smtp_sender_email">Absender-E-Mail</label>
+        <input id="smtp_sender_email" name="smtp_sender_email" type="email" class="form-input"
+               value="{{ smtp.sender_email or '' }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">
+          <input type="checkbox" name="smtp_use_tls" {% if smtp.use_tls %}checked{% endif %}>
+          STARTTLS (Port 587)
+        </label>
+      </div>
+      <div class="form-group">
+        <label class="form-label">
+          <input type="checkbox" name="smtp_use_ssl" {% if smtp.use_ssl %}checked{% endif %}>
+          SSL/TLS (Port 465)
+        </label>
+      </div>
+    </div>
+    <p class="form-hint mt-1">SMTP-Passwort wird über die Umgebungsvariable <code>SMTP_PASSWORD</code> gesetzt.</p>
+  </div>
+
+  <div class="card mt-2">
+    <div class="card__title">Rechnungen</div>
+    <div class="form-grid mt-1">
+      <div class="form-group form-group--full">
+        <label class="form-label" for="invoice_number_format">Nummernformat</label>
+        <input id="invoice_number_format" name="invoice_number_format" type="text" class="form-input text-mono"
+               value="{{ invoice.number_format or '' }}">
+        <span class="form-hint">Variablen: {customer_id}, {contract_id}, {year}, {month:02d}, {seq:04d}</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="invoice_payment_terms_days">Zahlungsziel (Tage)</label>
+        <input id="invoice_payment_terms_days" name="invoice_payment_terms_days" type="number" class="form-input"
+               style="width:100px" value="{{ invoice.payment_terms_days or 14 }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="invoice_vat_rate">MwSt.-Satz</label>
+        <input id="invoice_vat_rate" name="invoice_vat_rate" type="number" step="0.01" class="form-input"
+               style="width:100px" value="{{ invoice.vat_rate or 0.19 }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="invoice_currency">Währung</label>
+        <input id="invoice_currency" name="invoice_currency" type="text" class="form-input"
+               style="width:80px" value="{{ invoice.currency or 'EUR' }}">
+      </div>
+    </div>
+  </div>
+
+  <div class="form-actions mt-2" style="border:none">
+    <button type="submit" class="btn btn--primary">Speichern</button>
+  </div>
+</form>

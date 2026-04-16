@@ -1,48 +1,38 @@
 from datetime import date
 from pathlib import Path
 
-from fastapi import APIRouter, HTTPException, UploadFile
-from fastapi.responses import FileResponse
+import magic
+from fastapi import APIRouter, HTTPException, Request, Response, UploadFile
+from fastapi.responses import FileResponse, HTMLResponse
 
 from app.db.yaml_store import store
-from app.models.contract import (
-    CancelRequest,
-    Contract,
-    ContractCreate,
-    ContractRead,
-    ContractStatus,
-    ContractUpdate,
-    compute_status,
-)
-from app.models.customer import Customer
+from app.models.contract import Contract, ContractStatus, compute_status
 from app.models.plan import Plan, current_price
 
 UPLOADS_DIR = Path(__file__).parent.parent.parent / "uploads" / "contracts"
 
-router = APIRouter()
+router = APIRouter(prefix="/contracts")
 
 
-def _enrich(
-    contract: Contract,
-    customers: dict[int, dict],
-    plans: dict[int, dict],
-) -> dict:
+def _load_lookups():
+    customers = {c["id"]: c for c in store.load("customers")}
+    plans = {p["id"]: p for p in store.load("plans")}
+    return customers, plans
+
+
+def _enrich(contract: Contract, customers: dict, plans: dict) -> dict:
     today = date.today()
     status = compute_status(contract.start_date, contract.end_date, today)
-
     customer_d = customers.get(contract.customer_id)
     customer_name = (
         f"{customer_d['vorname']} {customer_d['nachname']}" if customer_d else "Unbekannt"
     )
-
     plan_d = plans.get(contract.plan_id)
     plan_name = plan_d["name"] if plan_d else "Unbekannt"
-    price: float | None = None
+    price = None
     if plan_d:
-        plan = Plan(**plan_d)
-        p = current_price(plan, today)
+        p = current_price(Plan(**plan_d), today)
         price = float(p) if p is not None else None
-
     data = contract.model_dump(mode="json")
     data["status"] = status.value
     data["customer_name"] = customer_name
@@ -51,71 +41,145 @@ def _enrich(
     return data
 
 
-def _load_lookups() -> tuple[dict[int, dict], dict[int, dict]]:
-    customers = {c["id"]: c for c in store.load("customers")}
-    plans = {p["id"]: p for p in store.load("plans")}
-    return customers, plans
-
-
 @router.get("")
-def list_contracts(status: ContractStatus | None = None):
+def list_contracts(request: Request, status: ContractStatus | None = None):
+    from app.main import render
+
     contracts = [Contract(**d) for d in store.load("contracts")]
     customers, plans = _load_lookups()
     enriched = [_enrich(c, customers, plans) for c in contracts]
     if status:
         enriched = [c for c in enriched if c["status"] == status.value]
-    return enriched
+
+    ctx = {
+        "active_page": "contracts",
+        "contracts": enriched,
+        "status_filter": status.value if status else "",
+    }
+    return render(request, "base.html.j2", "fragments/contract_table.html.j2", ctx)
+
+
+@router.get("/new")
+def new_contract_form(request: Request):
+    from app.main import render
+
+    customers, plans = _load_lookups()
+    ctx = {
+        "active_page": "contracts",
+        "contract": None,
+        "customers": list(customers.values()),
+        "plans": list(plans.values()),
+        "errors": {},
+    }
+    return render(request, "base.html.j2", "pages/contract_form.html.j2", ctx)
 
 
 @router.get("/{contract_id}")
-def get_contract(contract_id: int):
+def edit_contract_form(request: Request, contract_id: int):
+    from app.main import render
+
     d = store.get_by_id("contracts", contract_id)
     if not d:
         raise HTTPException(status_code=404, detail="Vertrag nicht gefunden")
     customers, plans = _load_lookups()
-    return _enrich(Contract(**d), customers, plans)
+    ctx = {
+        "active_page": "contracts",
+        "contract": _enrich(Contract(**d), customers, plans),
+        "customers": list(customers.values()),
+        "plans": list(plans.values()),
+        "errors": {},
+    }
+    return render(request, "base.html.j2", "pages/contract_form.html.j2", ctx)
 
 
-@router.post("", status_code=201)
-def create_contract(body: ContractCreate):
-    if not store.get_by_id("customers", body.customer_id):
+@router.post("")
+async def create_contract(request: Request, response: Response):
+    from app.main import set_toast
+    from app.main import templates as jinja_env
+
+    form = await request.form()
+    data = dict(form)
+    errors = _validate_contract(data)
+    if errors:
+        customers, plans = _load_lookups()
+        html = jinja_env.get_template("pages/contract_form.html.j2").render(
+            request=request, active_page="contracts", contract=None,
+            customers=list(customers.values()), plans=list(plans.values()),
+            form_data=data, errors=errors,
+        )
+        return HTMLResponse(html, status_code=422)
+
+    # Check FK constraints
+    customer_id = int(data["customer_id"])
+    plan_id = int(data["plan_id"])
+    if not store.get_by_id("customers", customer_id):
         raise HTTPException(status_code=404, detail="Kunde nicht gefunden")
-    plan_d = store.get_by_id("plans", body.plan_id)
+    plan_d = store.get_by_id("plans", plan_id)
     if not plan_d:
         raise HTTPException(status_code=404, detail="Tarif nicht gefunden")
-    if current_price(Plan(**plan_d), body.start_date) is None:
+    start = date.fromisoformat(data["start_date"])
+    if current_price(Plan(**plan_d), start) is None:
         raise HTTPException(
             status_code=422,
-            detail=f"Tarif hat am {body.start_date} keinen gültigen Preis. Bitte zuerst einen Preis mit passendem Gültigkeitsdatum anlegen.",
+            detail=f"Tarif hat am {start} keinen gültigen Preis.",
         )
-    data = body.model_dump(mode="json")
-    record = store.create("contracts", data)
-    customers, plans = _load_lookups()
-    return _enrich(Contract(**record), customers, plans)
+
+    store.create("contracts", {
+        "customer_id": customer_id,
+        "plan_id": plan_id,
+        "start_date": data["start_date"],
+        "end_date": data.get("end_date") or None,
+        "billing_cycle": data.get("billing_cycle", "monthly"),
+        "reference": data.get("reference") or None,
+        "comment": data.get("comment") or None,
+    })
+    _r = HTMLResponse("", status_code=200)
+    set_toast(_r, "Vertrag erstellt.")
+    _r.headers["HX-Redirect"] = "/contracts"
+    return _r
 
 
 @router.put("/{contract_id}")
-def update_contract(contract_id: int, body: ContractUpdate):
+async def update_contract(request: Request, response: Response, contract_id: int):
+    from app.main import set_toast
+    from app.main import templates as jinja_env
+
     d = store.get_by_id("contracts", contract_id)
     if not d:
         raise HTTPException(status_code=404, detail="Vertrag nicht gefunden")
-    if not store.get_by_id("customers", body.customer_id):
-        raise HTTPException(status_code=404, detail="Kunde nicht gefunden")
-    plan_d = store.get_by_id("plans", body.plan_id)
-    if not plan_d:
-        raise HTTPException(status_code=404, detail="Tarif nicht gefunden")
-    if current_price(Plan(**plan_d), body.start_date) is None:
-        raise HTTPException(
-            status_code=422,
-            detail=f"Tarif hat am {body.start_date} keinen gültigen Preis. Bitte zuerst einen Preis mit passendem Gültigkeitsdatum anlegen.",
+
+    form = await request.form()
+    data = dict(form)
+    errors = _validate_contract(data)
+    if errors:
+        customers, plans = _load_lookups()
+        html = jinja_env.get_template("pages/contract_form.html.j2").render(
+            request=request, active_page="contracts",
+            contract=_enrich(Contract(**d), customers, plans),
+            customers=list(customers.values()), plans=list(plans.values()),
+            form_data=data, errors=errors,
         )
-    updated = store.update("contracts", contract_id, body.model_dump(mode="json"))
-    customers, plans = _load_lookups()
-    return _enrich(Contract(**updated), customers, plans)
+        return HTMLResponse(html, status_code=422)
+
+    store.update("contracts", contract_id, {
+        "customer_id": int(data["customer_id"]),
+        "plan_id": int(data["plan_id"]),
+        "start_date": data["start_date"],
+        "end_date": data.get("end_date") or None,
+        "billing_cycle": data.get("billing_cycle", "monthly"),
+        "reference": data.get("reference") or None,
+        "comment": data.get("comment") or None,
+    })
+    _r = HTMLResponse("", status_code=200)
+    set_toast(_r, "Vertrag aktualisiert.")
+    _r.headers["HX-Redirect"] = "/contracts"
+    return _r
 
 
-@router.delete("/{contract_id}", status_code=204)
-def delete_contract(contract_id: int):
+@router.delete("/{contract_id}")
+def delete_contract(contract_id: int, response: Response):
+    from app.main import set_toast
+
     d = store.get_by_id("contracts", contract_id)
     if not d:
         raise HTTPException(status_code=404, detail="Vertrag nicht gefunden")
@@ -123,36 +187,64 @@ def delete_contract(contract_id: int):
     if any(inv.get("contract_id") == contract_id for inv in invoices):
         raise HTTPException(status_code=409, detail="Vertrag hat noch Rechnungen")
     store.delete("contracts", contract_id)
+    _r = HTMLResponse("", status_code=200)
+    set_toast(_r, "Vertrag gelöscht.")
+    return _r
+
+
+@router.post("/{contract_id}/cancel")
+async def cancel_contract(request: Request, response: Response, contract_id: int):
+    from app.main import set_toast
+    from app.services.cancellation import generate_cancellation
+
+    d = store.get_by_id("contracts", contract_id)
+    if not d:
+        raise HTTPException(status_code=404, detail="Vertrag nicht gefunden")
+
+    form = await request.form()
+    end_date_str = form.get("end_date", "")
+    if not end_date_str:
+        raise HTTPException(status_code=422, detail="Kündigungsdatum fehlt")
+    end_date = date.fromisoformat(end_date_str)
+
+    store.update("contracts", contract_id, {"end_date": end_date.isoformat()})
+    try:
+        pdf_path = generate_cancellation(contract_id, end_date, store)
+        store.update("contracts", contract_id, {"cancellation_pdf": str(pdf_path)})
+    except Exception:
+        pass
+
+    _r = HTMLResponse("", status_code=200)
+    set_toast(_r, "Vertrag gekündigt.")
+    _r.headers["HX-Redirect"] = f"/contracts/{contract_id}"
+    return _r
 
 
 @router.post("/{contract_id}/scan")
 async def upload_scan(contract_id: int, file: UploadFile):
+    from app.main import set_toast
+
     d = store.get_by_id("contracts", contract_id)
     if not d:
         raise HTTPException(status_code=404, detail="Vertrag nicht gefunden")
-    if file.content_type != "application/pdf":
+
+    content = await file.read()
+    # Validate via magic bytes (not just Content-Type header)
+    mime = magic.from_buffer(content, mime=True)
+    if mime != "application/pdf":
         raise HTTPException(status_code=422, detail="Nur PDF-Dateien erlaubt")
+
     UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
     dest = UPLOADS_DIR / f"{contract_id}.pdf"
-    content = await file.read()
     dest.write_bytes(content)
-    updated = store.update("contracts", contract_id, {"scan_file": str(dest)})
-    return _enrich(Contract(**updated))
-
-
-@router.get("/{contract_id}/cancellation-pdf")
-def download_cancellation_pdf(contract_id: int):
-    d = store.get_by_id("contracts", contract_id)
-    if not d:
-        raise HTTPException(status_code=404, detail="Vertrag nicht gefunden")
-    contract = Contract(**d)
-    if not contract.cancellation_pdf or not Path(contract.cancellation_pdf).exists():
-        raise HTTPException(status_code=404, detail="Kein Kündigungsdokument vorhanden")
-    return FileResponse(
-        contract.cancellation_pdf,
-        media_type="application/pdf",
-        filename=f"kuendigung-{contract_id}.pdf",
+    store.update("contracts", contract_id, {"scan_file": str(dest)})
+    _r = HTMLResponse(
+        f'<span class="text-success">Scan vorhanden</span> '
+        f'<a href="/contracts/{contract_id}/scan" class="btn btn--sm btn--secondary">Download</a>',
+        status_code=200,
     )
+    set_toast(_r, "Scan hochgeladen.")
+    return _r
 
 
 @router.get("/{contract_id}/scan")
@@ -163,25 +255,30 @@ def download_scan(contract_id: int):
     contract = Contract(**d)
     if not contract.scan_file or not Path(contract.scan_file).exists():
         raise HTTPException(status_code=404, detail="Kein Scan vorhanden")
-    return FileResponse(
-        contract.scan_file,
-        media_type="application/pdf",
-        filename=f"vertrag-{contract_id}.pdf",
-    )
+    return FileResponse(contract.scan_file, media_type="application/pdf",
+                        filename=f"vertrag-{contract_id}.pdf")
 
 
-@router.post("/{contract_id}/cancel")
-def cancel_contract(contract_id: int, body: CancelRequest):
-    from app.services.cancellation import generate_cancellation
-
+@router.get("/{contract_id}/cancellation-pdf")
+def download_cancellation_pdf(contract_id: int):
     d = store.get_by_id("contracts", contract_id)
     if not d:
         raise HTTPException(status_code=404, detail="Vertrag nicht gefunden")
-    updated = store.update("contracts", contract_id, {"end_date": body.end_date.isoformat()})
-    try:
-        pdf_path = generate_cancellation(contract_id, body.end_date, store)
-        updated = store.update("contracts", contract_id, {"cancellation_pdf": str(pdf_path)})
-    except Exception:
-        pass  # PDF generation failure should not block the cancellation
-    customers, plans = _load_lookups()
-    return _enrich(Contract(**updated), customers, plans)
+    contract = Contract(**d)
+    if not contract.cancellation_pdf or not Path(contract.cancellation_pdf).exists():
+        raise HTTPException(status_code=404, detail="Kein Kündigungsdokument vorhanden")
+    return FileResponse(contract.cancellation_pdf, media_type="application/pdf",
+                        filename=f"kuendigung-{contract_id}.pdf")
+
+
+def _validate_contract(data: dict) -> dict:
+    errors = {}
+    if not data.get("customer_id"):
+        errors["customer_id"] = "Pflichtfeld"
+    if not data.get("plan_id"):
+        errors["plan_id"] = "Pflichtfeld"
+    if not data.get("start_date"):
+        errors["start_date"] = "Pflichtfeld"
+    if not data.get("billing_cycle"):
+        errors["billing_cycle"] = "Pflichtfeld"
+    return errors

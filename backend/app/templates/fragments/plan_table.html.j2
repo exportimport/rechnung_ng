@@ -1,0 +1,48 @@
+<div class="page-header">
+  <h1 class="page-title">Tarife</h1>
+  <a href="/plans/new" class="btn btn--primary"
+     hx-get="/plans/new" hx-target="#main-content" hx-push-url="true">
+    + Neuer Tarif
+  </a>
+</div>
+
+{% if plans %}
+<div class="table-wrapper">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Aktueller Preis</th>
+        <th>Preiseinträge</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in plans %}
+      <tr id="plan-row-{{ p.id }}">
+        <td>{{ p.name }}</td>
+        <td class="text-right">{{ p.current_price | euro }}</td>
+        <td>{{ p.price_history | length }}</td>
+        <td>
+          <div class="table__actions">
+            <a href="/plans/{{ p.id }}" class="btn btn--sm btn--secondary"
+               hx-get="/plans/{{ p.id }}" hx-target="#main-content" hx-push-url="true">
+              Bearbeiten
+            </a>
+            <button class="btn btn--sm btn--danger"
+                    hx-delete="/plans/{{ p.id }}"
+                    hx-confirm="Tarif „{{ p.name }}" wirklich löschen?"
+                    hx-target="#plan-row-{{ p.id }}"
+                    hx-swap="outerHTML swap:300ms">
+              Löschen
+            </button>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="card"><p class="text-muted">Keine Tarife vorhanden.</p></div>
+{% endif %}

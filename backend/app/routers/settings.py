@@ -1,49 +1,10 @@
-from pathlib import Path
-
 import yaml
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from fastapi import APIRouter, Request
+from fastapi.responses import HTMLResponse
 
 from app.config import DATA_DIR, get_config
 
-router = APIRouter()
-
-
-class CompanySettings(BaseModel):
-    name: str
-    street: str
-    house_number: str
-    postcode: str
-    city: str
-    email: str
-    phone: str = ""
-    tax_id: str = ""
-    bank_name: str = ""
-    iban: str = ""
-    bic: str = ""
-
-
-class SmtpSettings(BaseModel):
-    host: str
-    port: int = 587
-    username: str
-    use_tls: bool = True
-    use_ssl: bool = False
-    sender_name: str
-    sender_email: str
-
-
-class InvoiceSettings(BaseModel):
-    number_format: str
-    payment_terms_days: int
-    vat_rate: float
-    currency: str
-
-
-class Settings(BaseModel):
-    company: CompanySettings
-    smtp: SmtpSettings
-    invoice: InvoiceSettings
+router = APIRouter(prefix="/settings")
 
 
 def _read_raw() -> dict:
@@ -61,27 +22,79 @@ def _write_raw(data: dict) -> None:
         yaml.dump(data, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
 
 
-@router.get("", response_model=Settings)
-def get_settings():
-    raw = _read_raw()
-    # Strip password from smtp before returning
+@router.get("")
+def settings_page(request: Request):
+    from app.main import render
+
+    try:
+        raw = _read_raw()
+    except FileNotFoundError:
+        raw = {"company": {}, "smtp": {}, "invoice": {}}
+
     smtp = {k: v for k, v in raw.get("smtp", {}).items() if k != "password"}
-    return Settings(company=raw["company"], smtp=smtp, invoice=raw["invoice"])
+    ctx = {
+        "active_page": "settings",
+        "company": raw.get("company", {}),
+        "smtp": smtp,
+        "invoice": raw.get("invoice", {}),
+        "errors": {},
+    }
+    return render(request, "base.html.j2", "pages/settings.html.j2", ctx)
 
 
-@router.put("", response_model=Settings)
-def update_settings(body: Settings):
-    raw = _read_raw()
-    # Preserve password field if present
+@router.put("")
+async def update_settings(request: Request):
+    from app.main import set_toast
+
+    form = await request.form()
+    data = dict(form)
+
+    # Rebuild nested structure
+    company = {
+        "name": data.get("company_name", ""),
+        "street": data.get("company_street", ""),
+        "house_number": data.get("company_house_number", ""),
+        "postcode": data.get("company_postcode", ""),
+        "city": data.get("company_city", ""),
+        "email": data.get("company_email", ""),
+        "phone": data.get("company_phone", ""),
+        "tax_id": data.get("company_tax_id", ""),
+        "bank_name": data.get("company_bank_name", ""),
+        "iban": data.get("company_iban", ""),
+        "bic": data.get("company_bic", ""),
+    }
+    smtp = {
+        "host": data.get("smtp_host", ""),
+        "port": int(data.get("smtp_port", 587) or 587),
+        "username": data.get("smtp_username", ""),
+        "use_tls": data.get("smtp_use_tls") == "on",
+        "use_ssl": data.get("smtp_use_ssl") == "on",
+        "sender_name": data.get("smtp_sender_name", ""),
+        "sender_email": data.get("smtp_sender_email", ""),
+    }
+    invoice = {
+        "number_format": data.get("invoice_number_format", ""),
+        "payment_terms_days": int(data.get("invoice_payment_terms_days", 14) or 14),
+        "vat_rate": float(data.get("invoice_vat_rate", 0.19) or 0.19),
+        "currency": data.get("invoice_currency", "EUR"),
+    }
+
+    try:
+        raw = _read_raw()
+    except FileNotFoundError:
+        raw = {}
+
     existing_password = raw.get("smtp", {}).get("password")
-
-    raw["company"] = body.company.model_dump()
-    raw["smtp"] = body.smtp.model_dump()
+    raw["company"] = company
+    raw["smtp"] = smtp
     if existing_password:
         raw["smtp"]["password"] = existing_password
-    raw["invoice"] = body.invoice.model_dump()
+    raw["invoice"] = invoice
 
     _write_raw(raw)
     get_config.cache_clear()
 
-    return body
+    _r = HTMLResponse("", status_code=200)
+    set_toast(_r, "Einstellungen gespeichert.")
+    _r.headers["HX-Redirect"] = "/settings"
+    return _r

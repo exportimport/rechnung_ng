@@ -1,10 +1,24 @@
+import json
 import os
 import shutil
+from datetime import date, datetime
 from pathlib import Path
-from typing import Any
 
 import yaml
 from filelock import FileLock
+
+try:
+    _YAML_LOADER = yaml.CFullLoader
+except AttributeError:
+    _YAML_LOADER = yaml.FullLoader  # type: ignore[assignment]
+
+
+class _JsonEncoder(json.JSONEncoder):
+    """Serialize date/datetime objects to ISO strings for json.dump."""
+    def default(self, o):
+        if isinstance(o, (datetime, date)):
+            return o.isoformat()
+        return super().default(o)
 
 
 class NotFoundError(Exception):
@@ -30,7 +44,7 @@ class YamlStore:
         if not path.exists():
             return []
         with open(path) as f:
-            data = yaml.safe_load(f)
+            data = yaml.load(f, Loader=_YAML_LOADER)  # noqa: S506 — CFullLoader is safe
         return data or []
 
     def save(self, entity: str, records: list[dict]) -> None:
@@ -40,8 +54,8 @@ class YamlStore:
         with lock:
             if path.exists():
                 shutil.copy2(path, self._bak_path(entity))
-            with open(tmp_path, "w") as f:
-                yaml.dump(records, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
+            with open(tmp_path, "w", encoding="utf-8") as f:
+                json.dump(records, f, cls=_JsonEncoder, ensure_ascii=False)
             os.replace(tmp_path, path)
 
     def get_by_id(self, entity: str, id: int | str) -> dict | None:

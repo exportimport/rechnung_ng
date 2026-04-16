@@ -1,60 +1,119 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request, Response
+from fastapi.responses import HTMLResponse
 
 from app.db.yaml_store import store
-from app.models.customer import Customer, CustomerCreate, CustomerUpdate
+from app.models.customer import Customer
 
-router = APIRouter()
+router = APIRouter(prefix="/customers")
 
 
 def _to_customer(d: dict) -> Customer:
     return Customer(**d)
 
 
-def _serialize(c: Customer) -> dict:
-    return c.model_dump(mode="json")
-
-
-@router.get("")
-def list_customers(q: str | None = None):
+def _customer_list(q: str | None = None) -> list[Customer]:
     customers = [_to_customer(d) for d in store.load("customers")]
     if q:
         q_lower = q.lower()
         customers = [
-            c
-            for c in customers
+            c for c in customers
             if q_lower in c.vorname.lower()
             or q_lower in c.nachname.lower()
             or q_lower in c.email.lower()
         ]
-    return [_serialize(c) for c in customers]
+    return customers
+
+
+@router.get("")
+def list_customers(request: Request, q: str | None = None):
+    from app.main import render
+
+    customers = _customer_list(q)
+    ctx = {"active_page": "customers", "customers": customers, "q": q or ""}
+    return render(
+        request,
+        "base.html.j2",
+        "fragments/customer_table.html.j2",
+        ctx,
+    )
+
+
+@router.get("/new")
+def new_customer_form(request: Request):
+    from app.main import render
+
+    ctx = {"active_page": "customers", "customer": None, "errors": {}}
+    return render(request, "base.html.j2", "pages/customer_form.html.j2", ctx)
 
 
 @router.get("/{customer_id}")
-def get_customer(customer_id: int):
+def edit_customer_form(request: Request, customer_id: int):
+    from app.main import render
+
     d = store.get_by_id("customers", customer_id)
     if not d:
         raise HTTPException(status_code=404, detail="Kunde nicht gefunden")
-    return _serialize(_to_customer(d))
+    ctx = {"active_page": "customers", "customer": _to_customer(d), "errors": {}}
+    return render(request, "base.html.j2", "pages/customer_form.html.j2", ctx)
 
 
-@router.post("", status_code=201)
-def create_customer(body: CustomerCreate):
-    data = body.model_dump(mode="json")
+@router.post("")
+async def create_customer(request: Request, response: Response):
+    from app.main import set_toast
+    from app.main import templates as jinja_env
+
+    form = await request.form()
+    data = dict(form)
+    errors = _validate_customer(data)
+    if errors:
+        html = jinja_env.get_template("pages/customer_form.html.j2").render(
+            request=request, active_page="customers",
+            customer=None, form_data=data, errors=errors
+        )
+        return HTMLResponse(html, status_code=422)
+
     record = store.create("customers", data)
-    return _serialize(_to_customer(record))
+    customer = _to_customer(record)
+    _r = HTMLResponse("", status_code=200)
+    set_toast(_r, f"Kunde {customer.vorname} {customer.nachname} erstellt.")
+    _r.headers["HX-Redirect"] = "/customers"
+    return _r
 
 
 @router.put("/{customer_id}")
-def update_customer(customer_id: int, body: CustomerUpdate):
+async def update_customer(request: Request, response: Response, customer_id: int):
+    from app.main import set_toast
+    from app.main import templates as jinja_env
+
     d = store.get_by_id("customers", customer_id)
     if not d:
         raise HTTPException(status_code=404, detail="Kunde nicht gefunden")
-    updated = store.update("customers", customer_id, body.model_dump(mode="json"))
-    return _serialize(_to_customer(updated))
+
+    form = await request.form()
+    data = dict(form)
+    errors = _validate_customer(data)
+    if errors:
+        html = jinja_env.get_template("pages/customer_form.html.j2").render(
+            request=request,
+            active_page="customers",
+            customer=_to_customer(d),
+            form_data=data,
+            errors=errors,
+        )
+        return HTMLResponse(html, status_code=422)
+
+    updated = store.update("customers", customer_id, data)
+    customer = _to_customer(updated)
+    _r = HTMLResponse("", status_code=200)
+    set_toast(_r, f"Kunde {customer.vorname} {customer.nachname} aktualisiert.")
+    _r.headers["HX-Redirect"] = "/customers"
+    return _r
 
 
-@router.delete("/{customer_id}", status_code=204)
+@router.delete("/{customer_id}")
 def delete_customer(customer_id: int):
+    from app.main import set_toast
+
     d = store.get_by_id("customers", customer_id)
     if not d:
         raise HTTPException(status_code=404, detail="Kunde nicht gefunden")
@@ -65,3 +124,18 @@ def delete_customer(customer_id: int):
             detail="Kunde hat noch Verträge und kann nicht gelöscht werden",
         )
     store.delete("customers", customer_id)
+    _r = HTMLResponse("", status_code=200)
+    set_toast(_r, "Kunde gelöscht.")
+    return _r
+
+
+def _validate_customer(data: dict) -> dict:
+    errors = {}
+    required = ("vorname", "nachname", "street", "house_number",
+               "postcode", "city", "iban", "email")
+    for field in required:
+        if not data.get(field, "").strip():
+            errors[field] = "Pflichtfeld"
+    if "email" not in errors and "@" not in data.get("email", ""):
+        errors["email"] = "Ungültige E-Mail-Adresse"
+    return errors

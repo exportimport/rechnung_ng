@@ -1,8 +1,7 @@
 from datetime import date, datetime, timedelta
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 
-from app.config import get_config
 from app.db.yaml_store import store
 from app.models.invoice import Invoice, InvoiceStatus
 
@@ -13,8 +12,9 @@ def _to_date(d: date | datetime) -> date:
     return d.date() if isinstance(d, datetime) else d
 
 
-@router.get("")
-def get_dashboard():
+def _dashboard_context() -> dict:
+    from app.config import get_config
+
     config = get_config()
     today = date.today()
     payment_terms = config.invoice.payment_terms_days
@@ -22,7 +22,6 @@ def get_dashboard():
     all_invoices = [Invoice(**d) for d in store.load("invoices")]
     drafts = [i for i in all_invoices if i.status == InvoiceStatus.draft]
 
-    # Load lookups once
     customers = {c["id"]: c for c in store.load("customers")}
     contracts = {c["id"]: c for c in store.load("contracts")}
     plans = {p["id"]: p for p in store.load("plans")}
@@ -42,19 +41,19 @@ def get_dashboard():
 
         enriched.append({
             **inv.model_dump(mode="json"),
-            "customer_name": f"{customer_d['vorname']} {customer_d['nachname']}" if customer_d else "Unbekannt",
+            "customer_name": (
+                f"{customer_d['vorname']} {customer_d['nachname']}" if customer_d else "Unbekannt"
+            ),
             "plan_name": plan_name,
-            "due_date": due_date.isoformat(),
+            "due_date": due_date,
             "overdue": overdue,
         })
 
     enriched.sort(key=lambda x: x["created_at"])
     overdue_count = sum(1 for e in enriched if e["overdue"])
 
-    # Revenue stats
     sent = [i for i in all_invoices if i.status == InvoiceStatus.sent]
 
-    # Last month
     last_month = today.month - 1 or 12
     last_month_year = today.year if today.month > 1 else today.year - 1
     last_month_revenue = sum(
@@ -62,17 +61,21 @@ def get_dashboard():
         if i.period_start.month == last_month and i.period_start.year == last_month_year
     )
 
-    # Last quarter
     current_quarter = (today.month - 1) // 3
     last_quarter = current_quarter or 4
     last_quarter_year = today.year if current_quarter > 0 else today.year - 1
-    last_quarter_months = {(last_quarter - 1) * 3 + 1, (last_quarter - 1) * 3 + 2, (last_quarter - 1) * 3 + 3}
+    last_quarter_months = {
+        (last_quarter - 1) * 3 + 1,
+        (last_quarter - 1) * 3 + 2,
+        (last_quarter - 1) * 3 + 3,
+    }
     last_quarter_revenue = sum(
         i.amount for i in sent
         if i.period_start.month in last_quarter_months and i.period_start.year == last_quarter_year
     )
 
     return {
+        "active_page": "dashboard",
         "draft_count": len(drafts),
         "overdue_count": overdue_count,
         "customer_count": len(customers),
@@ -80,3 +83,11 @@ def get_dashboard():
         "last_quarter_revenue": last_quarter_revenue,
         "draft_invoices": enriched,
     }
+
+
+@router.get("/")
+def dashboard(request: Request):
+    from app.main import render
+
+    ctx = _dashboard_context()
+    return render(request, "base.html.j2", "fragments/dashboard_stats.html.j2", ctx)

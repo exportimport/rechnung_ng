@@ -1,7 +1,7 @@
 from datetime import date
 from enum import StrEnum
 
-from pydantic import BaseModel, computed_field
+from pydantic import BaseModel
 
 
 class BillingCycle(StrEnum):

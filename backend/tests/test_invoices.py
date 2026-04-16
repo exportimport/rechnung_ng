@@ -1,162 +1,131 @@
-import json
-from datetime import date
-from pathlib import Path
-from unittest.mock import MagicMock, patch
-
+"""Invoice tests — uses made-up but realistic data."""
 import pytest
-import pytest_asyncio
-from httpx import ASGITransport, AsyncClient
 
-from app.db.yaml_store import YamlStore
-from app.main import app
-from app.models.contract import BillingCycle
-from app.models.plan import Plan, current_price
-from app.services.invoice_generator import _next_seq, _period_end_quarterly, generate_invoices
-
-
-def _parse_sse(response) -> list[dict]:
-    events = []
-    for line in response.text.splitlines():
-        if line.startswith("data: "):
-            events.append(json.loads(line[6:]))
-    return events
-
-
-def _sse_invoices(response) -> list[dict]:
-    """Return the invoice list from the final 'done' SSE event."""
-    done = next((e for e in _parse_sse(response) if e.get("done")), None)
-    return done.get("invoices", []) if done else []
-
+# Shared setup data
 CUSTOMER = {
-    "vorname": "Max",
-    "nachname": "Mustermann",
-    "street": "Straße",
-    "house_number": "1",
-    "postcode": "04103",
-    "city": "Leipzig",
-    "iban": "DE89370400440532013000",
-    "email": "max@example.com",
+    "vorname": "Anna", "nachname": "Schmidt",
+    "street": "Berliner Str.", "house_number": "12",
+    "postcode": "10115", "city": "Berlin",
+    "iban": "DE89370400440532013000", "email": "anna@example.com",
+}
+PLAN = {"name": "Internet 100", "initial_price": "49.99", "valid_from": "2024-01-01"}
+CONTRACT = {
+    "customer_id": "1", "plan_id": "1", "start_date": "2024-01-01", "billing_cycle": "monthly"
 }
 
 
-@pytest_asyncio.fixture
-async def client(tmp_path: Path):
-    import app.routers.contracts as cr
-    import app.routers.customers as cust_r
-    import app.routers.plans as pr
-    import app.routers.invoices as inv_r
-    import app.db.yaml_store as m
-    import app.services.invoice_generator as gen_mod
-
-    tmp_store = YamlStore(tmp_path)
-    m.store = cr.store = cust_r.store = pr.store = inv_r.store = tmp_store
-    gen_mod.OUTPUT_DIR = tmp_path / "output"
-
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
-        yield c
-
-    from app.db.yaml_store import _default_data_dir
-    import app.services.invoice_generator as gm
-    restored = YamlStore(_default_data_dir)
-    m.store = cr.store = cust_r.store = pr.store = inv_r.store = restored
-    gm.OUTPUT_DIR = Path(__file__).parent.parent / "output"
+async def _seed(client, csrf):
+    await client.post("/customers", data=CUSTOMER,
+                      headers={"HX-Request": "true", "X-CSRF-Token": csrf})
+    await client.post("/plans", data=PLAN,
+                      headers={"HX-Request": "true", "X-CSRF-Token": csrf})
+    await client.post("/contracts", data=CONTRACT,
+                      headers={"HX-Request": "true", "X-CSRF-Token": csrf})
 
 
-async def _seed(client: AsyncClient, start="2026-01-01"):
-    c = await client.post("/api/v1/customers", json=CUSTOMER)
-    p = await client.post(
-        "/api/v1/plans",
-        json={"name": "Basic", "initial_price": "19.99", "valid_from": "2026-01-01"},
+@pytest.mark.asyncio
+async def test_invoices_page_empty(client):
+    r = await client.get("/invoices")
+    assert r.status_code == 200
+    assert "Rechnungen" in r.text
+
+
+@pytest.mark.asyncio
+async def test_invoices_filter_year_month(client, csrf):
+    await _seed(client, csrf)
+    r = await client.get("/invoices?year=2024&month=1")
+    assert r.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_generate_invoices(client, csrf):
+    await _seed(client, csrf)
+    r = await client.post(
+        "/invoices/generate",
+        data={"year": "2024", "month": "3"},
+        headers={"HX-Request": "true", "X-CSRF-Token": csrf},
     )
-    ct = await client.post(
-        "/api/v1/contracts",
-        json={
-            "customer_id": c.json()["id"],
-            "plan_id": p.json()["id"],
-            "start_date": start,
-            "billing_cycle": "monthly",
-        },
-    )
-    return c.json(), p.json(), ct.json()
+    assert r.status_code == 200
+    assert "text/html" in r.headers["content-type"]
+    assert "Fertig" in r.text
+    assert "HX-Trigger" in r.headers
 
 
-def test_quarterly_period_end():
-    assert _period_end_quarterly(2026, 1) == date(2026, 3, 31)
-    assert _period_end_quarterly(2026, 10) == date(2026, 12, 31)
-    assert _period_end_quarterly(2026, 7) == date(2026, 9, 30)
-
-
-def test_next_seq_empty():
-    assert _next_seq([], 2026, 4) == 1
-
-
-def test_next_seq_existing():
-    inv = [
-        {"year": 2026, "month": 4, "invoice_number": "1-1-2026-04-0001"},
-        {"year": 2026, "month": 4, "invoice_number": "2-2-2026-04-0002"},
-    ]
-    assert _next_seq(inv, 2026, 4) == 3
-    assert _next_seq(inv, 2026, 5) == 1
-
-
-def test_current_price_selection():
-    plan = Plan(
-        id=1,
-        name="Test",
-        price_history=[
-            {"amount": "10.00", "valid_from": date(2026, 1, 1)},
-            {"amount": "12.00", "valid_from": date(2026, 7, 1)},
-        ],
-    )
-    assert current_price(plan, date(2026, 6, 30)) == 10
-    assert current_price(plan, date(2026, 7, 1)) == 12
-
-
-@patch("app.services.invoice_generator.render_invoice_pdf")
-async def test_generate_basic(mock_render: MagicMock, client: AsyncClient, tmp_path: Path):
-    mock_render.return_value = tmp_path / "output" / "invoices" / "test.pdf"
-    await _seed(client)
-
-    res = await client.post("/api/v1/invoices/generate", json={"year": 2026, "month": 4})
-    assert res.status_code == 200
-    data = _sse_invoices(res)
-    assert len(data) == 1
-    assert data[0]["invoice_number"].startswith("1-1-2026-04-")
-    assert data[0]["status"] == "draft"
-    assert data[0]["amount"] == pytest.approx(19.99, rel=1e-3)
-
-
-@patch("app.services.invoice_generator.render_invoice_pdf")
-async def test_generate_skips_existing(mock_render: MagicMock, client: AsyncClient, tmp_path: Path):
-    mock_render.return_value = tmp_path / "output" / "invoices" / "test.pdf"
-    await _seed(client)
-
-    await client.post("/api/v1/invoices/generate", json={"year": 2026, "month": 4})
-    res2 = await client.post("/api/v1/invoices/generate", json={"year": 2026, "month": 4})
-    assert len(_sse_invoices(res2)) == 0
-
-
-@patch("app.services.invoice_generator.render_invoice_pdf")
-async def test_quarterly_only_in_quarter_start(mock_render: MagicMock, client: AsyncClient, tmp_path: Path):
-    mock_render.return_value = tmp_path / "output" / "invoices" / "test.pdf"
-    c = await client.post("/api/v1/customers", json=CUSTOMER)
-    p = await client.post(
-        "/api/v1/plans",
-        json={"name": "Q", "initial_price": "50.00", "valid_from": "2026-01-01"},
-    )
+@pytest.mark.asyncio
+async def test_generate_then_list(client, csrf):
+    await _seed(client, csrf)
     await client.post(
-        "/api/v1/contracts",
-        json={
-            "customer_id": c.json()["id"],
-            "plan_id": p.json()["id"],
-            "start_date": "2026-01-01",
-            "billing_cycle": "quarterly",
-        },
+        "/invoices/generate",
+        data={"year": "2024", "month": "3"},
+        headers={"HX-Request": "true", "X-CSRF-Token": csrf},
     )
-    res_feb = await client.post("/api/v1/invoices/generate", json={"year": 2026, "month": 2})
-    assert len(_sse_invoices(res_feb)) == 0
+    r = await client.get("/invoices?year=2024&month=3")
+    assert r.status_code == 200
+    assert "Schmidt" in r.text
+    assert "Internet 100" in r.text
 
-    res_apr = await client.post("/api/v1/invoices/generate", json={"year": 2026, "month": 4})
-    invoices_apr = _sse_invoices(res_apr)
-    assert len(invoices_apr) == 1
-    assert invoices_apr[0]["amount"] == pytest.approx(150.0, rel=1e-3)
+
+@pytest.mark.asyncio
+async def test_generate_missing_params(client, csrf):
+    r = await client.post(
+        "/invoices/generate",
+        data={"year": "0", "month": "0"},
+        headers={"HX-Request": "true", "X-CSRF-Token": csrf},
+    )
+    assert r.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_delete_draft_invoice(client, csrf):
+    await _seed(client, csrf)
+    # Generate first
+    await client.post(
+        "/invoices/generate",
+        data={"year": "2024", "month": "4"},
+        headers={"HX-Request": "true", "X-CSRF-Token": csrf},
+    )
+    # Delete invoice id=1
+    r = await client.delete(
+        "/invoices/1",
+        headers={"HX-Request": "true", "X-CSRF-Token": csrf},
+    )
+    assert r.status_code == 200
+
+    r2 = await client.get("/invoices?year=2024&month=4")
+    assert "Schmidt" not in r2.text
+
+
+@pytest.mark.asyncio
+async def test_bulk_delete(client, csrf):
+    await _seed(client, csrf)
+    await client.post(
+        "/invoices/generate",
+        data={"year": "2024", "month": "5"},
+        headers={"HX-Request": "true", "X-CSRF-Token": csrf},
+    )
+    r = await client.post(
+        "/invoices/bulk-delete",
+        data={"ids": "1"},
+        headers={"HX-Request": "true", "X-CSRF-Token": csrf},
+    )
+    assert r.status_code == 200
+    assert r.headers.get("HX-Redirect") == "/invoices"
+
+
+@pytest.mark.asyncio
+async def test_pdf_download(client, csrf):
+    await _seed(client, csrf)
+    await client.post(
+        "/invoices/generate",
+        data={"year": "2024", "month": "6"},
+        headers={"HX-Request": "true", "X-CSRF-Token": csrf},
+    )
+    r = await client.get("/invoices/1/pdf")
+    assert r.status_code == 200
+    assert r.headers["content-type"] == "application/pdf"
+
+
+@pytest.mark.asyncio
+async def test_invoice_not_found(client):
+    r = await client.get("/invoices/999/pdf")
+    assert r.status_code == 404

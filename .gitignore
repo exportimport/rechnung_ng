@@ -1,24 +1,25 @@
-CLAUDE.md
-CLAUDE(1).md
-
-# Secrets
-backend/.env
-
 # Python
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+*.so
+.venv/
 *.egg-info/
-backend/.venv/
-backend/.venv-distrobox/
-backend/data/*.bak
-backend/data/customers.yaml
-backend/data/contracts.yaml
-backend/data/plans.yaml
-backend/data/invoices.yaml
+dist/
+build/
+.pytest_cache/
+
+# Runtime data
+backend/data/*.yaml
+!backend/data/mail_templates.yaml
 backend/output/
 backend/uploads/
-backend/data/config.yaml
-# Frontend
-frontend/node_modules/
-frontend/dist/
+backend/data/*.bak
+
+# Env
+backend/.env
+!backend/.env.example
+
+# IDE
+.idea/
+.vscode/
+*.swp

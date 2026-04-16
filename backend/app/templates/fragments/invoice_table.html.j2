@@ -1,0 +1,126 @@
+<div class="page-header">
+  <h1 class="page-title">Rechnungen</h1>
+</div>
+
+<div class="filter-bar">
+  <input type="number" id="inv-year" name="year" placeholder="Jahr" class="form-input"
+         value="{{ filter_year }}" style="width:100px"
+         hx-get="/invoices" hx-trigger="input changed delay:500ms"
+         hx-target="#main-content" hx-push-url="true"
+         hx-include="#inv-month,#inv-status">
+  <select id="inv-month" name="month" class="form-select"
+          hx-get="/invoices" hx-trigger="change"
+          hx-target="#main-content" hx-push-url="true"
+          hx-include="#inv-year,#inv-status">
+    {% set months = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"] %}
+    {% for i in range(1, 13) %}
+    <option value="{{ i }}" {% if filter_month == i %}selected{% endif %}>{{ months[i-1] }}</option>
+    {% endfor %}
+  </select>
+  <select id="inv-status" name="status" class="form-select"
+          hx-get="/invoices" hx-trigger="change"
+          hx-target="#main-content" hx-push-url="true"
+          hx-include="#inv-year,#inv-month">
+    <option value="" {% if not filter_status %}selected{% endif %}>Alle Status</option>
+    <option value="draft" {% if filter_status == 'draft' %}selected{% endif %}>Entwurf</option>
+    <option value="sent" {% if filter_status == 'sent' %}selected{% endif %}>Versendet</option>
+  </select>
+
+  <div class="filter-bar__sep"></div>
+
+  <button class="btn btn--primary"
+          hx-post="/invoices/generate"
+          hx-include="#inv-year,#inv-month"
+          hx-target="#generate-status"
+          hx-swap="innerHTML"
+          hx-indicator="#generate-spinner">
+    Rechnungen generieren
+  </button>
+  <span id="generate-spinner" class="htmx-indicator">…</span>
+</div>
+
+<div id="generate-status" class="mt-1"></div>
+
+<form id="invoice-bulk-form"
+      hx-post="/invoices/bulk-delete"
+      hx-target="#main-content"
+      hx-push-url="true"
+      hx-confirm="Ausgewählte Entwürfe wirklich löschen?">
+  {% if invoices %}
+  <div class="bulk-bar mt-1">
+    <button type="submit" class="btn btn--danger btn--sm">Auswahl löschen</button>
+  </div>
+  <div class="table-wrapper mt-1">
+    <table class="table">
+      <thead>
+        <tr>
+          <th><input type="checkbox" class="checkbox" id="select-all"></th>
+          <th>Nummer</th>
+          <th>Kunde</th>
+          <th>Tarif</th>
+          <th>Zeitraum</th>
+          <th>Betrag</th>
+          <th>Status</th>
+          <th>Versendet</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for inv in invoices %}
+        <tr id="invoice-row-{{ inv.id }}">
+          <td>
+            {% if inv.status == 'draft' %}
+            <input type="checkbox" name="ids" value="{{ inv.id }}" class="checkbox inv-check">
+            {% endif %}
+          </td>
+          <td class="text-mono">{{ inv.invoice_number }}</td>
+          <td>{{ inv.customer_name }}</td>
+          <td>{{ inv.plan_name }}</td>
+          <td>{{ inv.period_start }} – {{ inv.period_end }}</td>
+          <td class="text-right">{{ inv.amount | euro }}</td>
+          <td>
+            {% if inv.status == 'draft' %}
+              <span class="badge badge--draft">Entwurf</span>
+            {% else %}
+              <span class="badge badge--sent">Versendet</span>
+            {% endif %}
+          </td>
+          <td class="text-muted">{{ inv.sent_at | date_de }}</td>
+          <td>
+            <div class="table__actions">
+              {% if inv.pdf_path %}
+              <a href="/invoices/{{ inv.id }}/pdf" class="btn btn--sm btn--secondary">PDF</a>
+              {% endif %}
+              {% if inv.status == 'draft' %}
+              <button class="btn btn--sm btn--primary"
+                      hx-post="/invoices/{{ inv.id }}/send"
+                      hx-target="#invoice-row-{{ inv.id }}"
+                      hx-swap="outerHTML"
+                      hx-confirm="Rechnung {{ inv.invoice_number }} jetzt versenden?">
+                Senden
+              </button>
+              <button class="btn btn--sm btn--danger"
+                      hx-delete="/invoices/{{ inv.id }}"
+                      hx-confirm="Rechnung löschen?"
+                      hx-target="#invoice-row-{{ inv.id }}"
+                      hx-swap="outerHTML swap:300ms">
+                Löschen
+              </button>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="table-wrapper mt-2">
+    <table class="table">
+      <tbody class="table--empty">
+        <tr><td>Keine Rechnungen gefunden.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</form>
