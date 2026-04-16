@@ -68,8 +68,7 @@ async def create_customer(request: Request, response: Response):
     if errors:
         html = jinja_env.get_template("pages/customer_form.html.j2").render(
             request=request, active_page="customers",
-            customer=None, form_data=data, errors=errors,
-            csrf_token="",
+            customer=None, form_data=data, errors=errors
         )
         return HTMLResponse(html, status_code=422)
 

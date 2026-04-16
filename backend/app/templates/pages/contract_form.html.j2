@@ -56,9 +56,31 @@
                value="{{ fd.end_date or (c.end_date if c else '') }}">
       </div>
 
+      <div class="form-group">
+        <label class="form-label form-label--required" for="billing_cycle">Abrechnungszyklus</label>
+        <select id="billing_cycle" name="billing_cycle"
+                class="form-select {% if errors.billing_cycle %}form-select--error{% endif %}" required>
+          <option value="monthly"
+            {% if (fd.billing_cycle or (c.billing_cycle if c else 'monthly')) == 'monthly' %}selected{% endif %}>
+            Monatlich
+          </option>
+          <option value="quarterly"
+            {% if (fd.billing_cycle or (c.billing_cycle if c else '')) == 'quarterly' %}selected{% endif %}>
+            Vierteljährlich
+          </option>
+        </select>
+        {% if errors.billing_cycle %}<span class="form-error">{{ errors.billing_cycle }}</span>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="reference">Referenz</label>
+        <input id="reference" name="reference" type="text" class="form-input"
+               value="{{ fd.reference or (c.reference if c else '') }}">
+      </div>
+
       <div class="form-group form-group--full">
-        <label class="form-label" for="notes">Notizen</label>
-        <textarea id="notes" name="notes" class="form-textarea">{{ fd.notes or (c.notes if c else '') }}</textarea>
+        <label class="form-label" for="comment">Kommentar</label>
+        <textarea id="comment" name="comment" class="form-textarea">{{ fd.comment or (c.comment if c else '') }}</textarea>
       </div>
     </div>
 

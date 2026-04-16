@@ -49,6 +49,7 @@ templates.globals["CONTRACT_STATUS_LABELS"] = {
     ContractStatus.not_yet_active: "Noch nicht aktiv",
     ContractStatus.cancelled: "Gekündigt",
 }
+templates.globals["csrf_token"] = ""   # overridden per-request in render()
 templates.globals["INVOICE_STATUS_LABELS"] = {
     InvoiceStatus.draft: "Entwurf",
     InvoiceStatus.sent: "Versendet",
@@ -78,7 +79,9 @@ def render(
 
 
 def set_toast(response: Response, message: str, ok: bool = True) -> None:
-    """Sets HX-Trigger header to show a toast notification."""
+    """Sets HX-Trigger header to show a toast notification.
+    Pass the HTMLResponse you are about to return, not the injected Response param.
+    """
     response.headers["HX-Trigger"] = json.dumps(
         {"showToast": {"message": message, "ok": ok}}
     )

@@ -198,7 +198,7 @@ async def send_invoice(request: Request, response: Response, invoice_id: int):
     updated = store.get_by_id("invoices", invoice_id)
     from app.main import templates as jinja_env
     html = jinja_env.get_template("fragments/invoice_row.html.j2").render(
-        request=request, invoice=_enrich_invoice(Invoice(**updated)), csrf_token=""
+        request=request, invoice=_enrich_invoice(Invoice(**updated))
     )
     _r = HTMLResponse(html, status_code=200)
     set_toast(_r, f"Rechnung {invoice.invoice_number} versendet.")

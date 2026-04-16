@@ -103,7 +103,6 @@ async def update_settings(request: Request):
         smtp=smtp_display,
         invoice=invoice,
         errors={},
-        csrf_token="",
     )
     _r = HTMLResponse(html, status_code=200)
     set_toast(_r, "Einstellungen gespeichert.")
