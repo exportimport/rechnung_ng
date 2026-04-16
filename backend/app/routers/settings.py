@@ -1,5 +1,5 @@
 import yaml
-from fastapi import APIRouter, HTTPException, Request, Response
+from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 
 from app.config import DATA_DIR, get_config

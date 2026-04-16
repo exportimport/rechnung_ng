@@ -62,7 +62,9 @@ async def create_plan(request: Request, response: Response):
 
     record = store.create("plans", {
         "name": data["name"].strip(),
-        "price_history": [{"amount": data["initial_price"].strip(), "valid_from": data["valid_from"].strip()}],
+        "price_history": [
+            {"amount": data["initial_price"].strip(), "valid_from": data["valid_from"].strip()}
+        ],
     })
     plan = Plan(**record)
     _r = HTMLResponse("", status_code=200)

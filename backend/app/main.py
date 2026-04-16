@@ -172,7 +172,15 @@ app.mount("/static", StaticFiles(directory=str(Path(__file__).parent / "static")
 app.mount("/output", StaticFiles(directory=str(BASE_DIR / "output")), name="output")
 
 # Routers
-from app.routers import contracts, customers, dashboard, invoices, mail_templates, plans, settings  # noqa: E402
+from app.routers import (  # noqa: E402
+    contracts,
+    customers,
+    dashboard,
+    invoices,
+    mail_templates,
+    plans,
+    settings,
+)
 
 app.include_router(dashboard.router)
 app.include_router(customers.router)

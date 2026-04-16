@@ -1,7 +1,7 @@
-import magic
 from datetime import date
 from pathlib import Path
 
+import magic
 from fastapi import APIRouter, HTTPException, Request, Response, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse
 
@@ -124,7 +124,7 @@ async def create_contract(request: Request, response: Response):
             detail=f"Tarif hat am {start} keinen gültigen Preis.",
         )
 
-    record = store.create("contracts", {
+    store.create("contracts", {
         "customer_id": customer_id,
         "plan_id": plan_id,
         "start_date": data["start_date"],
@@ -161,7 +161,7 @@ async def update_contract(request: Request, response: Response, contract_id: int
         )
         return HTMLResponse(html, status_code=422)
 
-    updated = store.update("contracts", contract_id, {
+    store.update("contracts", contract_id, {
         "customer_id": int(data["customer_id"]),
         "plan_id": int(data["plan_id"]),
         "start_date": data["start_date"],
@@ -207,10 +207,10 @@ async def cancel_contract(request: Request, response: Response, contract_id: int
         raise HTTPException(status_code=422, detail="Kündigungsdatum fehlt")
     end_date = date.fromisoformat(end_date_str)
 
-    updated = store.update("contracts", contract_id, {"end_date": end_date.isoformat()})
+    store.update("contracts", contract_id, {"end_date": end_date.isoformat()})
     try:
         pdf_path = generate_cancellation(contract_id, end_date, store)
-        updated = store.update("contracts", contract_id, {"cancellation_pdf": str(pdf_path)})
+        store.update("contracts", contract_id, {"cancellation_pdf": str(pdf_path)})
     except Exception:
         pass
 

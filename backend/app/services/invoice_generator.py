@@ -2,7 +2,7 @@ import calendar
 import os
 from datetime import date, datetime
 from decimal import Decimal
-from multiprocessing import Pool, get_context
+from multiprocessing import get_context
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader

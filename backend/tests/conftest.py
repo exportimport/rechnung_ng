@@ -1,4 +1,3 @@
-import shutil
 import tempfile
 from pathlib import Path
 
@@ -9,8 +8,8 @@ from httpx import ASGITransport, AsyncClient
 # Point data directory to a temp dir before importing the app
 _tmp_data = tempfile.mkdtemp()
 
-import app.db.yaml_store as ys_module
-import app.config as config_module
+import app.config as config_module  # noqa: E402
+import app.db.yaml_store as ys_module  # noqa: E402
 
 # Patch DATA_DIR before app loads
 config_module.DATA_DIR = Path(_tmp_data)

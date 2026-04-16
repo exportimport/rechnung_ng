@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Request, Response
 from fastapi.responses import HTMLResponse
 
 from app.db.yaml_store import store
-from app.models.customer import Customer, CustomerCreate, CustomerUpdate
+from app.models.customer import Customer
 
 router = APIRouter(prefix="/customers")
 
@@ -131,7 +131,9 @@ def delete_customer(customer_id: int):
 
 def _validate_customer(data: dict) -> dict:
     errors = {}
-    for field in ("vorname", "nachname", "street", "house_number", "postcode", "city", "iban", "email"):
+    required = ("vorname", "nachname", "street", "house_number",
+               "postcode", "city", "iban", "email")
+    for field in required:
         if not data.get(field, "").strip():
             errors[field] = "Pflichtfeld"
     if "email" not in errors and "@" not in data.get("email", ""):

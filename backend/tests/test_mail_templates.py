@@ -1,7 +1,7 @@
 """Mail template tests."""
-import yaml
+
 import pytest
-from pathlib import Path
+import yaml
 
 
 @pytest.fixture(autouse=True)
@@ -41,7 +41,10 @@ async def test_update_template(client, csrf):
         "/mail-templates/default",
         data={
             "subject": "Ihre Rechnung Nr. {{ invoice.invoice_number }}",
-            "body": "Sehr geehrte/r {{ customer.vorname }} {{ customer.nachname }},\nanbei Ihre Rechnung.",
+            "body": (
+                "Sehr geehrte/r {{ customer.vorname }} {{ customer.nachname }},"
+                "\nanbei Ihre Rechnung."
+            ),
         },
         headers={"HX-Request": "true", "X-CSRF-Token": csrf},
     )

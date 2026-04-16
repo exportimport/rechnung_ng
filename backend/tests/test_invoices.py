@@ -9,7 +9,9 @@ CUSTOMER = {
     "iban": "DE89370400440532013000", "email": "anna@example.com",
 }
 PLAN = {"name": "Internet 100", "initial_price": "49.99", "valid_from": "2024-01-01"}
-CONTRACT = {"customer_id": "1", "plan_id": "1", "start_date": "2024-01-01", "billing_cycle": "monthly"}
+CONTRACT = {
+    "customer_id": "1", "plan_id": "1", "start_date": "2024-01-01", "billing_cycle": "monthly"
+}
 
 
 async def _seed(client, csrf):

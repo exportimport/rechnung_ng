@@ -1,4 +1,3 @@
-import json
 import smtplib
 import socket
 from pathlib import Path
@@ -85,7 +84,6 @@ def list_invoices(
 
 @router.post("/generate")
 async def generate(request: Request, response: Response):
-    from app.main import templates as jinja_env
 
     form = await request.form()
     year = int(form.get("year", 0))
@@ -109,9 +107,8 @@ async def generate(request: Request, response: Response):
                 yield f"event: progress\ndata: {html}\n\n"
             elif event[0] == "done":
                 _, results = event
-                html = (
-                    f'<div class="text-success">Fertig — {len(results)} Rechnung(en) generiert.</div>'
-                )
+                count = len(results)
+                html = f'<div class="text-success">Fertig — {count} Rechnung(en) generiert.</div>'
                 yield f"event: done\ndata: {html}\n\n"
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
@@ -178,7 +175,8 @@ async def bulk_delete(request: Request, response: Response):
 @router.post("/{invoice_id}/send")
 async def send_invoice(request: Request, response: Response, invoice_id: int):
     from app.main import set_toast
-    from app.services.mail_service import send_invoice as do_send, select_template
+    from app.services.mail_service import select_template
+    from app.services.mail_service import send_invoice as do_send
 
     d = store.get_by_id("invoices", invoice_id)
     if not d:
@@ -208,7 +206,8 @@ async def send_invoice(request: Request, response: Response, invoice_id: int):
 @router.post("/send-batch")
 async def send_batch(request: Request):
     from app.main import set_toast
-    from app.services.mail_service import send_invoice as do_send, select_template
+    from app.services.mail_service import select_template
+    from app.services.mail_service import send_invoice as do_send
 
     form = await request.form()
     year = int(form.get("year", 0))
