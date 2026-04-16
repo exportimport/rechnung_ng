@@ -139,7 +139,14 @@ def generate_invoices(year: int, month: int, s: YamlStore) -> list[Invoice]:
         )
         existing_ids = [r["id"] for r in all_invoices + new_records if isinstance(r.get("id"), int)]
         new_id = max(existing_ids, default=0) + 1
-        invoice_number = f"{contract.customer_id}-{contract.id}-{year}-{month:02d}-{seq:04d}"
+        fmt = get_config().invoice.number_format
+        invoice_number = fmt.format(
+            customer_id=contract.customer_id,
+            contract_id=contract.id,
+            year=year,
+            month=month,
+            seq=seq,
+        )
 
         data = {
             "id": new_id,
