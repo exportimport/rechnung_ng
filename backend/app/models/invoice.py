@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 class InvoiceStatus(StrEnum):
     draft = "draft"
     sent = "sent"
+    paid = "paid"
 
 
 class Invoice(BaseModel):
@@ -24,6 +25,8 @@ class Invoice(BaseModel):
     mail_template: str | None = None
     created_at: datetime
     sent_at: datetime | None = None
+    paid_at: date | None = None
+    payment_transaction_id: str | None = None
 
 
 class GenerateRequest(BaseModel):
