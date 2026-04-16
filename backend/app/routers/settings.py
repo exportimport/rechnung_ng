@@ -45,7 +45,6 @@ def settings_page(request: Request):
 @router.put("")
 async def update_settings(request: Request):
     from app.main import set_toast
-    from app.main import templates as jinja_env
 
     form = await request.form()
     data = dict(form)
@@ -95,15 +94,7 @@ async def update_settings(request: Request):
     _write_raw(raw)
     get_config.cache_clear()
 
-    smtp_display = {k: v for k, v in smtp.items() if k != "password"}
-    html = jinja_env.get_template("pages/settings.html.j2").render(
-        request=request,
-        active_page="settings",
-        company=company,
-        smtp=smtp_display,
-        invoice=invoice,
-        errors={},
-    )
-    _r = HTMLResponse(html, status_code=200)
+    _r = HTMLResponse("", status_code=200)
     set_toast(_r, "Einstellungen gespeichert.")
+    _r.headers["HX-Redirect"] = "/settings"
     return _r

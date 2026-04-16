@@ -73,8 +73,14 @@ def render(
     context: dict,
 ) -> HTMLResponse:
     """Returns fragment for HTMX requests, full page for direct browser access."""
+    from app.config import get_config
     csrf_token = _get_or_create_csrf(request)
-    ctx = {"request": request, "csrf_token": csrf_token, **context}
+    ctx = {
+        "request": request,
+        "csrf_token": csrf_token,
+        "company_name": get_config().company.name,
+        **context,
+    }
     is_htmx = request.headers.get("HX-Request") == "true"
     if is_htmx:
         html = templates.get_template(fragment_template).render(**ctx)
@@ -82,6 +88,7 @@ def render(
         ctx["content_template"] = fragment_template
         html = templates.get_template(page_template).render(**ctx)
     resp = HTMLResponse(html)
+    resp.headers["Cache-Control"] = "no-store"
     resp.set_cookie(_CSRF_COOKIE, csrf_token, httponly=False, samesite="strict")
     return resp
 
@@ -157,6 +164,7 @@ async def security_headers(request: Request, call_next):
     )
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Cache-Control"] = "no-store"
     return response
 
 
