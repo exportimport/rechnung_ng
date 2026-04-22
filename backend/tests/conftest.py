@@ -70,7 +70,7 @@ async def csrf(client):
 def clean_store():
     """Reset all YAML store files before each test."""
     import yaml
-    for name in ("customers", "plans", "contracts", "invoices", "mail_templates"):
+    for name in ("customers", "plans", "contracts", "invoices", "mail_templates", "camt_transactions"):
         p = Path(_tmp_data) / f"{name}.yaml"
         if name == "mail_templates":
             p.write_text(yaml.dump([]))
