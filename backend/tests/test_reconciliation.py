@@ -19,6 +19,16 @@ async def test_monthly_view_uses_base_layout(client):
 
 
 @pytest.mark.asyncio
+async def test_monthly_view_has_month_navigation(client):
+    r = await client.get("/reconciliation?year=2026&month=3")
+    assert "2026" in r.text
+    # prev month link
+    assert "month=2" in r.text
+    # next month link
+    assert "month=4" in r.text
+
+
+@pytest.mark.asyncio
 async def test_monthly_view_shows_sent_invoices(client, csrf):
     import app.db.yaml_store as ys
     # Seed customer and sent invoice directly
@@ -95,6 +105,32 @@ async def test_review_uses_base_layout(client):
 
 
 @pytest.mark.asyncio
+async def test_review_shows_medium_confidence_transactions(client, csrf):
+    import app.db.yaml_store as ys
+    from datetime import datetime
+    # Seed a medium-confidence transaction (match_confidence set, match_status unmatched)
+    ys.store.create("camt_transactions", {
+        "transaction_id": "TX-REVIEW-001",
+        "booking_date": "2026-04-05",
+        "value_date": "2026-04-05",
+        "amount": 119.00,
+        "currency": "EUR",
+        "credit_debit": "CRDT",
+        "debtor_name": "Max Mustermann",
+        "debtor_iban": "DE89370400440532013000",
+        "remittance_info": "Monatsbeitrag",
+        "imported_at": "2026-04-22T08:00:00",
+        "source_file": "test.xml",
+        "match_status": "unmatched",
+        "matched_invoice_id": None,
+        "matched_at": None,
+        "match_confidence": "medium",
+    })
+    r = await client.get("/reconciliation/review")
+    assert "TX-REVIEW-001" in r.text
+
+
+@pytest.mark.asyncio
 async def test_customer_view_returns_200(client, csrf):
     await client.post("/customers", data={
         "vorname": "Max", "nachname": "Mustermann",
@@ -113,6 +149,25 @@ async def test_customer_view_uses_base_layout(client):
 
 
 @pytest.mark.asyncio
+async def test_customer_view_shows_invoices(client):
+    import app.db.yaml_store as ys
+    ys.store.create("customers", {
+        "id": 1, "vorname": "Max", "nachname": "Mustermann",
+        "street": "Musterstr", "house_number": "1", "postcode": "12345",
+        "city": "Berlin", "iban": "DE89370400440532013000", "email": "max@example.com",
+    })
+    ys.store.create("invoices", {
+        "id": 1, "contract_id": 1, "customer_id": 1,
+        "invoice_number": "2025-03-0001", "year": 2025, "month": 3,
+        "amount": 119.00, "period_start": "2025-03-01", "period_end": "2025-03-31",
+        "status": "sent", "created_at": "2025-03-01T10:00:00",
+        "sent_at": "2025-03-01T10:00:00",
+    })
+    r = await client.get("/reconciliation/customers/1")
+    assert "2025-03-0001" in r.text
+
+
+@pytest.mark.asyncio
 async def test_import_post_shows_imported_count(client, csrf):
     xml = (FIXTURES / "camt053_v8_sample.xml").read_bytes()
     r = await client.post(
@@ -122,6 +177,26 @@ async def test_import_post_shows_imported_count(client, csrf):
     )
     assert r.status_code == 200
     assert "Importiert: 4" in r.text
+
+
+@pytest.mark.asyncio
+async def test_import_post_shows_auto_matched_count(client, csrf):
+    import app.db.yaml_store as ys
+    ys.store.create("invoices", {
+        "id": 1, "contract_id": 1, "customer_id": 1,
+        "invoice_number": "2025-03-0001", "year": 2025, "month": 3,
+        "amount": 119.00, "period_start": "2025-03-01", "period_end": "2025-03-31",
+        "status": "sent", "created_at": "2025-03-01T10:00:00",
+        "sent_at": "2025-03-01T10:00:00",
+    })
+    xml = (FIXTURES / "camt053_v8_sample.xml").read_bytes()
+    r = await client.post(
+        "/reconciliation/import",
+        files={"file": ("sample.xml", xml, "application/xml")},
+        headers={"X-CSRF-Token": csrf},
+    )
+    assert r.status_code == 200
+    assert "Auto-Match: 1" in r.text
 
 
 @pytest.mark.asyncio

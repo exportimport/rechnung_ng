@@ -1,4 +1,6 @@
-# CLAUDE.md — rechnung_ng
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## What this repo is
 
@@ -84,8 +86,8 @@ def render(request, template, fragment_template, context) -> HTMLResponse:
 - Files end in `.html.j2`
 - Autoescape is globally active; `|safe` only where explicitly needed (and commented why)
 - Never use `|safe` on user input
-- Available filters: `euro`, `date_de`
-- Available globals: `InvoiceStatus`, `ContractStatus`
+- Available filters: `euro`, `date_de`, `month_name`
+- Available globals: `InvoiceStatus`, `ContractStatus`, `INVOICE_STATUS_LABELS`, `CONTRACT_STATUS_LABELS`
 
 ## Security
 
@@ -102,10 +104,25 @@ def render(request, template, fragment_template, context) -> HTMLResponse:
 - CSS: BEM naming
 - Commits: Conventional Commits (`feat:`, `fix:`, `style:`, `refactor:`, `test:`, `docs:`)
 
-## Running tests
+## Common commands
+
+All commands run inside the `rechnung-htmx` distrobox from `backend/` with the venv active:
 
 ```bash
-cd backend
-source .venv/bin/activate
+# Lint
+ruff check app/
+
+# Format
+ruff format app/
+
+# Run all tests
 pytest
+
+# Run a single test file or test
+pytest tests/test_customers.py
+pytest tests/test_customers.py::test_create_customer
 ```
+
+## Testing conventions
+
+`tests/conftest.py` patches `config.DATA_DIR` and `yaml_store.store` to a temporary directory before the app loads — tests never touch `backend/data/`. Tests use `httpx.AsyncClient` with `ASGITransport` (no running server needed). `asyncio_mode = "auto"` is set in `pyproject.toml`.

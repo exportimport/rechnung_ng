@@ -2,6 +2,16 @@
 
 <div class="page-header">
   <h1 class="page-title">Zahlungsabgleich — {{ month | month_name }} {{ year }}</h1>
+  <div class="month-nav">
+    <a href="/reconciliation?year={{ prev_year }}&month={{ prev_month }}"
+       hx-get="/reconciliation?year={{ prev_year }}&month={{ prev_month }}"
+       hx-target="#main-content" hx-push-url="true"
+       class="btn btn-secondary">&#8592;</a>
+    <a href="/reconciliation?year={{ next_year }}&month={{ next_month }}"
+       hx-get="/reconciliation?year={{ next_year }}&month={{ next_month }}"
+       hx-target="#main-content" hx-push-url="true"
+       class="btn btn-secondary">&#8594;</a>
+  </div>
 </div>
 
 {% if invoices %}

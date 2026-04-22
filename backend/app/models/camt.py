@@ -39,9 +39,11 @@ class CamtTransaction(BaseModel):
 class MatchResult(BaseModel):
     confidence: MatchConfidence | None
     invoice_id: int | None
+    reason: str = ""
 
 
 class ImportSummary(BaseModel):
     total_parsed: int
     imported: int
     skipped_duplicates: int
+    auto_matched: int

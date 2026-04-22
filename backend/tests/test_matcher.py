@@ -148,6 +148,13 @@ def test_t07_no_match():
     assert result.invoice_id is None
 
 
+def test_match_result_has_reason():
+    tx = _tx(remittance_info="RE 2025-03-0001")
+    result = match_transaction(tx, [_invoice()], [_customer()])
+    assert isinstance(result.reason, str)
+    assert len(result.reason) > 0
+
+
 def test_t09_amount_mismatch_despite_invoice_number_no_match():
     # Invoice number found but amount differs → flag, no auto-match
     tx = _tx(remittance_info="RE 2025-03-0001", amount=50.00)

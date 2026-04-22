@@ -1,7 +1,35 @@
 {% include "fragments/reconciliation_nav.html.j2" %}
 
 <div class="page-header">
-  <h1 class="page-title">Zahlungsübersicht Kunde</h1>
+  <h1 class="page-title">
+    Zahlungsübersicht —
+    {% if customer %}{{ customer.vorname }} {{ customer.nachname }}{% else %}Kunde {{ customer_id }}{% endif %}
+  </h1>
 </div>
 
-<p>Noch keine Rechnungen.</p>
+{% if invoices %}
+<table class="table">
+  <thead>
+    <tr>
+      <th>Rechnung</th>
+      <th>Zeitraum</th>
+      <th>Betrag</th>
+      <th>Status</th>
+      <th>Abgeglichen</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for inv in invoices %}
+    <tr>
+      <td>{{ inv.invoice_number }}</td>
+      <td>{{ inv.period_start | date_de }} – {{ inv.period_end | date_de }}</td>
+      <td>{{ inv.amount | euro }}</td>
+      <td>{{ inv.effective_status }}</td>
+      <td>{% if inv.effective_status == "paid" %}Abgeglichen{% else %}Offen{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>Keine Rechnungen für diesen Kunden.</p>
+{% endif %}

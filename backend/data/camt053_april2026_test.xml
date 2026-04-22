@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Test-CAMT-Datei für März 2026 — generiert aus echten Projektdaten -->
+<!-- Enthält: 5x Tier-1 (Auto-Match), 1x Tier-2 (IBAN+Betrag), 1x Tier-3 (Fuzzy-Name), 1x kein Match -->
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.08">
+  <BkToCstmrStmt>
+    <GrpHdr>
+      <MsgId>DEMO-2026-04-22-001</MsgId>
+      <CreDtTm>2026-04-22T08:00:00</CreDtTm>
+    </GrpHdr>
+    <Stmt>
+      <Id>STMT-2026-04-22</Id>
+      <ElctrncSeqNb>1</ElctrncSeqNb>
+      <CreDtTm>2026-04-22T08:00:00</CreDtTm>
+      <FrToDt>
+        <FrDtTm>2026-04-01T00:00:00</FrDtTm>
+        <ToDtTm>2026-04-21T23:59:59</ToDtTm>
+      </FrToDt>
+      <Acct>
+        <Id><IBAN>DE99200400600000000000</IBAN></Id>
+        <Ccy>EUR</Ccy>
+        <Nm>Muster GmbH Geschäftskonto</Nm>
+      </Acct>
+      <Bal>
+        <Tp><CdOrPrtry><Cd>OPBD</Cd></CdOrPrtry></Tp>
+        <Amt Ccy="EUR">12500.00</Amt>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <Dt><Dt>2026-04-01</Dt></Dt>
+      </Bal>
+
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!-- Eintrag 1: TIER 1 AUTO-MATCH                               -->
+      <!-- Felix Becker · 24,99 € · Rechnungsnummer im Verwendungszweck -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <Ntry>
+        <Amt Ccy="EUR">24.99</Amt>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <BookgDt><Dt>2026-04-02</Dt></BookgDt>
+        <ValDt><Dt>2026-04-02</Dt></ValDt>
+        <NtryDtls>
+          <TxDtls>
+            <Refs>
+              <AcctSvcrRef>DEMO-2026-04-001</AcctSvcrRef>
+              <EndToEndId>E2E-BECKER-2026-03</EndToEndId>
+            </Refs>
+            <RltdPties>
+              <Dbtr><Pty><Nm>Felix Becker</Nm></Pty></Dbtr>
+              <DbtrAcct><Id><IBAN>DE11370400440000000001</IBAN></Id></DbtrAcct>
+            </RltdPties>
+            <RmtInf><Ustrd>RE 1-1-2026-03-0001 März Beitrag</Ustrd></RmtInf>
+          </TxDtls>
+        </NtryDtls>
+      </Ntry>
+
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!-- Eintrag 2: TIER 1 AUTO-MATCH                               -->
+      <!-- Lena Hofmann · 69,99 € · Rechnungsnummer im Verwendungszweck -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <Ntry>
+        <Amt Ccy="EUR">69.99</Amt>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <BookgDt><Dt>2026-04-03</Dt></BookgDt>
+        <ValDt><Dt>2026-04-03</Dt></ValDt>
+        <NtryDtls>
+          <TxDtls>
+            <Refs>
+              <AcctSvcrRef>DEMO-2026-04-002</AcctSvcrRef>
+              <EndToEndId>E2E-HOFMANN-2026-03</EndToEndId>
+            </Refs>
+            <RltdPties>
+              <Dbtr><Pty><Nm>Lena Hofmann</Nm></Pty></Dbtr>
+              <DbtrAcct><Id><IBAN>DE18370400440000000008</IBAN></Id></DbtrAcct>
+            </RltdPties>
+            <RmtInf><Ustrd>Rechnung 8-8-2026-03-0002</Ustrd></RmtInf>
+          </TxDtls>
+        </NtryDtls>
+      </Ntry>
+
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!-- Eintrag 3: TIER 1 AUTO-MATCH                               -->
+      <!-- Jonas Meier · 44,99 € · Rechnungsnummer im Verwendungszweck -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <Ntry>
+        <Amt Ccy="EUR">44.99</Amt>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <BookgDt><Dt>2026-04-03</Dt></BookgDt>
+        <ValDt><Dt>2026-04-04</Dt></ValDt>
+        <NtryDtls>
+          <TxDtls>
+            <Refs>
+              <AcctSvcrRef>DEMO-2026-04-003</AcctSvcrRef>
+              <EndToEndId>E2E-MEIER-2026-03</EndToEndId>
+            </Refs>
+            <RltdPties>
+              <Dbtr><Pty><Nm>Jonas Meier</Nm></Pty></Dbtr>
+              <DbtrAcct><Id><IBAN>DE19370400440000000009</IBAN></Id></DbtrAcct>
+            </RltdPties>
+            <RmtInf><Ustrd>9-9-2026-03-0003 Monatsbeitrag März</Ustrd></RmtInf>
+          </TxDtls>
+        </NtryDtls>
+      </Ntry>
+
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!-- Eintrag 4: TIER 1 AUTO-MATCH                               -->
+      <!-- Dieter Weiß · 69,99 € · Rechnungsnummer im Verwendungszweck -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <Ntry>
+        <Amt Ccy="EUR">69.99</Amt>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <BookgDt><Dt>2026-04-04</Dt></BookgDt>
+        <ValDt><Dt>2026-04-04</Dt></ValDt>
+        <NtryDtls>
+          <TxDtls>
+            <Refs>
+              <AcctSvcrRef>DEMO-2026-04-004</AcctSvcrRef>
+              <EndToEndId>E2E-WEISS-2026-03</EndToEndId>
+            </Refs>
+            <RltdPties>
+              <Dbtr><Pty><Nm>Dieter Weiß</Nm></Pty></Dbtr>
+              <DbtrAcct><Id><IBAN>DE25370400440000000015</IBAN></Id></DbtrAcct>
+            </RltdPties>
+            <RmtInf><Ustrd>RE 15-15-2026-03-0004</Ustrd></RmtInf>
+          </TxDtls>
+        </NtryDtls>
+      </Ntry>
+
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!-- Eintrag 5: TIER 1 AUTO-MATCH                               -->
+      <!-- Sebastian Schubert · 69,99 € · Rechnungsnummer im Betreff -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <Ntry>
+        <Amt Ccy="EUR">69.99</Amt>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <BookgDt><Dt>2026-04-05</Dt></BookgDt>
+        <ValDt><Dt>2026-04-05</Dt></ValDt>
+        <NtryDtls>
+          <TxDtls>
+            <Refs>
+              <AcctSvcrRef>DEMO-2026-04-005</AcctSvcrRef>
+              <EndToEndId>E2E-SCHUBERT-2026-03</EndToEndId>
+            </Refs>
+            <RltdPties>
+              <Dbtr><Pty><Nm>Sebastian Schubert</Nm></Pty></Dbtr>
+              <DbtrAcct><Id><IBAN>DE27370400440000000017</IBAN></Id></DbtrAcct>
+            </RltdPties>
+            <RmtInf><Ustrd>Zahlung Rechnung 17-17-2026-03-0005 vielen Dank</Ustrd></RmtInf>
+          </TxDtls>
+        </NtryDtls>
+      </Ntry>
+
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!-- Eintrag 6: TIER 2 (kein Match erwartet — kein Verwendungszw.) -->
+      <!-- Jan Braun · 34,99 € · nur IBAN + Betrag                   -->
+      <!-- Landet in der Prüfwarteschlange (medium confidence)        -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <Ntry>
+        <Amt Ccy="EUR">34.99</Amt>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <BookgDt><Dt>2026-04-07</Dt></BookgDt>
+        <ValDt><Dt>2026-04-07</Dt></ValDt>
+        <NtryDtls>
+          <TxDtls>
+            <Refs>
+              <AcctSvcrRef>DEMO-2026-04-006</AcctSvcrRef>
+              <EndToEndId>E2E-BRAUN-2026-03</EndToEndId>
+            </Refs>
+            <RltdPties>
+              <Dbtr><Pty><Nm>J. Braun</Nm></Pty></Dbtr>
+              <DbtrAcct><Id><IBAN>DE28370400440000000018</IBAN></Id></DbtrAcct>
+            </RltdPties>
+            <RmtInf><Ustrd>Monatsbeitrag</Ustrd></RmtInf>
+          </TxDtls>
+        </NtryDtls>
+      </Ntry>
+
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!-- Eintrag 7: TIER 3 (Fuzzy-Name)                            -->
+      <!-- martin.walter — Tippfehler im Namen, keine Rechnungsnummer -->
+      <!-- Lands in review queue (low confidence)                     -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <Ntry>
+        <Amt Ccy="EUR">69.99</Amt>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <BookgDt><Dt>2026-04-08</Dt></BookgDt>
+        <ValDt><Dt>2026-04-08</Dt></ValDt>
+        <NtryDtls>
+          <TxDtls>
+            <Refs>
+              <AcctSvcrRef>DEMO-2026-04-007</AcctSvcrRef>
+              <EndToEndId>E2E-WALTER-2026-03</EndToEndId>
+            </Refs>
+            <RltdPties>
+              <Dbtr><Pty><Nm>Martin Walter</Nm></Pty></Dbtr>
+              <DbtrAcct><Id><IBAN>DE99000000000000000099</IBAN></Id></DbtrAcct>
+            </RltdPties>
+            <RmtInf><Ustrd>Beitrag März 2026</Ustrd></RmtInf>
+          </TxDtls>
+        </NtryDtls>
+      </Ntry>
+
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!-- Eintrag 8: KEIN MATCH                                      -->
+      <!-- Unbekannter Absender, falscher Betrag — landet in Unmatched -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <Ntry>
+        <Amt Ccy="EUR">13.37</Amt>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <BookgDt><Dt>2026-04-10</Dt></BookgDt>
+        <ValDt><Dt>2026-04-10</Dt></ValDt>
+        <NtryDtls>
+          <TxDtls>
+            <Refs>
+              <AcctSvcrRef>DEMO-2026-04-008</AcctSvcrRef>
+              <EndToEndId>E2E-UNKNOWN-001</EndToEndId>
+            </Refs>
+            <RltdPties>
+              <Dbtr><Pty><Nm>Unbekannt GmbH</Nm></Pty></Dbtr>
+              <DbtrAcct><Id><IBAN>DE00000000000000000000</IBAN></Id></DbtrAcct>
+            </RltdPties>
+            <RmtInf><Ustrd>Diverses</Ustrd></RmtInf>
+          </TxDtls>
+        </NtryDtls>
+      </Ntry>
+
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!-- Eintrag 9: DBIT — wird ignoriert (Ausgabe, kein Zahlungseingang) -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <Ntry>
+        <Amt Ccy="EUR">150.00</Amt>
+        <CdtDbtInd>DBIT</CdtDbtInd>
+        <BookgDt><Dt>2026-04-12</Dt></BookgDt>
+        <ValDt><Dt>2026-04-12</Dt></ValDt>
+        <NtryDtls>
+          <TxDtls>
+            <Refs>
+              <AcctSvcrRef>DEMO-2026-04-009</AcctSvcrRef>
+              <EndToEndId>E2E-MIETE-APRIL</EndToEndId>
+            </Refs>
+            <RltdPties>
+              <Cdtr><Nm>Hausverwaltung Muster AG</Nm></Cdtr>
+            </RltdPties>
+            <RmtInf><Ustrd>Büromiete April 2026</Ustrd></RmtInf>
+          </TxDtls>
+        </NtryDtls>
+      </Ntry>
+
+    </Stmt>
+  </BkToCstmrStmt>
+</Document>

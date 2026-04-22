@@ -665,3 +665,12 @@ code {
   border-bottom-color: var(--color-primary);
   font-weight: 500;
 }
+
+/* ---------------------------------------------------------
+   Month navigation (reconciliation monthly view)
+   --------------------------------------------------------- */
+.month-nav {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+}
