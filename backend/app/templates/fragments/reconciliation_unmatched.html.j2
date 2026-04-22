@@ -1,0 +1,30 @@
+<div class="page-header">
+  <h1 class="page-title">Nicht abgeglichene Transaktionen</h1>
+</div>
+
+{% if transactions %}
+<table class="table">
+  <thead>
+    <tr>
+      <th>Datum</th>
+      <th>Betrag</th>
+      <th>Auftraggeber</th>
+      <th>IBAN</th>
+      <th>Verwendungszweck</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for tx in transactions %}
+    <tr>
+      <td>{{ tx.booking_date | date_de }}</td>
+      <td>{{ tx.amount | euro }}</td>
+      <td>{{ tx.debtor_name or "—" }}</td>
+      <td>{{ tx.debtor_iban or "—" }}</td>
+      <td>{{ tx.remittance_info or "—" }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>Keine offenen Transaktionen.</p>
+{% endif %}

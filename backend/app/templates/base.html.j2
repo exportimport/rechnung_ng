@@ -54,6 +54,12 @@
           Mail-Vorlagen
         </a>
       </li>
+      <li class="sidebar__item">
+        <a href="/reconciliation" class="sidebar__link {% if active_page == 'reconciliation' %}sidebar__link--active{% endif %}"
+           hx-get="/reconciliation" hx-target="#main-content" hx-push-url="true">
+          Zahlungsabgleich
+        </a>
+      </li>
       <li class="sidebar__item sidebar__item--bottom">
         <a href="/settings" class="sidebar__link {% if active_page == 'settings' %}sidebar__link--active{% endif %}"
            hx-get="/settings" hx-target="#main-content" hx-push-url="true">

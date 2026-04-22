@@ -1,0 +1,30 @@
+<div class="page-header">
+  <h1 class="page-title">Zahlungsabgleich — {{ month | month_name }} {{ year }}</h1>
+</div>
+
+{% if invoices %}
+<table class="table">
+  <thead>
+    <tr>
+      <th>Rechnung</th>
+      <th>Kunde</th>
+      <th>Betrag</th>
+      <th>Status</th>
+      <th>Abgeglichen</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for inv in invoices %}
+    <tr>
+      <td>{{ inv.invoice_number }}</td>
+      <td>{{ inv.customer_name }}</td>
+      <td>{{ inv.amount | euro }}</td>
+      <td>{{ inv.effective_status }}</td>
+      <td>{% if inv.effective_status == "paid" %}Abgeglichen{% else %}Offen{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>Keine Rechnungen für diesen Monat.</p>
+{% endif %}
