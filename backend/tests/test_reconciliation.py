@@ -109,3 +109,20 @@ async def test_import_post_shows_imported_count(client, csrf):
     )
     assert r.status_code == 200
     assert "Importiert: 4" in r.text
+
+
+@pytest.mark.asyncio
+async def test_import_post_shows_skipped_count(client, csrf):
+    xml = (FIXTURES / "camt053_v8_sample.xml").read_bytes()
+    # Import twice — second run should show skipped
+    await client.post(
+        "/reconciliation/import",
+        files={"file": ("sample.xml", xml, "application/xml")},
+        headers={"X-CSRF-Token": csrf},
+    )
+    r = await client.post(
+        "/reconciliation/import",
+        files={"file": ("sample.xml", xml, "application/xml")},
+        headers={"X-CSRF-Token": csrf},
+    )
+    assert "Übersprungen: 4" in r.text
