@@ -45,8 +45,11 @@ def monthly_view(request: Request, year: int | None = None, month: int | None = 
 
 
 @router.get("/customers/{customer_id}")
-def customer_view(customer_id: int):
-    return HTMLResponse(f"<p>Kunde {customer_id}</p>")
+def customer_view(request: Request, customer_id: int):
+    from app.main import render
+
+    return render(request, "base.html.j2", "fragments/reconciliation_customer.html.j2",
+                  {"active_page": "reconciliation", "customer_id": customer_id})
 
 
 @router.get("/unmatched")
@@ -61,8 +64,11 @@ def unmatched_list(request: Request):
 
 
 @router.get("/review")
-def review_queue():
-    return HTMLResponse("<p>Prüfwarteschlange</p>")
+def review_queue(request: Request):
+    from app.main import render
+
+    return render(request, "base.html.j2", "fragments/reconciliation_review.html.j2",
+                  {"active_page": "reconciliation"})
 
 
 @router.get("/import")

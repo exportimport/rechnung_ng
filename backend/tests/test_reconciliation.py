@@ -76,6 +76,12 @@ async def test_review_returns_200(client):
 
 
 @pytest.mark.asyncio
+async def test_review_uses_base_layout(client):
+    r = await client.get("/reconciliation/review")
+    assert "<nav" in r.text
+
+
+@pytest.mark.asyncio
 async def test_customer_view_returns_200(client, csrf):
     await client.post("/customers", data={
         "vorname": "Max", "nachname": "Mustermann",
@@ -85,6 +91,12 @@ async def test_customer_view_returns_200(client, csrf):
     }, headers={"HX-Request": "true", "X-CSRF-Token": csrf})
     r = await client.get("/reconciliation/customers/1")
     assert r.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_customer_view_uses_base_layout(client):
+    r = await client.get("/reconciliation/customers/1")
+    assert "<nav" in r.text
 
 
 @pytest.mark.asyncio
