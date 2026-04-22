@@ -51,6 +51,19 @@ async def test_import_form_has_file_input(client):
 
 
 @pytest.mark.asyncio
+async def test_reconciliation_pages_have_subnav(client):
+    r = await client.get("/reconciliation/import")
+    assert "/reconciliation/unmatched" in r.text
+    assert "/reconciliation/review" in r.text
+
+
+@pytest.mark.asyncio
+async def test_import_nav_link_is_active_on_import_page(client):
+    r = await client.get("/reconciliation/import")
+    assert "subnav__link--active" in r.text
+
+
+@pytest.mark.asyncio
 async def test_unmatched_returns_200(client):
     r = await client.get("/reconciliation/unmatched")
     assert r.status_code == 200

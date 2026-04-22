@@ -1,0 +1,18 @@
+<nav class="subnav">
+  <a href="/reconciliation" class="subnav__link {% if recon_page == 'monthly' %}subnav__link--active{% endif %}"
+     hx-get="/reconciliation" hx-target="#main-content" hx-push-url="true">
+    Monatsübersicht
+  </a>
+  <a href="/reconciliation/unmatched" class="subnav__link {% if recon_page == 'unmatched' %}subnav__link--active{% endif %}"
+     hx-get="/reconciliation/unmatched" hx-target="#main-content" hx-push-url="true">
+    Nicht abgeglichen
+  </a>
+  <a href="/reconciliation/review" class="subnav__link {% if recon_page == 'review' %}subnav__link--active{% endif %}"
+     hx-get="/reconciliation/review" hx-target="#main-content" hx-push-url="true">
+    Prüfwarteschlange
+  </a>
+  <a href="/reconciliation/import" class="subnav__link {% if recon_page == 'import' %}subnav__link--active{% endif %}"
+     hx-get="/reconciliation/import" hx-target="#main-content" hx-push-url="true">
+    Import
+  </a>
+</nav>

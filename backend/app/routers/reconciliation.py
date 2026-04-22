@@ -40,7 +40,8 @@ def monthly_view(request: Request, year: int | None = None, month: int | None = 
         data["effective_status"] = effective_status(inv, today, payment_terms)
         rows.append(data)
 
-    ctx = {"active_page": "reconciliation", "year": year, "month": month, "invoices": rows}
+    ctx = {"active_page": "reconciliation", "recon_page": "monthly",
+           "year": year, "month": month, "invoices": rows}
     return render(request, "base.html.j2", "fragments/reconciliation_monthly.html.j2", ctx)
 
 
@@ -49,7 +50,7 @@ def customer_view(request: Request, customer_id: int):
     from app.main import render
 
     return render(request, "base.html.j2", "fragments/reconciliation_customer.html.j2",
-                  {"active_page": "reconciliation", "customer_id": customer_id})
+                  {"active_page": "reconciliation", "recon_page": "customer", "customer_id": customer_id})
 
 
 @router.get("/unmatched")
@@ -60,7 +61,8 @@ def unmatched_list(request: Request):
     all_tx = [CamtTransaction(**d) for d in store.load("camt_transactions")]
     unmatched = [tx for tx in all_tx if tx.match_status == MatchStatus.unmatched]
     return render(request, "base.html.j2", "fragments/reconciliation_unmatched.html.j2",
-                  {"active_page": "reconciliation", "transactions": [tx.model_dump(mode="json") for tx in unmatched]})
+                  {"active_page": "reconciliation", "recon_page": "unmatched",
+                   "transactions": [tx.model_dump(mode="json") for tx in unmatched]})
 
 
 @router.get("/review")
@@ -68,7 +70,7 @@ def review_queue(request: Request):
     from app.main import render
 
     return render(request, "base.html.j2", "fragments/reconciliation_review.html.j2",
-                  {"active_page": "reconciliation"})
+                  {"active_page": "reconciliation", "recon_page": "review"})
 
 
 @router.get("/import")
@@ -76,7 +78,7 @@ def import_form(request: Request):
     from app.main import render
 
     return render(request, "base.html.j2", "fragments/reconciliation_import.html.j2",
-                  {"active_page": "reconciliation"})
+                  {"active_page": "reconciliation", "recon_page": "import"})
 
 
 @router.post("/import")
