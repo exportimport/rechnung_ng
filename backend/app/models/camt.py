@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from enum import StrEnum
 from typing import Literal
 
@@ -19,10 +19,17 @@ class MatchConfidence(StrEnum):
 
 
 class CamtTransaction(BaseModel):
+    transaction_id: str
+    booking_date: date
+    value_date: date
+    amount: float
+    currency: str
     credit_debit: Literal["CRDT", "DBIT"]
     debtor_name: str | None = None
     debtor_iban: str | None = None
     remittance_info: str | None = None
+    imported_at: datetime
+    source_file: str
     match_status: MatchStatus = MatchStatus.unmatched
     matched_invoice_id: int | None = None
     matched_at: datetime | None = None
