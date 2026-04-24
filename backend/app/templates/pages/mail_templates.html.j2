@@ -2,6 +2,41 @@
   <h1 class="page-title">Mail-Vorlagen</h1>
 </div>
 
+<div class="card mt-2">
+  <div class="card__title">Verfügbare Jinja2-Variablen</div>
+  <div class="mt-1">
+    <input type="search" id="var-search" class="form-input" placeholder="Variable suchen…"
+           oninput="filterVars(this.value)" style="max-width:300px">
+  </div>
+  <div class="var-ref mt-1" id="var-list">
+    {% set variables = [
+      ("invoice.invoice_number", "Rechnungsnummer, z.B. 1-1-2024-03-0001"),
+      ("invoice.amount",         "Betrag (brutto), z.B. 29.99"),
+      ("invoice.year",           "Rechnungsjahr, z.B. 2024"),
+      ("invoice.month",          "Rechnungsmonat (Zahl), z.B. 3"),
+      ("invoice.period_start",   "Leistungsbeginn, z.B. 2024-03-01"),
+      ("invoice.period_end",     "Leistungsende, z.B. 2024-03-31"),
+      ("invoice.status",         "Status: draft / sent / paid"),
+      ("invoice.created_at",     "Erstellungszeitpunkt"),
+      ("invoice.sent_at",        "Versandzeitpunkt"),
+      ("customer.vorname",       "Vorname des Kunden"),
+      ("customer.nachname",      "Nachname des Kunden"),
+      ("customer.email",         "E-Mail-Adresse des Kunden"),
+      ("customer.street",        "Straße"),
+      ("customer.house_number",  "Hausnummer"),
+      ("customer.postcode",      "Postleitzahl"),
+      ("customer.city",          "Stadt"),
+      ("customer.iban",          "IBAN des Kunden"),
+    ] %}
+    {% for var, desc in variables %}
+    <div class="var-ref__row" data-var="{{ var }}">
+      <code class="var-ref__name">{{ '{{' }} {{ var }} {{ '}}' }}</code>
+      <span class="var-ref__desc">{{ desc }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
 {% for tpl in mail_templates %}
 <div class="card mt-2" id="mail-tpl-{{ tpl.id }}">
   <div class="card__title">{{ tpl.name if tpl.name is defined else tpl.id }}</div>
@@ -10,3 +45,12 @@
 {% else %}
 <div class="card"><p class="text-muted">Keine Vorlagen vorhanden.</p></div>
 {% endfor %}
+
+<script>
+function filterVars(q) {
+  q = q.toLowerCase();
+  document.querySelectorAll('#var-list .var-ref__row').forEach(function(row) {
+    row.style.display = row.dataset.var.includes(q) || row.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+</script>

@@ -75,3 +75,17 @@ async def test_template_not_found(client, csrf):
         headers={"HX-Request": "true", "X-CSRF-Token": csrf},
     )
     assert r.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_mail_templates_page_has_variable_reference(client):
+    """The page must show a searchable list of available Jinja2 variables."""
+    r = await client.get("/mail-templates")
+    assert r.status_code == 200
+    # Key invoice and customer variables must be listed
+    assert "invoice.invoice_number" in r.text
+    assert "invoice.amount" in r.text
+    assert "customer.vorname" in r.text
+    assert "customer.email" in r.text
+    # Must have a search input for filtering
+    assert 'type="search"' in r.text

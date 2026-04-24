@@ -725,3 +725,25 @@ code {
   gap: 0.25rem;
   cursor: pointer;
 }
+
+/* ── Variable reference panel (mail templates) ───────────────────────────── */
+.var-ref__row {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.25rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.var-ref__row:last-child { border-bottom: none; }
+.var-ref__name {
+  flex: 0 0 auto;
+  font-size: 0.85rem;
+  background: var(--color-bg-alt);
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+.var-ref__desc {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
