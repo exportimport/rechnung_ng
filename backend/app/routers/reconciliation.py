@@ -62,7 +62,7 @@ SEARCHABLE_COLS = {"debtor_name", "debtor_iban", "remittance_info", "transaction
 
 @router.get("/customers/{customer_id}")
 def customer_view(request: Request, customer_id: int,
-                  tx_year: int | None = None, tx_month: int | None = None,
+                  tx_year: str | None = None, tx_month: str | None = None,
                   tx_search: str | None = None,
                   tx_cols: list[str] | None = None):
     from app.config import get_config
@@ -73,6 +73,7 @@ def customer_view(request: Request, customer_id: int,
     today = date.today()
     cfg = get_config()
     payment_terms = cfg.invoice.payment_terms_days
+
 
     customers = {c["id"]: c for c in store.load("customers")}
     customer = customers.get(customer_id)
@@ -92,10 +93,12 @@ def customer_view(request: Request, customer_id: int,
     from app.models.camt import CamtTransaction, MatchStatus
     all_tx = [CamtTransaction(**d) for d in store.load("camt_transactions")]
     unmatched = [tx for tx in all_tx if tx.match_status == MatchStatus.unmatched]
-    if tx_year is not None:
-        unmatched = [tx for tx in unmatched if tx.booking_date.year == tx_year]
-    if tx_month is not None:
-        unmatched = [tx for tx in unmatched if tx.booking_date.month == tx_month]
+    _yr = int(tx_year) if tx_year else None
+    _mo = int(tx_month) if tx_month else None
+    if _yr is not None:
+        unmatched = [tx for tx in unmatched if tx.booking_date.year == _yr]
+    if _mo is not None:
+        unmatched = [tx for tx in unmatched if tx.booking_date.month == _mo]
     if tx_search:
         needle = tx_search.lower()
         cols = [c for c in (tx_cols or []) if c in SEARCHABLE_COLS] or list(SEARCHABLE_COLS)
@@ -117,7 +120,7 @@ def customer_view(request: Request, customer_id: int,
                    "customer_id": customer_id, "customer": customer, "invoices": rows,
                    "unmatched_tx": [tx.model_dump(mode="json") for tx in unmatched_tx],
                    "open_invoices": [inv.model_dump(mode="json") for inv in open_invoices],
-                   "tx_years": tx_years, "tx_year": tx_year, "tx_month": tx_month,
+                   "tx_years": tx_years, "tx_year": _yr, "tx_month": _mo,
                    "tx_search": tx_search or "", "tx_cols": tx_cols or []})
 
 

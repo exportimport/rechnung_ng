@@ -579,6 +579,23 @@ async def test_customer_view_has_column_checkboxes(client):
 
 
 @pytest.mark.asyncio
+async def test_customer_view_empty_year_month_shows_all_transactions(client):
+    import app.db.yaml_store as ys
+    ys.store.create("camt_transactions", {
+        "transaction_id": "TX-EMPTY-FILTER", "booking_date": "2026-04-01",
+        "value_date": "2026-04-01", "amount": 50.00, "currency": "EUR",
+        "credit_debit": "CRDT", "debtor_name": "Test", "debtor_iban": None,
+        "remittance_info": None, "imported_at": "2026-04-01T10:00:00",
+        "source_file": "bank.xml", "match_status": "unmatched",
+        "matched_invoice_id": None, "matched_at": None, "match_confidence": None,
+    })
+    # Empty strings from "Alle Jahre/Monate" must show all transactions, not filter them out
+    r = await client.get("/reconciliation/customers/1?tx_year=&tx_month=")
+    assert r.status_code == 200
+    assert "TX-EMPTY-FILTER" in r.text
+
+
+@pytest.mark.asyncio
 async def test_customer_view_returns_200(client, csrf):
     await client.post("/customers", data={
         "vorname": "Max", "nachname": "Mustermann",
