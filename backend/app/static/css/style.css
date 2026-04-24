@@ -671,6 +671,18 @@ code {
    --------------------------------------------------------- */
 .month-nav {
   display: flex;
+  align-items: center;
   gap: 0.5rem;
   margin-left: auto;
+}
+
+.month-nav__selects {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.form-input--sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  height: auto;
 }

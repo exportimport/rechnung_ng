@@ -46,10 +46,14 @@ def monthly_view(request: Request, year: int | None = None, month: int | None = 
     prev_year, prev_month = (year, month - 1) if month > 1 else (year - 1, 12)
     next_year, next_month = (year, month + 1) if month < 12 else (year + 1, 1)
 
+    invoice_years = sorted({inv.year for inv in all_invoices}) or [today.year]
+    available_years = list(range(min(invoice_years), today.year + 1))
+
     ctx = {"active_page": "reconciliation", "recon_page": "monthly",
            "year": year, "month": month, "invoices": rows,
            "prev_year": prev_year, "prev_month": prev_month,
-           "next_year": next_year, "next_month": next_month}
+           "next_year": next_year, "next_month": next_month,
+           "available_years": available_years}
     return render(request, "base.html.j2", "fragments/reconciliation_monthly.html.j2", ctx)
 
 

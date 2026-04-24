@@ -19,6 +19,15 @@ async def test_monthly_view_uses_base_layout(client):
 
 
 @pytest.mark.asyncio
+async def test_monthly_view_has_year_month_dropdowns(client):
+    r = await client.get("/reconciliation?year=2025&month=3")
+    assert '<select' in r.text
+    assert 'name="year"' in r.text
+    assert 'name="month"' in r.text
+    assert '<option' in r.text
+
+
+@pytest.mark.asyncio
 async def test_monthly_view_has_month_navigation(client):
     r = await client.get("/reconciliation?year=2026&month=3")
     assert "2026" in r.text
