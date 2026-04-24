@@ -70,3 +70,18 @@ jobs:
           context: ./backend
           push: true
           tags: ghcr.io/exportimport/rechnung-ng:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: docker
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: deploy
+          key: ${{ secrets.URSERVER_DEPLOY_KEY }}
+          script: |
+            sudo podman pull ghcr.io/exportimport/rechnung-ng:latest
+            sudo systemctl restart rechnung-ng-backend
