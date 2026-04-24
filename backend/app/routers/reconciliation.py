@@ -108,7 +108,10 @@ def customer_view(request: Request, customer_id: int,
         ]
     unmatched_tx = sorted(unmatched, key=lambda t: t.booking_date, reverse=True)
 
-    tx_years = sorted({tx.booking_date.year for tx in all_tx if tx.match_status == MatchStatus.unmatched}, reverse=True)
+    all_unmatched = [tx for tx in all_tx if tx.match_status == MatchStatus.unmatched]
+    tx_years = sorted({tx.booking_date.year for tx in all_unmatched}, reverse=True)
+    tx_months_src = [tx for tx in all_unmatched if _yr is None or tx.booking_date.year == _yr]
+    tx_months = sorted({tx.booking_date.month for tx in tx_months_src})
 
     open_invoices = [
         inv for inv in all_invoices
@@ -120,7 +123,7 @@ def customer_view(request: Request, customer_id: int,
                    "customer_id": customer_id, "customer": customer, "invoices": rows,
                    "unmatched_tx": [tx.model_dump(mode="json") for tx in unmatched_tx],
                    "open_invoices": [inv.model_dump(mode="json") for inv in open_invoices],
-                   "tx_years": tx_years, "tx_year": _yr, "tx_month": _mo,
+                   "tx_years": tx_years, "tx_months": tx_months, "tx_year": _yr, "tx_month": _mo,
                    "tx_search": tx_search or "", "tx_cols": tx_cols or []})
 
 
@@ -143,12 +146,7 @@ async def manual_match(customer_id: int, request: Request):
     tx.match_status = MatchStatus.manually_matched
     tx.matched_invoice_id = invoice_id
     tx.matched_at = datetime.now()
-    all_records = store.load("camt_transactions")
-    for i, r in enumerate(all_records):
-        if r["transaction_id"] == transaction_id:
-            all_records[i] = tx.model_dump(mode="json")
-            break
-    store.save("camt_transactions", all_records)
+    store.update_by("camt_transactions", "transaction_id", transaction_id, tx.model_dump(mode="json"))
 
     all_invoices = [Invoice(**d) for d in store.load("invoices")]
     inv = next((i for i in all_invoices if i.id == invoice_id), None)
@@ -202,12 +200,7 @@ def confirm_match(transaction_id: str):
 
     tx.match_status = MatchStatus.manually_matched
     tx.matched_at = datetime.now()
-    all_records = store.load("camt_transactions")
-    for i, r in enumerate(all_records):
-        if r["transaction_id"] == transaction_id:
-            all_records[i] = tx.model_dump(mode="json")
-            break
-    store.save("camt_transactions", all_records)
+    store.update_by("camt_transactions", "transaction_id", transaction_id, tx.model_dump(mode="json"))
 
     if tx.matched_invoice_id is not None:
         all_invoices = [Invoice(**d) for d in store.load("invoices")]
@@ -235,12 +228,7 @@ def reject_suggestion(transaction_id: str):
 
     tx.match_confidence = None
     tx.matched_invoice_id = None
-    all_records = store.load("camt_transactions")
-    for i, r in enumerate(all_records):
-        if r["transaction_id"] == transaction_id:
-            all_records[i] = tx.model_dump(mode="json")
-            break
-    store.save("camt_transactions", all_records)
+    store.update_by("camt_transactions", "transaction_id", transaction_id, tx.model_dump(mode="json"))
 
     return HTMLResponse("<tr><td colspan='7'>Vorschlag abgelehnt</td></tr>")
 
@@ -256,12 +244,7 @@ def ignore_transaction(transaction_id: str):
         raise HTTPException(status_code=404)
 
     tx.match_status = MatchStatus.ignored
-    all_records = store.load("camt_transactions")
-    for i, r in enumerate(all_records):
-        if r["transaction_id"] == transaction_id:
-            all_records[i] = tx.model_dump(mode="json")
-            break
-    store.save("camt_transactions", all_records)
+    store.update_by("camt_transactions", "transaction_id", transaction_id, tx.model_dump(mode="json"))
 
     return HTMLResponse("<tr><td colspan='6'>Ignoriert</td></tr>")
 

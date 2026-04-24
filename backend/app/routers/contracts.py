@@ -1,3 +1,4 @@
+import logging
 from datetime import date
 from pathlib import Path
 
@@ -5,11 +6,14 @@ import magic
 from fastapi import APIRouter, HTTPException, Request, Response, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse
 
+logger = logging.getLogger(__name__)
+
+from app.config import UPLOADS_DIR as _UPLOADS_BASE
 from app.db.yaml_store import store
 from app.models.contract import Contract, ContractStatus, compute_status
 from app.models.plan import Plan, current_price
 
-UPLOADS_DIR = Path(__file__).parent.parent.parent / "uploads" / "contracts"
+UPLOADS_DIR = _UPLOADS_BASE / "contracts"
 
 router = APIRouter(prefix="/contracts")
 
@@ -212,7 +216,7 @@ async def cancel_contract(request: Request, response: Response, contract_id: int
         pdf_path = generate_cancellation(contract_id, end_date, store)
         store.update("contracts", contract_id, {"cancellation_pdf": str(pdf_path)})
     except Exception:
-        pass
+        logger.warning("Cancellation PDF generation failed for contract %d", contract_id, exc_info=True)
 
     _r = HTMLResponse("", status_code=200)
     set_toast(_r, "Vertrag gekündigt.")

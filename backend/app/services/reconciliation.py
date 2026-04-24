@@ -4,6 +4,8 @@ from app.models.camt import CamtTransaction, MatchConfidence, MatchResult
 from app.models.customer import Customer
 from app.models.invoice import Invoice, InvoiceStatus
 
+MIN_NAME_MATCH_OVERLAP = 0.8
+
 
 def effective_status(invoice: Invoice, today: date, payment_terms_days: int) -> str:
     if invoice.status == InvoiceStatus.paid:
@@ -71,7 +73,7 @@ def match_transaction(
             if not cust_tokens:
                 continue
             overlap = len(tx_tokens & cust_tokens) / len(cust_tokens)
-            if overlap >= 0.8:
+            if overlap >= MIN_NAME_MATCH_OVERLAP:
                 tier3_matches.append(inv)
         if len(tier3_matches) == 1:
             return MatchResult(

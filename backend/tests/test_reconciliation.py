@@ -1,9 +1,35 @@
 """Tests for /reconciliation/* router — spec §8."""
+import tempfile
 from pathlib import Path
 
 import pytest
 
 FIXTURES = Path(__file__).parent / "fixtures"
+
+
+def test_config_exports_templates_dir():
+    from app.config import TEMPLATES_DIR
+    assert TEMPLATES_DIR.is_dir()
+
+
+def test_reconciliation_has_min_name_match_overlap_constant():
+    from app.services.reconciliation import MIN_NAME_MATCH_OVERLAP
+    assert MIN_NAME_MATCH_OVERLAP == 0.8
+
+
+def test_yaml_store_update_by_field():
+    """YamlStore.update_by replaces a record matched by an arbitrary field."""
+    from app.db.yaml_store import YamlStore
+    tmp = Path(tempfile.mkdtemp())
+    s = YamlStore(tmp)
+    s.save("things", [
+        {"transaction_id": "TX-001", "value": "old"},
+        {"transaction_id": "TX-002", "value": "other"},
+    ])
+    s.update_by("things", "transaction_id", "TX-001", {"transaction_id": "TX-001", "value": "new"})
+    records = s.load("things")
+    assert next(r for r in records if r["transaction_id"] == "TX-001")["value"] == "new"
+    assert next(r for r in records if r["transaction_id"] == "TX-002")["value"] == "other"
 
 
 @pytest.mark.asyncio
@@ -679,3 +705,49 @@ async def test_import_post_shows_skipped_count(client, csrf):
         headers={"X-CSRF-Token": csrf},
     )
     assert "Übersprungen: 5" in r.text
+
+
+@pytest.mark.asyncio
+async def test_customer_view_filter_has_submit_button(client):
+    r = await client.get("/reconciliation/customers/1")
+    assert 'type="submit"' in r.text
+
+
+@pytest.mark.asyncio
+async def test_customer_view_month_dropdown_only_shows_months_with_data(client):
+    """Month <select> must only include months that have unmatched transactions."""
+    import app.db.yaml_store as ys
+    # Only April 2026 has data — no March, no February
+    ys.store.create("camt_transactions", {
+        "transaction_id": "TX-ONLY-APRIL", "booking_date": "2026-04-15",
+        "value_date": "2026-04-15", "amount": 119.00, "currency": "EUR",
+        "credit_debit": "CRDT", "debtor_name": "Test", "debtor_iban": None,
+        "remittance_info": None, "imported_at": "2026-04-15T10:00:00",
+        "source_file": "bank.xml", "match_status": "unmatched",
+        "matched_invoice_id": None, "matched_at": None, "match_confidence": None,
+    })
+    r = await client.get("/reconciliation/customers/1")
+    assert r.status_code == 200
+    # April (month 4) must appear as an option
+    assert 'value="4"' in r.text
+    # March (month 3) must NOT appear as an option in the month dropdown
+    assert 'value="3"' not in r.text
+
+
+def test_config_exports_uploads_dir():
+    from pathlib import Path
+    from app.config import UPLOADS_DIR
+    assert isinstance(UPLOADS_DIR, Path)
+
+
+def test_invoice_generator_does_not_hardcode_vat_rate():
+    """render_invoice_pdf must derive the VAT divisor from config, not hardcode 1.19."""
+    import inspect
+    from app.services.invoice_generator import render_invoice_pdf
+    src = inspect.getsource(render_invoice_pdf)
+    assert "1.19" not in src
+
+
+def test_invoice_generator_has_max_pdf_workers_constant():
+    from app.services.invoice_generator import MAX_PDF_WORKERS
+    assert isinstance(MAX_PDF_WORKERS, int) and MAX_PDF_WORKERS > 0

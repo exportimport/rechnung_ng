@@ -702,6 +702,13 @@ code {
 
 .tx-filter__row input[type="search"] {
   flex: 1;
+  min-width: 0;
+}
+
+/* Selects inside the filter row must not use width:100% (inherited from .form-input)
+   so the search input can claim the remaining flex space. */
+.tx-filter__row select {
+  width: auto;
 }
 
 .tx-filter__cols {

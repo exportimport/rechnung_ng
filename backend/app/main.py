@@ -9,6 +9,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+from app.config import TEMPLATES_DIR
 from app.models.contract import ContractStatus
 from app.models.invoice import InvoiceStatus
 
@@ -16,7 +17,6 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
 
 BASE_DIR = Path(__file__).parent.parent
-TEMPLATES_DIR = Path(__file__).parent / "templates"
 
 # ---------------------------------------------------------------------------
 # Jinja2 Environment
