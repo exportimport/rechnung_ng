@@ -60,12 +60,15 @@ async def create_plan(request: Request, response: Response):
         )
         return HTMLResponse(html, status_code=422)
 
-    record = store.create("plans", {
-        "name": data["name"].strip(),
-        "price_history": [
-            {"amount": data["initial_price"].strip(), "valid_from": data["valid_from"].strip()}
-        ],
-    })
+    record = store.create(
+        "plans",
+        {
+            "name": data["name"].strip(),
+            "price_history": [
+                {"amount": data["initial_price"].strip(), "valid_from": data["valid_from"].strip()}
+            ],
+        },
+    )
     plan = Plan(**record)
     _r = HTMLResponse("", status_code=200)
     set_toast(_r, f'Tarif "{plan.name}" erstellt.')
@@ -89,8 +92,11 @@ async def update_plan(request: Request, response: Response, plan_id: int):
         errors["name"] = "Pflichtfeld"
     if errors:
         html = jinja_env.get_template("pages/plan_form.html.j2").render(
-            request=request, active_page="plans",
-            plan=_enrich_plan(Plan(**d)), form_data=data, errors=errors
+            request=request,
+            active_page="plans",
+            plan=_enrich_plan(Plan(**d)),
+            form_data=data,
+            errors=errors,
         )
         return HTMLResponse(html, status_code=422)
 

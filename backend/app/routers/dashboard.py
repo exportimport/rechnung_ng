@@ -39,22 +39,26 @@ def _dashboard_context() -> dict:
         due_date = created + timedelta(days=payment_terms)
         overdue = due_date < today
 
-        enriched.append({
-            **inv.model_dump(mode="json"),
-            "customer_name": (
-                f"{customer_d['vorname']} {customer_d['nachname']}" if customer_d else "Unbekannt"
-            ),
-            "plan_name": plan_name,
-            "due_date": due_date,
-            "overdue": overdue,
-        })
+        enriched.append(
+            {
+                **inv.model_dump(mode="json"),
+                "customer_name": (
+                    f"{customer_d['vorname']} {customer_d['nachname']}"
+                    if customer_d
+                    else "Unbekannt"
+                ),
+                "plan_name": plan_name,
+                "due_date": due_date,
+                "overdue": overdue,
+            }
+        )
 
     enriched.sort(key=lambda x: x["created_at"])
 
     from app.services.reconciliation import effective_status
+
     overdue_count = sum(
-        1 for inv in all_invoices
-        if effective_status(inv, today, payment_terms) == "overdue"
+        1 for inv in all_invoices if effective_status(inv, today, payment_terms) == "overdue"
     )
 
     sent = [i for i in all_invoices if i.status == InvoiceStatus.sent]
@@ -62,7 +66,8 @@ def _dashboard_context() -> dict:
     last_month = today.month - 1 or 12
     last_month_year = today.year if today.month > 1 else today.year - 1
     last_month_revenue = sum(
-        i.amount for i in sent
+        i.amount
+        for i in sent
         if i.period_start.month == last_month and i.period_start.year == last_month_year
     )
 
@@ -75,7 +80,8 @@ def _dashboard_context() -> dict:
         (last_quarter - 1) * 3 + 3,
     }
     last_quarter_revenue = sum(
-        i.amount for i in sent
+        i.amount
+        for i in sent
         if i.period_start.month in last_quarter_months and i.period_start.year == last_quarter_year
     )
 

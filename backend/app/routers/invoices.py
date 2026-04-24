@@ -159,8 +159,10 @@ async def delete_all_drafts(request: Request):
 
     all_records = store.load("invoices")
     to_delete = [
-        Invoice(**d) for d in all_records
-        if d.get("year") == year and d.get("month") == month
+        Invoice(**d)
+        for d in all_records
+        if d.get("year") == year
+        and d.get("month") == month
         and d.get("status") == InvoiceStatus.draft
     ]
     for inv in to_delete:
@@ -226,6 +228,7 @@ async def send_invoice(request: Request, response: Response, invoice_id: int):
 
     updated = store.get_by_id("invoices", invoice_id)
     from app.main import templates as jinja_env
+
     html = jinja_env.get_template("fragments/invoice_row.html.j2").render(
         request=request, invoice=_enrich_invoice(Invoice(**updated))
     )

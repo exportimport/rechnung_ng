@@ -42,6 +42,7 @@ async def update_template(request: Request, template_id: str):
 
     if errors:
         from app.main import templates as jinja_env
+
         html = jinja_env.get_template("fragments/mail_template_form.html.j2").render(
             request=request,
             tpl={**d, **data},
@@ -51,8 +52,11 @@ async def update_template(request: Request, template_id: str):
 
     updated = store.update("mail_templates", template_id, data)
     from app.main import templates as jinja_env
+
     html = jinja_env.get_template("fragments/mail_template_form.html.j2").render(
-        request=request, tpl=updated, errors={},
+        request=request,
+        tpl=updated,
+        errors={},
     )
     _r = HTMLResponse(html, status_code=200)
     set_toast(_r, "Vorlage gespeichert.")

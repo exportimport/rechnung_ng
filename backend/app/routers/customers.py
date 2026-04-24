@@ -16,7 +16,8 @@ def _customer_list(q: str | None = None) -> list[Customer]:
     if q:
         q_lower = q.lower()
         customers = [
-            c for c in customers
+            c
+            for c in customers
             if q_lower in c.vorname.lower()
             or q_lower in c.nachname.lower()
             or q_lower in c.email.lower()
@@ -67,8 +68,7 @@ async def create_customer(request: Request, response: Response):
     errors = _validate_customer(data)
     if errors:
         html = jinja_env.get_template("pages/customer_form.html.j2").render(
-            request=request, active_page="customers",
-            customer=None, form_data=data, errors=errors
+            request=request, active_page="customers", customer=None, form_data=data, errors=errors
         )
         return HTMLResponse(html, status_code=422)
 
@@ -131,8 +131,16 @@ def delete_customer(customer_id: int):
 
 def _validate_customer(data: dict) -> dict:
     errors = {}
-    required = ("vorname", "nachname", "street", "house_number",
-               "postcode", "city", "iban", "email")
+    required = (
+        "vorname",
+        "nachname",
+        "street",
+        "house_number",
+        "postcode",
+        "city",
+        "iban",
+        "email",
+    )
     for field in required:
         if not data.get(field, "").strip():
             errors[field] = "Pflichtfeld"

@@ -26,7 +26,8 @@ def match_transaction(
 
     # Tier 1 — invoice number in Verwendungszweck
     tier1_matches = [
-        inv for inv in invoices
+        inv
+        for inv in invoices
         if inv.invoice_number.lower().replace(" ", "") in remittance
         and round(inv.amount, 2) == round(transaction.amount, 2)
         and inv.status != InvoiceStatus.paid
@@ -44,7 +45,8 @@ def match_transaction(
         matched_customer = customer_by_iban.get(transaction.debtor_iban)
         if matched_customer:
             tier2_matches = [
-                inv for inv in invoices
+                inv
+                for inv in invoices
                 if inv.customer_id == matched_customer.id
                 and round(inv.amount, 2) == round(transaction.amount, 2)
                 and inv.status != InvoiceStatus.paid

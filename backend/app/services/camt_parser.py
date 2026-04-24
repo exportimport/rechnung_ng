@@ -46,14 +46,18 @@ def parse_camt053(xml_bytes: bytes, source_file: str) -> list[CamtTransaction]:
                             transaction_id = e2e.text
 
             booking_date_el = entry.find(f".//{_tag(ns, 'BookgDt')}")
-            booking_date = date.fromisoformat(
-                booking_date_el.find(_tag(ns, "Dt")).text
-            ) if booking_date_el is not None else date.today()
+            booking_date = (
+                date.fromisoformat(booking_date_el.find(_tag(ns, "Dt")).text)
+                if booking_date_el is not None
+                else date.today()
+            )
 
             value_date_el = entry.find(f".//{_tag(ns, 'ValDt')}")
-            value_date = date.fromisoformat(
-                value_date_el.find(_tag(ns, "Dt")).text
-            ) if value_date_el is not None else booking_date
+            value_date = (
+                date.fromisoformat(value_date_el.find(_tag(ns, "Dt")).text)
+                if value_date_el is not None
+                else booking_date
+            )
 
             amt_el = entry.find(_tag(ns, "Amt"))
             amount = float(amt_el.text) if amt_el is not None else 0.0
@@ -89,19 +93,20 @@ def parse_camt053(xml_bytes: bytes, source_file: str) -> list[CamtTransaction]:
                 raw = f"{booking_date}_{amount}_{debtor_iban or 'NOIBAN'}_{remittance_info or ''}"
                 transaction_id = "FALLBACK-" + hashlib.sha256(raw.encode()).hexdigest()[:16]
 
-            results.append(CamtTransaction(
-                transaction_id=transaction_id,
-                booking_date=booking_date,
-                value_date=value_date,
-                amount=amount,
-                currency=currency,
-                credit_debit="CRDT",
-                debtor_name=debtor_name,
-                debtor_iban=debtor_iban,
-                remittance_info=remittance_info,
-                imported_at=now,
-                source_file=source_file,
-            ))
+            results.append(
+                CamtTransaction(
+                    transaction_id=transaction_id,
+                    booking_date=booking_date,
+                    value_date=value_date,
+                    amount=amount,
+                    currency=currency,
+                    credit_debit="CRDT",
+                    debtor_name=debtor_name,
+                    debtor_iban=debtor_iban,
+                    remittance_info=remittance_info,
+                    imported_at=now,
+                    source_file=source_file,
+                )
+            )
 
     return results
-

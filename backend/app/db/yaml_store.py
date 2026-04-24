@@ -15,6 +15,7 @@ except AttributeError:
 
 class _JsonEncoder(json.JSONEncoder):
     """Serialize date/datetime objects to ISO strings for json.dump."""
+
     def default(self, o):
         if isinstance(o, (datetime, date)):
             return o.isoformat()
