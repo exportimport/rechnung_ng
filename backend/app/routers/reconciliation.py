@@ -58,7 +58,8 @@ def monthly_view(request: Request, year: int | None = None, month: int | None = 
 
 
 @router.get("/customers/{customer_id}")
-def customer_view(request: Request, customer_id: int):
+def customer_view(request: Request, customer_id: int,
+                  tx_year: int | None = None, tx_month: int | None = None):
     from app.config import get_config
     from app.main import render
     from app.models.invoice import Invoice, InvoiceStatus
@@ -85,10 +86,14 @@ def customer_view(request: Request, customer_id: int):
 
     from app.models.camt import CamtTransaction, MatchStatus
     all_tx = [CamtTransaction(**d) for d in store.load("camt_transactions")]
-    unmatched_tx = sorted(
-        [tx for tx in all_tx if tx.match_status == MatchStatus.unmatched],
-        key=lambda t: t.booking_date, reverse=True,
-    )
+    unmatched = [tx for tx in all_tx if tx.match_status == MatchStatus.unmatched]
+    if tx_year is not None:
+        unmatched = [tx for tx in unmatched if tx.booking_date.year == tx_year]
+    if tx_month is not None:
+        unmatched = [tx for tx in unmatched if tx.booking_date.month == tx_month]
+    unmatched_tx = sorted(unmatched, key=lambda t: t.booking_date, reverse=True)
+
+    tx_years = sorted({tx.booking_date.year for tx in all_tx if tx.match_status == MatchStatus.unmatched}, reverse=True)
 
     open_invoices = [
         inv for inv in all_invoices
@@ -99,7 +104,8 @@ def customer_view(request: Request, customer_id: int):
                   {"active_page": "reconciliation", "recon_page": "customer",
                    "customer_id": customer_id, "customer": customer, "invoices": rows,
                    "unmatched_tx": [tx.model_dump(mode="json") for tx in unmatched_tx],
-                   "open_invoices": [inv.model_dump(mode="json") for inv in open_invoices]})
+                   "open_invoices": [inv.model_dump(mode="json") for inv in open_invoices],
+                   "tx_years": tx_years, "tx_year": tx_year, "tx_month": tx_month})
 
 
 @router.post("/customers/{customer_id}/match")

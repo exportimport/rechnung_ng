@@ -488,6 +488,37 @@ async def test_customer_match_post_marks_transaction_and_invoice(client, csrf):
 
 
 @pytest.mark.asyncio
+async def test_customer_view_unmatched_filter_by_month(client):
+    import app.db.yaml_store as ys
+    ys.store.create("camt_transactions", {
+        "transaction_id": "TX-APRIL", "booking_date": "2026-04-10",
+        "value_date": "2026-04-10", "amount": 119.00, "currency": "EUR",
+        "credit_debit": "CRDT", "debtor_name": "A", "debtor_iban": None,
+        "remittance_info": None, "imported_at": "2026-04-10T10:00:00",
+        "source_file": "bank.xml", "match_status": "unmatched",
+        "matched_invoice_id": None, "matched_at": None, "match_confidence": None,
+    })
+    ys.store.create("camt_transactions", {
+        "transaction_id": "TX-MARCH", "booking_date": "2026-03-05",
+        "value_date": "2026-03-05", "amount": 55.00, "currency": "EUR",
+        "credit_debit": "CRDT", "debtor_name": "B", "debtor_iban": None,
+        "remittance_info": None, "imported_at": "2026-03-05T10:00:00",
+        "source_file": "bank.xml", "match_status": "unmatched",
+        "matched_invoice_id": None, "matched_at": None, "match_confidence": None,
+    })
+    r = await client.get("/reconciliation/customers/1?tx_year=2026&tx_month=4")
+    assert "TX-APRIL" in r.text
+    assert "TX-MARCH" not in r.text
+
+
+@pytest.mark.asyncio
+async def test_customer_view_has_tx_filter_dropdowns(client):
+    r = await client.get("/reconciliation/customers/1")
+    assert 'name="tx_year"' in r.text
+    assert 'name="tx_month"' in r.text
+
+
+@pytest.mark.asyncio
 async def test_customer_view_returns_200(client, csrf):
     await client.post("/customers", data={
         "vorname": "Max", "nachname": "Mustermann",
