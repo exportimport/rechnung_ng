@@ -4,7 +4,7 @@
 
 Contract and invoice management for small service businesses. Single-user, self-hosted, no cloud dependency.
 
-<!-- Add GIF screenshots here once recorded — see bottom of this file -->
+<video src="assets/dummycast.webm" autoplay loop muted playsinline width="100%"></video>
 
 ---
 
