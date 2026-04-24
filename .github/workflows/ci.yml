@@ -85,6 +85,10 @@ jobs:
           host: ${{ secrets.DEPLOY_HOST }}
           username: deploy
           key: ${{ secrets.URSERVER_DEPLOY_KEY }}
+          envs: GITHUB_TOKEN
           script: |
-            sudo podman pull ghcr.io/exportimport/rechnung-ng:latest
+            echo "$GITHUB_TOKEN" | sudo podman login ghcr.io -u ${{ github.actor }} --password-stdin --authfile /etc/containers/auth.json
+            sudo podman pull --authfile /etc/containers/auth.json ghcr.io/exportimport/rechnung-ng:latest
             sudo systemctl restart rechnung-ng-backend
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
