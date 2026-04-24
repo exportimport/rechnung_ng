@@ -15,6 +15,7 @@
       <th>Zeitraum</th>
       <th>Betrag</th>
       <th>Status</th>
+      <th>Zahlungsdatum</th>
       <th>Zahlung von Bank</th>
       <th>Verwendungszweck</th>
     </tr>
@@ -26,6 +27,7 @@
       <td>{{ inv.period_start | date_de }} – {{ inv.period_end | date_de }}</td>
       <td>{{ inv.amount | euro }}</td>
       <td>{{ INVOICE_STATUS_LABELS.get(inv.effective_status, inv.effective_status) }}</td>
+      <td>{{ inv.paid_at | date_de if inv.paid_at else "—" }}</td>
       <td>{{ inv.matched_tx.debtor_name if inv.matched_tx else "—" }}</td>
       <td>{{ inv.matched_tx.remittance_info if inv.matched_tx else "—" }}</td>
     </tr>
