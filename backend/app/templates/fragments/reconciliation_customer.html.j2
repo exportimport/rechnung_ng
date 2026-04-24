@@ -15,7 +15,8 @@
       <th>Zeitraum</th>
       <th>Betrag</th>
       <th>Status</th>
-      <th>Abgeglichen</th>
+      <th>Zahlung von Bank</th>
+      <th>Verwendungszweck</th>
     </tr>
   </thead>
   <tbody>
@@ -24,8 +25,9 @@
       <td>{{ inv.invoice_number }}</td>
       <td>{{ inv.period_start | date_de }} – {{ inv.period_end | date_de }}</td>
       <td>{{ inv.amount | euro }}</td>
-      <td>{{ inv.effective_status }}</td>
-      <td>{% if inv.effective_status == "paid" %}Abgeglichen{% else %}Offen{% endif %}</td>
+      <td>{{ INVOICE_STATUS_LABELS.get(inv.effective_status, inv.effective_status) }}</td>
+      <td>{{ inv.matched_tx.debtor_name if inv.matched_tx else "—" }}</td>
+      <td>{{ inv.matched_tx.remittance_info if inv.matched_tx else "—" }}</td>
     </tr>
     {% endfor %}
   </tbody>

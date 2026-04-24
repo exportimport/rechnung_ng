@@ -30,6 +30,8 @@ def monthly_view(request: Request, year: int | None = None, month: int | None = 
         and inv.status != InvoiceStatus.draft
     ]
 
+    tx_by_id = {t["transaction_id"]: t for t in store.load("camt_transactions")}
+
     rows = []
     for inv in month_invoices:
         customer = customers.get(inv.customer_id)
@@ -38,6 +40,7 @@ def monthly_view(request: Request, year: int | None = None, month: int | None = 
             f"{customer['vorname']} {customer['nachname']}" if customer else "Unbekannt"
         )
         data["effective_status"] = effective_status(inv, today, payment_terms)
+        data["matched_tx"] = tx_by_id.get(inv.payment_transaction_id) if inv.payment_transaction_id else None
         rows.append(data)
 
     prev_year, prev_month = (year, month - 1) if month > 1 else (year - 1, 12)
@@ -67,10 +70,13 @@ def customer_view(request: Request, customer_id: int):
     cust_invoices = [inv for inv in all_invoices
                      if inv.customer_id == customer_id and inv.status != InvoiceStatus.draft]
 
+    tx_by_id = {t["transaction_id"]: t for t in store.load("camt_transactions")}
+
     rows = []
     for inv in sorted(cust_invoices, key=lambda i: (i.year, i.month), reverse=True):
         data = inv.model_dump(mode="json")
         data["effective_status"] = effective_status(inv, today, payment_terms)
+        data["matched_tx"] = tx_by_id.get(inv.payment_transaction_id) if inv.payment_transaction_id else None
         rows.append(data)
 
     return render(request, "base.html.j2", "fragments/reconciliation_customer.html.j2",

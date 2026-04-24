@@ -22,7 +22,8 @@
       <th>Kunde</th>
       <th>Betrag</th>
       <th>Status</th>
-      <th>Abgeglichen</th>
+      <th>Zahlung von Bank</th>
+      <th>Verwendungszweck</th>
     </tr>
   </thead>
   <tbody>
@@ -34,7 +35,8 @@
              hx-target="#main-content" hx-push-url="true">{{ inv.customer_name }}</a></td>
       <td>{{ inv.amount | euro }}</td>
       <td>{{ INVOICE_STATUS_LABELS.get(inv.effective_status, inv.effective_status) }}</td>
-      <td>{% if inv.effective_status == "paid" %}Abgeglichen{% else %}Offen{% endif %}</td>
+      <td>{{ inv.matched_tx.debtor_name if inv.matched_tx else "—" }}</td>
+      <td>{{ inv.matched_tx.remittance_info if inv.matched_tx else "—" }}</td>
     </tr>
     {% endfor %}
   </tbody>

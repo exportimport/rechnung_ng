@@ -88,6 +88,66 @@ async def test_monthly_view_shows_ueberfaellig_for_overdue_invoice(client):
 
 
 @pytest.mark.asyncio
+async def test_customer_view_shows_matched_transaction_debtor_name(client):
+    import app.db.yaml_store as ys
+    ys.store.create("customers", {
+        "id": 1, "vorname": "Max", "nachname": "Mustermann",
+        "street": "Musterstr", "house_number": "1", "postcode": "12345",
+        "city": "Berlin", "iban": "DE89370400440532013000", "email": "max@example.com",
+    })
+    ys.store.create("invoices", {
+        "id": 1, "contract_id": 1, "customer_id": 1,
+        "invoice_number": "2025-03-0001", "year": 2025, "month": 3,
+        "amount": 119.00, "period_start": "2025-03-01", "period_end": "2025-03-31",
+        "status": "paid", "created_at": "2025-03-01T10:00:00",
+        "sent_at": "2025-03-01T10:00:00", "paid_at": "2025-03-15",
+        "payment_transaction_id": "ACCTSVR-001",
+    })
+    ys.store.create("camt_transactions", {
+        "transaction_id": "ACCTSVR-001",
+        "booking_date": "2025-03-15", "value_date": "2025-03-15",
+        "amount": 119.00, "currency": "EUR", "credit_debit": "CRDT",
+        "debtor_name": "M. Mustermann GmbH", "debtor_iban": "DE89370400440532013000",
+        "remittance_info": "RE 2025-03-0001", "imported_at": "2025-03-15T10:00:00",
+        "source_file": "bank.xml", "match_status": "auto_matched",
+        "matched_invoice_id": 1, "matched_at": "2025-03-15T10:00:00",
+        "match_confidence": "high",
+    })
+    r = await client.get("/reconciliation/customers/1")
+    assert "M. Mustermann GmbH" in r.text
+
+
+@pytest.mark.asyncio
+async def test_monthly_view_shows_matched_transaction_debtor_name(client):
+    import app.db.yaml_store as ys
+    ys.store.create("customers", {
+        "id": 1, "vorname": "Max", "nachname": "Mustermann",
+        "street": "Musterstr", "house_number": "1", "postcode": "12345",
+        "city": "Berlin", "iban": "DE89370400440532013000", "email": "max@example.com",
+    })
+    ys.store.create("invoices", {
+        "id": 1, "contract_id": 1, "customer_id": 1,
+        "invoice_number": "2025-03-0001", "year": 2025, "month": 3,
+        "amount": 119.00, "period_start": "2025-03-01", "period_end": "2025-03-31",
+        "status": "paid", "created_at": "2025-03-01T10:00:00",
+        "sent_at": "2025-03-01T10:00:00", "paid_at": "2025-03-15",
+        "payment_transaction_id": "ACCTSVR-001",
+    })
+    ys.store.create("camt_transactions", {
+        "transaction_id": "ACCTSVR-001",
+        "booking_date": "2025-03-15", "value_date": "2025-03-15",
+        "amount": 119.00, "currency": "EUR", "credit_debit": "CRDT",
+        "debtor_name": "M. Mustermann GmbH", "debtor_iban": "DE89370400440532013000",
+        "remittance_info": "RE 2025-03-0001", "imported_at": "2025-03-15T10:00:00",
+        "source_file": "bank.xml", "match_status": "auto_matched",
+        "matched_invoice_id": 1, "matched_at": "2025-03-15T10:00:00",
+        "match_confidence": "high",
+    })
+    r = await client.get("/reconciliation?year=2025&month=3")
+    assert "M. Mustermann GmbH" in r.text
+
+
+@pytest.mark.asyncio
 async def test_monthly_view_customer_name_links_to_customer_view(client):
     import app.db.yaml_store as ys
     ys.store.create("customers", {
