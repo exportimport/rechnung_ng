@@ -50,7 +50,12 @@ def _dashboard_context() -> dict:
         })
 
     enriched.sort(key=lambda x: x["created_at"])
-    overdue_count = sum(1 for e in enriched if e["overdue"])
+
+    from app.services.reconciliation import effective_status
+    overdue_count = sum(
+        1 for inv in all_invoices
+        if effective_status(inv, today, payment_terms) == "overdue"
+    )
 
     sent = [i for i in all_invoices if i.status == InvoiceStatus.sent]
 

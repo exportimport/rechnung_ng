@@ -6,7 +6,7 @@
   <meta name="csrf-token" content="{{ csrf_token }}">
   <title>{% block title %}rechnung_ng{% endblock %}</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="/static/css/style.css?v=11">
+  <link rel="stylesheet" href="/static/css/style.css?v=13">
   <script src="/static/js/htmx.min.js" defer></script>
   <script src="/static/js/ext/sse.js" defer></script>
 </head>
@@ -52,6 +52,12 @@
         <a href="/mail-templates" class="sidebar__link {% if active_page == 'mail_templates' %}sidebar__link--active{% endif %}"
            hx-get="/mail-templates" hx-target="#main-content" hx-push-url="true">
           Mail-Vorlagen
+        </a>
+      </li>
+      <li class="sidebar__item">
+        <a href="/reconciliation" class="sidebar__link {% if active_page == 'reconciliation' %}sidebar__link--active{% endif %}"
+           hx-get="/reconciliation" hx-target="#main-content" hx-push-url="true">
+          Zahlungsabgleich
         </a>
       </li>
       <li class="sidebar__item sidebar__item--bottom">

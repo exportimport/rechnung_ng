@@ -83,6 +83,16 @@ class YamlStore:
                 return records[i]
         raise NotFoundError(f"{entity} with id={id!r} not found")
 
+    def update_by(self, entity: str, id_field: str, record_id: str, data: dict) -> None:
+        """Replace a record matched by an arbitrary field (e.g. transaction_id)."""
+        records = self.load(entity)
+        for i, record in enumerate(records):
+            if record.get(id_field) == record_id:
+                records[i] = data
+                self.save(entity, records)
+                return
+        raise NotFoundError(f"{entity} with {id_field}={record_id!r} not found")
+
     def delete(self, entity: str, id: int | str) -> None:
         records = self.load(entity)
         new_records = [r for r in records if r.get("id") != id]

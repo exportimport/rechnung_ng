@@ -9,6 +9,8 @@ from pydantic import BaseModel, Field
 load_dotenv(Path(__file__).parent.parent / ".env")
 
 DATA_DIR = Path(__file__).parent.parent / "data"
+TEMPLATES_DIR = Path(__file__).parent / "templates"
+UPLOADS_DIR = Path(__file__).parent.parent / "uploads"
 
 
 class CompanyConfig(BaseModel):

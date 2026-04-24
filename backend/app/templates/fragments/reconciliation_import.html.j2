@@ -1,0 +1,16 @@
+{% include "fragments/reconciliation_nav.html.j2" %}
+
+<div class="page-header">
+  <h1 class="page-title">CAMT-Import</h1>
+</div>
+
+<form action="/reconciliation/import" method="post" enctype="multipart/form-data"
+      hx-post="/reconciliation/import" hx-target="#import-result" hx-encoding="multipart/form-data">
+  <div class="form-group">
+    <label class="form-label" for="file">CAMT.053-Datei (.xml)</label>
+    <input type="file" id="file" name="file" accept=".xml" class="form-input" required>
+  </div>
+  <button type="submit" class="btn btn-primary">Importieren</button>
+</form>
+
+<div id="import-result"></div>

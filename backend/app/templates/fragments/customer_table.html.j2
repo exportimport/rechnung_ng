@@ -42,6 +42,10 @@
                  hx-get="/customers/{{ c.id }}" hx-target="#main-content" hx-push-url="true">
                 Bearbeiten
               </a>
+              <a href="/reconciliation/customers/{{ c.id }}" class="btn btn--sm btn--secondary"
+                 hx-get="/reconciliation/customers/{{ c.id }}" hx-target="#main-content" hx-push-url="true">
+                Zahlungsdaten
+              </a>
               <button class="btn btn--sm btn--danger"
                       hx-delete="/customers/{{ c.id }}"
                       hx-confirm="Kunde {{ c.vorname }} {{ c.nachname }} wirklich löschen?"

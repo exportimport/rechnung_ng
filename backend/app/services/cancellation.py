@@ -4,13 +4,12 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML
 
-from app.config import get_config
+from app.config import TEMPLATES_DIR, get_config
 from app.db.yaml_store import YamlStore
 from app.models.contract import Contract
 from app.models.customer import Customer
 from app.models.plan import Plan
 
-TEMPLATES_DIR = Path(__file__).parent.parent / "templates"
 ASSETS_DIR = Path(__file__).parent.parent.parent / "assets"
 OUTPUT_DIR = Path(__file__).parent.parent.parent / "output"
 

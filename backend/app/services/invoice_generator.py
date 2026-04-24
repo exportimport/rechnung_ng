@@ -1,23 +1,26 @@
 import calendar
+import logging
 import os
 from datetime import date, datetime
 from decimal import Decimal
 from multiprocessing import get_context
 from pathlib import Path
 
+logger = logging.getLogger(__name__)
+
 from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML
 
-from app.config import get_config
+from app.config import TEMPLATES_DIR, get_config
 from app.db.yaml_store import YamlStore
 from app.models.contract import BillingCycle, Contract
 from app.models.customer import Customer
 from app.models.invoice import Invoice, InvoiceStatus
 from app.models.plan import Plan, current_price
 
-TEMPLATES_DIR = Path(__file__).parent.parent / "templates"
 ASSETS_DIR = Path(__file__).parent.parent.parent / "assets"
 OUTPUT_DIR = Path(__file__).parent.parent.parent / "output"
+MAX_PDF_WORKERS = 4
 
 
 def _period_end_quarterly(year: int, month: int) -> date:
@@ -37,7 +40,10 @@ def _next_seq(all_invoices: list[dict], year: int, month: int) -> int:
             try:
                 seqs.append(int(inv["invoice_number"].split("-")[-1]))
             except (KeyError, ValueError, IndexError):
-                pass
+                logger.warning(
+                    "Malformed invoice_number %r on invoice id=%s — skipping for sequence",
+                    inv.get("invoice_number"), inv.get("id"),
+                )
     return max(seqs, default=0) + 1
 
 
@@ -50,7 +56,7 @@ def render_invoice_pdf(
 ) -> Path:
     config = get_config()
     gross = Decimal(str(invoice.amount))
-    net = gross / Decimal("1.19")
+    net = gross / (1 + Decimal(str(config.invoice.vat_rate)))
     vat = gross - net
 
     env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)), autoescape=False)
@@ -184,7 +190,7 @@ def generate_invoices(year: int, month: int, s: YamlStore) -> list[Invoice]:
     s.save("invoices", all_invoices + new_records)
 
     # Render PDFs in parallel, yielding progress as each completes
-    workers = min(os.cpu_count() or 1, 4)
+    workers = min(os.cpu_count() or 1, MAX_PDF_WORKERS)
     ctx = get_context("fork")
     pdf_updates: dict[int, str] = {}
     with ctx.Pool(processes=workers) as pool:

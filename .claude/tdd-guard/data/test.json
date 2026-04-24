@@ -1,0 +1,814 @@
+{
+  "testModules": [
+    {
+      "moduleId": "tests/test_camt_import.py",
+      "tests": [
+        {
+          "name": "test_returns_import_summary",
+          "fullName": "tests/test_camt_import.py::test_returns_import_summary",
+          "state": "passed"
+        },
+        {
+          "name": "test_total_parsed_counts_crdt_entries",
+          "fullName": "tests/test_camt_import.py::test_total_parsed_counts_crdt_entries",
+          "state": "passed"
+        },
+        {
+          "name": "test_new_transactions_are_stored",
+          "fullName": "tests/test_camt_import.py::test_new_transactions_are_stored",
+          "state": "passed"
+        },
+        {
+          "name": "test_duplicate_transactions_are_skipped",
+          "fullName": "tests/test_camt_import.py::test_duplicate_transactions_are_skipped",
+          "state": "passed"
+        },
+        {
+          "name": "test_tier1_match_is_auto_matched",
+          "fullName": "tests/test_camt_import.py::test_tier1_match_is_auto_matched",
+          "state": "passed"
+        },
+        {
+          "name": "test_tier1_match_marks_invoice_paid",
+          "fullName": "tests/test_camt_import.py::test_tier1_match_marks_invoice_paid",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "tests/test_camt_models.py",
+      "tests": [
+        {
+          "name": "test_invoice_status_has_paid",
+          "fullName": "tests/test_camt_models.py::test_invoice_status_has_paid",
+          "state": "passed"
+        },
+        {
+          "name": "test_invoice_status_draft_and_sent_unchanged",
+          "fullName": "tests/test_camt_models.py::test_invoice_status_draft_and_sent_unchanged",
+          "state": "passed"
+        },
+        {
+          "name": "test_invoice_paid_at_defaults_to_none",
+          "fullName": "tests/test_camt_models.py::test_invoice_paid_at_defaults_to_none",
+          "state": "passed"
+        },
+        {
+          "name": "test_invoice_payment_transaction_id_defaults_to_none",
+          "fullName": "tests/test_camt_models.py::test_invoice_payment_transaction_id_defaults_to_none",
+          "state": "passed"
+        },
+        {
+          "name": "test_invoice_accepts_paid_at",
+          "fullName": "tests/test_camt_models.py::test_invoice_accepts_paid_at",
+          "state": "passed"
+        },
+        {
+          "name": "test_invoice_accepts_payment_transaction_id",
+          "fullName": "tests/test_camt_models.py::test_invoice_accepts_payment_transaction_id",
+          "state": "passed"
+        },
+        {
+          "name": "test_invoice_status_paid_persists",
+          "fullName": "tests/test_camt_models.py::test_invoice_status_paid_persists",
+          "state": "passed"
+        },
+        {
+          "name": "test_match_status_values",
+          "fullName": "tests/test_camt_models.py::test_match_status_values",
+          "state": "passed"
+        },
+        {
+          "name": "test_match_confidence_values",
+          "fullName": "tests/test_camt_models.py::test_match_confidence_values",
+          "state": "passed"
+        },
+        {
+          "name": "test_camt_transaction_defaults",
+          "fullName": "tests/test_camt_models.py::test_camt_transaction_defaults",
+          "state": "passed"
+        },
+        {
+          "name": "test_camt_transaction_credit_debit_crdt",
+          "fullName": "tests/test_camt_models.py::test_camt_transaction_credit_debit_crdt",
+          "state": "passed"
+        },
+        {
+          "name": "test_camt_transaction_rejects_invalid_credit_debit",
+          "fullName": "tests/test_camt_models.py::test_camt_transaction_rejects_invalid_credit_debit",
+          "state": "passed"
+        },
+        {
+          "name": "test_camt_transaction_optional_fields_none",
+          "fullName": "tests/test_camt_models.py::test_camt_transaction_optional_fields_none",
+          "state": "passed"
+        },
+        {
+          "name": "test_camt_transaction_matched_state",
+          "fullName": "tests/test_camt_models.py::test_camt_transaction_matched_state",
+          "state": "passed"
+        },
+        {
+          "name": "test_match_result_no_match",
+          "fullName": "tests/test_camt_models.py::test_match_result_no_match",
+          "state": "passed"
+        },
+        {
+          "name": "test_match_result_high_confidence",
+          "fullName": "tests/test_camt_models.py::test_match_result_high_confidence",
+          "state": "passed"
+        },
+        {
+          "name": "test_import_summary_fields",
+          "fullName": "tests/test_camt_models.py::test_import_summary_fields",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "tests/test_camt_parser.py",
+      "tests": [
+        {
+          "name": "test_rejects_unsupported_namespace",
+          "fullName": "tests/test_camt_parser.py::test_rejects_unsupported_namespace",
+          "state": "passed"
+        },
+        {
+          "name": "test_accepts_v8_namespace",
+          "fullName": "tests/test_camt_parser.py::test_accepts_v8_namespace",
+          "state": "passed"
+        },
+        {
+          "name": "test_dbit_entries_excluded",
+          "fullName": "tests/test_camt_parser.py::test_dbit_entries_excluded",
+          "state": "passed"
+        },
+        {
+          "name": "test_crdt_count",
+          "fullName": "tests/test_camt_parser.py::test_crdt_count",
+          "state": "passed"
+        },
+        {
+          "name": "test_transaction_id_from_acct_svr_ref",
+          "fullName": "tests/test_camt_parser.py::test_transaction_id_from_acct_svr_ref",
+          "state": "passed"
+        },
+        {
+          "name": "test_booking_date",
+          "fullName": "tests/test_camt_parser.py::test_booking_date",
+          "state": "passed"
+        },
+        {
+          "name": "test_value_date",
+          "fullName": "tests/test_camt_parser.py::test_value_date",
+          "state": "passed"
+        },
+        {
+          "name": "test_amount",
+          "fullName": "tests/test_camt_parser.py::test_amount",
+          "state": "passed"
+        },
+        {
+          "name": "test_currency",
+          "fullName": "tests/test_camt_parser.py::test_currency",
+          "state": "passed"
+        },
+        {
+          "name": "test_debtor_name",
+          "fullName": "tests/test_camt_parser.py::test_debtor_name",
+          "state": "passed"
+        },
+        {
+          "name": "test_debtor_iban",
+          "fullName": "tests/test_camt_parser.py::test_debtor_iban",
+          "state": "passed"
+        },
+        {
+          "name": "test_remittance_info",
+          "fullName": "tests/test_camt_parser.py::test_remittance_info",
+          "state": "passed"
+        },
+        {
+          "name": "test_source_file",
+          "fullName": "tests/test_camt_parser.py::test_source_file",
+          "state": "passed"
+        },
+        {
+          "name": "test_imported_at_is_set",
+          "fullName": "tests/test_camt_parser.py::test_imported_at_is_set",
+          "state": "passed"
+        },
+        {
+          "name": "test_transaction_id_falls_back_to_end_to_end_id",
+          "fullName": "tests/test_camt_parser.py::test_transaction_id_falls_back_to_end_to_end_id",
+          "state": "passed"
+        },
+        {
+          "name": "test_transaction_id_deterministic_fallback",
+          "fullName": "tests/test_camt_parser.py::test_transaction_id_deterministic_fallback",
+          "state": "passed"
+        },
+        {
+          "name": "test_missing_debtor_iban_is_none",
+          "fullName": "tests/test_camt_parser.py::test_missing_debtor_iban_is_none",
+          "state": "passed"
+        },
+        {
+          "name": "test_missing_remittance_info_is_none",
+          "fullName": "tests/test_camt_parser.py::test_missing_remittance_info_is_none",
+          "state": "passed"
+        },
+        {
+          "name": "test_value_date_differs_from_booking_date",
+          "fullName": "tests/test_camt_parser.py::test_value_date_differs_from_booking_date",
+          "state": "passed"
+        },
+        {
+          "name": "test_parsed_transactions_start_unmatched",
+          "fullName": "tests/test_camt_parser.py::test_parsed_transactions_start_unmatched",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "tests/test_contracts.py",
+      "tests": [
+        {
+          "name": "test_create_contract",
+          "fullName": "tests/test_contracts.py::test_create_contract",
+          "state": "passed"
+        },
+        {
+          "name": "test_contract_appears_in_list",
+          "fullName": "tests/test_contracts.py::test_contract_appears_in_list",
+          "state": "passed"
+        },
+        {
+          "name": "test_contract_filter_by_status",
+          "fullName": "tests/test_contracts.py::test_contract_filter_by_status",
+          "state": "passed"
+        },
+        {
+          "name": "test_contract_validation_missing_billing_cycle",
+          "fullName": "tests/test_contracts.py::test_contract_validation_missing_billing_cycle",
+          "state": "passed"
+        },
+        {
+          "name": "test_delete_contract",
+          "fullName": "tests/test_contracts.py::test_delete_contract",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "tests/test_customers.py",
+      "tests": [
+        {
+          "name": "test_create_customer",
+          "fullName": "tests/test_customers.py::test_create_customer",
+          "state": "passed"
+        },
+        {
+          "name": "test_customer_appears_in_list",
+          "fullName": "tests/test_customers.py::test_customer_appears_in_list",
+          "state": "passed"
+        },
+        {
+          "name": "test_customer_search",
+          "fullName": "tests/test_customers.py::test_customer_search",
+          "state": "passed"
+        },
+        {
+          "name": "test_create_customer_validation_error",
+          "fullName": "tests/test_customers.py::test_create_customer_validation_error",
+          "state": "passed"
+        },
+        {
+          "name": "test_edit_customer_form",
+          "fullName": "tests/test_customers.py::test_edit_customer_form",
+          "state": "passed"
+        },
+        {
+          "name": "test_update_customer",
+          "fullName": "tests/test_customers.py::test_update_customer",
+          "state": "passed"
+        },
+        {
+          "name": "test_delete_customer",
+          "fullName": "tests/test_customers.py::test_delete_customer",
+          "state": "passed"
+        },
+        {
+          "name": "test_customer_not_found",
+          "fullName": "tests/test_customers.py::test_customer_not_found",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "tests/test_effective_status.py",
+      "tests": [
+        {
+          "name": "test_paid_invoice_returns_paid",
+          "fullName": "tests/test_effective_status.py::test_paid_invoice_returns_paid",
+          "state": "passed"
+        },
+        {
+          "name": "test_sent_within_due_date_returns_sent",
+          "fullName": "tests/test_effective_status.py::test_sent_within_due_date_returns_sent",
+          "state": "passed"
+        },
+        {
+          "name": "test_sent_past_due_date_returns_overdue",
+          "fullName": "tests/test_effective_status.py::test_sent_past_due_date_returns_overdue",
+          "state": "passed"
+        },
+        {
+          "name": "test_sent_exactly_on_due_date_is_not_overdue",
+          "fullName": "tests/test_effective_status.py::test_sent_exactly_on_due_date_is_not_overdue",
+          "state": "passed"
+        },
+        {
+          "name": "test_draft_invoice_returns_draft",
+          "fullName": "tests/test_effective_status.py::test_draft_invoice_returns_draft",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "tests/test_invoice_generator.py",
+      "tests": [
+        {
+          "name": "test_monthly_generates_every_month",
+          "fullName": "tests/test_invoice_generator.py::test_monthly_generates_every_month",
+          "state": "passed"
+        },
+        {
+          "name": "test_monthly_amount_equals_plan_price",
+          "fullName": "tests/test_invoice_generator.py::test_monthly_amount_equals_plan_price",
+          "state": "passed"
+        },
+        {
+          "name": "test_monthly_period_end_is_last_day_of_month",
+          "fullName": "tests/test_invoice_generator.py::test_monthly_period_end_is_last_day_of_month",
+          "state": "passed"
+        },
+        {
+          "name": "test_quarterly_generates_in_quarter_start_months[1]",
+          "fullName": "tests/test_invoice_generator.py::test_quarterly_generates_in_quarter_start_months[1]",
+          "state": "passed"
+        },
+        {
+          "name": "test_quarterly_generates_in_quarter_start_months[4]",
+          "fullName": "tests/test_invoice_generator.py::test_quarterly_generates_in_quarter_start_months[4]",
+          "state": "passed"
+        },
+        {
+          "name": "test_quarterly_generates_in_quarter_start_months[7]",
+          "fullName": "tests/test_invoice_generator.py::test_quarterly_generates_in_quarter_start_months[7]",
+          "state": "passed"
+        },
+        {
+          "name": "test_quarterly_generates_in_quarter_start_months[10]",
+          "fullName": "tests/test_invoice_generator.py::test_quarterly_generates_in_quarter_start_months[10]",
+          "state": "passed"
+        },
+        {
+          "name": "test_quarterly_skips_non_quarter_months[2]",
+          "fullName": "tests/test_invoice_generator.py::test_quarterly_skips_non_quarter_months[2]",
+          "state": "passed"
+        },
+        {
+          "name": "test_quarterly_skips_non_quarter_months[3]",
+          "fullName": "tests/test_invoice_generator.py::test_quarterly_skips_non_quarter_months[3]",
+          "state": "passed"
+        },
+        {
+          "name": "test_quarterly_skips_non_quarter_months[5]",
+          "fullName": "tests/test_invoice_generator.py::test_quarterly_skips_non_quarter_months[5]",
+          "state": "passed"
+        },
+        {
+          "name": "test_quarterly_skips_non_quarter_months[6]",
+          "fullName": "tests/test_invoice_generator.py::test_quarterly_skips_non_quarter_months[6]",
+          "state": "passed"
+        },
+        {
+          "name": "test_quarterly_skips_non_quarter_months[8]",
+          "fullName": "tests/test_invoice_generator.py::test_quarterly_skips_non_quarter_months[8]",
+          "state": "passed"
+        },
+        {
+          "name": "test_quarterly_skips_non_quarter_months[9]",
+          "fullName": "tests/test_invoice_generator.py::test_quarterly_skips_non_quarter_months[9]",
+          "state": "passed"
+        },
+        {
+          "name": "test_quarterly_skips_non_quarter_months[11]",
+          "fullName": "tests/test_invoice_generator.py::test_quarterly_skips_non_quarter_months[11]",
+          "state": "passed"
+        },
+        {
+          "name": "test_quarterly_skips_non_quarter_months[12]",
+          "fullName": "tests/test_invoice_generator.py::test_quarterly_skips_non_quarter_months[12]",
+          "state": "passed"
+        },
+        {
+          "name": "test_quarterly_amount_is_three_times_monthly",
+          "fullName": "tests/test_invoice_generator.py::test_quarterly_amount_is_three_times_monthly",
+          "state": "passed"
+        },
+        {
+          "name": "test_quarterly_period_spans_three_months",
+          "fullName": "tests/test_invoice_generator.py::test_quarterly_period_spans_three_months",
+          "state": "passed"
+        },
+        {
+          "name": "test_quarterly_period_wraps_year_boundary",
+          "fullName": "tests/test_invoice_generator.py::test_quarterly_period_wraps_year_boundary",
+          "state": "passed"
+        },
+        {
+          "name": "test_no_invoice_before_contract_start",
+          "fullName": "tests/test_invoice_generator.py::test_no_invoice_before_contract_start",
+          "state": "passed"
+        },
+        {
+          "name": "test_invoice_in_start_month",
+          "fullName": "tests/test_invoice_generator.py::test_invoice_in_start_month",
+          "state": "passed"
+        },
+        {
+          "name": "test_no_invoice_after_contract_end",
+          "fullName": "tests/test_invoice_generator.py::test_no_invoice_after_contract_end",
+          "state": "passed"
+        },
+        {
+          "name": "test_invoice_in_end_month",
+          "fullName": "tests/test_invoice_generator.py::test_invoice_in_end_month",
+          "state": "passed"
+        },
+        {
+          "name": "test_no_duplicate_invoice_same_period",
+          "fullName": "tests/test_invoice_generator.py::test_no_duplicate_invoice_same_period",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "tests/test_invoices.py",
+      "tests": [
+        {
+          "name": "test_invoices_page_empty",
+          "fullName": "tests/test_invoices.py::test_invoices_page_empty",
+          "state": "passed"
+        },
+        {
+          "name": "test_invoices_filter_year_month",
+          "fullName": "tests/test_invoices.py::test_invoices_filter_year_month",
+          "state": "passed"
+        },
+        {
+          "name": "test_generate_invoices",
+          "fullName": "tests/test_invoices.py::test_generate_invoices",
+          "state": "passed"
+        },
+        {
+          "name": "test_generate_then_list",
+          "fullName": "tests/test_invoices.py::test_generate_then_list",
+          "state": "passed"
+        },
+        {
+          "name": "test_generate_missing_params",
+          "fullName": "tests/test_invoices.py::test_generate_missing_params",
+          "state": "passed"
+        },
+        {
+          "name": "test_delete_draft_invoice",
+          "fullName": "tests/test_invoices.py::test_delete_draft_invoice",
+          "state": "passed"
+        },
+        {
+          "name": "test_bulk_delete",
+          "fullName": "tests/test_invoices.py::test_bulk_delete",
+          "state": "passed"
+        },
+        {
+          "name": "test_pdf_download",
+          "fullName": "tests/test_invoices.py::test_pdf_download",
+          "state": "passed"
+        },
+        {
+          "name": "test_invoice_not_found",
+          "fullName": "tests/test_invoices.py::test_invoice_not_found",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "tests/test_mail_templates.py",
+      "tests": [
+        {
+          "name": "test_mail_templates_page",
+          "fullName": "tests/test_mail_templates.py::test_mail_templates_page",
+          "state": "passed"
+        },
+        {
+          "name": "test_update_template",
+          "fullName": "tests/test_mail_templates.py::test_update_template",
+          "state": "passed"
+        },
+        {
+          "name": "test_update_template_invalid_jinja",
+          "fullName": "tests/test_mail_templates.py::test_update_template_invalid_jinja",
+          "state": "passed"
+        },
+        {
+          "name": "test_template_not_found",
+          "fullName": "tests/test_mail_templates.py::test_template_not_found",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "tests/test_matcher.py",
+      "tests": [
+        {
+          "name": "test_t01_exact_invoice_number_matches_high_confidence",
+          "fullName": "tests/test_matcher.py::test_t01_exact_invoice_number_matches_high_confidence",
+          "state": "passed"
+        },
+        {
+          "name": "test_t02_invoice_number_embedded_in_text",
+          "fullName": "tests/test_matcher.py::test_t02_invoice_number_embedded_in_text",
+          "state": "passed"
+        },
+        {
+          "name": "test_t03_multiple_invoice_numbers_no_auto_match",
+          "fullName": "tests/test_matcher.py::test_t03_multiple_invoice_numbers_no_auto_match",
+          "state": "passed"
+        },
+        {
+          "name": "test_t04_amount_and_iban_match_medium_confidence",
+          "fullName": "tests/test_matcher.py::test_t04_amount_and_iban_match_medium_confidence",
+          "state": "passed"
+        },
+        {
+          "name": "test_t05_ambiguous_tier2_no_match",
+          "fullName": "tests/test_matcher.py::test_t05_ambiguous_tier2_no_match",
+          "state": "passed"
+        },
+        {
+          "name": "test_t06_fuzzy_name_match_low_confidence",
+          "fullName": "tests/test_matcher.py::test_t06_fuzzy_name_match_low_confidence",
+          "state": "passed"
+        },
+        {
+          "name": "test_t07_no_match",
+          "fullName": "tests/test_matcher.py::test_t07_no_match",
+          "state": "passed"
+        },
+        {
+          "name": "test_match_result_has_reason",
+          "fullName": "tests/test_matcher.py::test_match_result_has_reason",
+          "state": "passed"
+        },
+        {
+          "name": "test_t09_amount_mismatch_despite_invoice_number_no_match",
+          "fullName": "tests/test_matcher.py::test_t09_amount_mismatch_despite_invoice_number_no_match",
+          "state": "passed"
+        },
+        {
+          "name": "test_t10_already_paid_invoice_not_rematched",
+          "fullName": "tests/test_matcher.py::test_t10_already_paid_invoice_not_rematched",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "tests/test_pages.py",
+      "tests": [
+        {
+          "name": "test_dashboard",
+          "fullName": "tests/test_pages.py::test_dashboard",
+          "state": "passed"
+        },
+        {
+          "name": "test_dashboard_htmx_fragment",
+          "fullName": "tests/test_pages.py::test_dashboard_htmx_fragment",
+          "state": "passed"
+        },
+        {
+          "name": "test_customers_page",
+          "fullName": "tests/test_pages.py::test_customers_page",
+          "state": "passed"
+        },
+        {
+          "name": "test_customers_new_form",
+          "fullName": "tests/test_pages.py::test_customers_new_form",
+          "state": "passed"
+        },
+        {
+          "name": "test_plans_page",
+          "fullName": "tests/test_pages.py::test_plans_page",
+          "state": "passed"
+        },
+        {
+          "name": "test_plans_new_form",
+          "fullName": "tests/test_pages.py::test_plans_new_form",
+          "state": "passed"
+        },
+        {
+          "name": "test_contracts_page",
+          "fullName": "tests/test_pages.py::test_contracts_page",
+          "state": "passed"
+        },
+        {
+          "name": "test_invoices_page",
+          "fullName": "tests/test_pages.py::test_invoices_page",
+          "state": "passed"
+        },
+        {
+          "name": "test_settings_page",
+          "fullName": "tests/test_pages.py::test_settings_page",
+          "state": "passed"
+        },
+        {
+          "name": "test_mail_templates_page",
+          "fullName": "tests/test_pages.py::test_mail_templates_page",
+          "state": "passed"
+        },
+        {
+          "name": "test_csrf_rejects_post_without_token",
+          "fullName": "tests/test_pages.py::test_csrf_rejects_post_without_token",
+          "state": "passed"
+        },
+        {
+          "name": "test_static_htmx_js",
+          "fullName": "tests/test_pages.py::test_static_htmx_js",
+          "state": "passed"
+        },
+        {
+          "name": "test_static_css",
+          "fullName": "tests/test_pages.py::test_static_css",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "tests/test_plans.py",
+      "tests": [
+        {
+          "name": "test_create_plan",
+          "fullName": "tests/test_plans.py::test_create_plan",
+          "state": "passed"
+        },
+        {
+          "name": "test_plan_appears_in_list",
+          "fullName": "tests/test_plans.py::test_plan_appears_in_list",
+          "state": "passed"
+        },
+        {
+          "name": "test_plan_validation_error",
+          "fullName": "tests/test_plans.py::test_plan_validation_error",
+          "state": "passed"
+        },
+        {
+          "name": "test_update_plan",
+          "fullName": "tests/test_plans.py::test_update_plan",
+          "state": "passed"
+        },
+        {
+          "name": "test_add_price_to_plan",
+          "fullName": "tests/test_plans.py::test_add_price_to_plan",
+          "state": "passed"
+        },
+        {
+          "name": "test_delete_plan",
+          "fullName": "tests/test_plans.py::test_delete_plan",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "tests/test_reconciliation.py",
+      "tests": [
+        {
+          "name": "test_monthly_view_returns_200",
+          "fullName": "tests/test_reconciliation.py::test_monthly_view_returns_200",
+          "state": "passed"
+        },
+        {
+          "name": "test_monthly_view_uses_base_layout",
+          "fullName": "tests/test_reconciliation.py::test_monthly_view_uses_base_layout",
+          "state": "passed"
+        },
+        {
+          "name": "test_monthly_view_has_month_navigation",
+          "fullName": "tests/test_reconciliation.py::test_monthly_view_has_month_navigation",
+          "state": "passed"
+        },
+        {
+          "name": "test_monthly_view_shows_sent_invoices",
+          "fullName": "tests/test_reconciliation.py::test_monthly_view_shows_sent_invoices",
+          "state": "passed"
+        },
+        {
+          "name": "test_import_get_returns_200",
+          "fullName": "tests/test_reconciliation.py::test_import_get_returns_200",
+          "state": "passed"
+        },
+        {
+          "name": "test_import_form_has_file_input",
+          "fullName": "tests/test_reconciliation.py::test_import_form_has_file_input",
+          "state": "passed"
+        },
+        {
+          "name": "test_reconciliation_pages_have_subnav",
+          "fullName": "tests/test_reconciliation.py::test_reconciliation_pages_have_subnav",
+          "state": "passed"
+        },
+        {
+          "name": "test_import_nav_link_is_active_on_import_page",
+          "fullName": "tests/test_reconciliation.py::test_import_nav_link_is_active_on_import_page",
+          "state": "passed"
+        },
+        {
+          "name": "test_unmatched_returns_200",
+          "fullName": "tests/test_reconciliation.py::test_unmatched_returns_200",
+          "state": "passed"
+        },
+        {
+          "name": "test_unmatched_shows_transactions",
+          "fullName": "tests/test_reconciliation.py::test_unmatched_shows_transactions",
+          "state": "passed"
+        },
+        {
+          "name": "test_review_returns_200",
+          "fullName": "tests/test_reconciliation.py::test_review_returns_200",
+          "state": "passed"
+        },
+        {
+          "name": "test_review_uses_base_layout",
+          "fullName": "tests/test_reconciliation.py::test_review_uses_base_layout",
+          "state": "passed"
+        },
+        {
+          "name": "test_review_shows_medium_confidence_transactions",
+          "fullName": "tests/test_reconciliation.py::test_review_shows_medium_confidence_transactions",
+          "state": "passed"
+        },
+        {
+          "name": "test_customer_view_returns_200",
+          "fullName": "tests/test_reconciliation.py::test_customer_view_returns_200",
+          "state": "passed"
+        },
+        {
+          "name": "test_customer_view_uses_base_layout",
+          "fullName": "tests/test_reconciliation.py::test_customer_view_uses_base_layout",
+          "state": "passed"
+        },
+        {
+          "name": "test_customer_view_shows_invoices",
+          "fullName": "tests/test_reconciliation.py::test_customer_view_shows_invoices",
+          "state": "passed"
+        },
+        {
+          "name": "test_import_post_shows_imported_count",
+          "fullName": "tests/test_reconciliation.py::test_import_post_shows_imported_count",
+          "state": "passed"
+        },
+        {
+          "name": "test_import_post_shows_auto_matched_count",
+          "fullName": "tests/test_reconciliation.py::test_import_post_shows_auto_matched_count",
+          "state": "passed"
+        },
+        {
+          "name": "test_import_post_shows_skipped_count",
+          "fullName": "tests/test_reconciliation.py::test_import_post_shows_skipped_count",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "tests/test_settings.py",
+      "tests": [
+        {
+          "name": "test_settings_page_loads",
+          "fullName": "tests/test_settings.py::test_settings_page_loads",
+          "state": "passed"
+        },
+        {
+          "name": "test_settings_update",
+          "fullName": "tests/test_settings.py::test_settings_update",
+          "state": "passed"
+        },
+        {
+          "name": "test_settings_password_not_exposed",
+          "fullName": "tests/test_settings.py::test_settings_password_not_exposed",
+          "state": "passed"
+        }
+      ]
+    }
+  ]
+}

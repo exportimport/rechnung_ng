@@ -1,0 +1,43 @@
+{% include "fragments/reconciliation_nav.html.j2" %}
+
+<div class="page-header">
+  <h1 class="page-title">Prüfwarteschlange</h1>
+</div>
+
+{% if transactions %}
+<table class="table">
+  <thead>
+    <tr>
+      <th>Datum</th>
+      <th>Betrag</th>
+      <th>Auftraggeber</th>
+      <th>Verwendungszweck</th>
+      <th>Konfidenz</th>
+      <th>ID</th>
+      <th>Aktion</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for tx in transactions %}
+    <tr>
+      <td>{{ tx.booking_date | date_de }}</td>
+      <td>{{ tx.amount | euro }}</td>
+      <td>{{ tx.debtor_name or "—" }}</td>
+      <td>{{ tx.remittance_info or "—" }}</td>
+      <td>{{ tx.match_confidence }}</td>
+      <td><code>{{ tx.transaction_id }}</code></td>
+      <td>
+        <button hx-post="/reconciliation/review/{{ tx.transaction_id }}/confirm"
+                hx-target="closest tr" hx-swap="outerHTML"
+                class="btn btn-primary btn-sm">Bestätigen</button>
+        <button hx-post="/reconciliation/review/{{ tx.transaction_id }}/reject"
+                hx-target="closest tr" hx-swap="outerHTML"
+                class="btn btn-secondary btn-sm">Ablehnen</button>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>Keine Transaktionen zur Prüfung.</p>
+{% endif %}

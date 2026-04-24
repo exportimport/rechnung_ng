@@ -1,0 +1,59 @@
+{% include "fragments/reconciliation_nav.html.j2" %}
+
+<div class="page-header">
+  <h1 class="page-title">Zahlungsabgleich — {{ month | month_name }} {{ year }}</h1>
+  <div class="month-nav">
+    <a href="/reconciliation?year={{ prev_year }}&month={{ prev_month }}"
+       hx-get="/reconciliation?year={{ prev_year }}&month={{ prev_month }}"
+       hx-target="#main-content" hx-push-url="true"
+       class="btn btn-secondary">&#8592;</a>
+    <form hx-get="/reconciliation" hx-target="#main-content" hx-push-url="true"
+          hx-trigger="change" class="month-nav__selects">
+      <select name="year" class="form-input form-input--sm">
+        {% for y in available_years %}
+        <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
+        {% endfor %}
+      </select>
+      <select name="month" class="form-input form-input--sm">
+        {% for m in range(1, 13) %}
+        <option value="{{ m }}" {% if m == month %}selected{% endif %}>{{ m | month_name }}</option>
+        {% endfor %}
+      </select>
+    </form>
+    <a href="/reconciliation?year={{ next_year }}&month={{ next_month }}"
+       hx-get="/reconciliation?year={{ next_year }}&month={{ next_month }}"
+       hx-target="#main-content" hx-push-url="true"
+       class="btn btn-secondary">&#8594;</a>
+  </div>
+</div>
+
+{% if invoices %}
+<table class="table">
+  <thead>
+    <tr>
+      <th>Rechnung</th>
+      <th>Kunde</th>
+      <th>Betrag</th>
+      <th>Status</th>
+      <th>Zahlung von Bank</th>
+      <th>Verwendungszweck</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for inv in invoices %}
+    <tr>
+      <td>{{ inv.invoice_number }}</td>
+      <td><a href="/reconciliation/customers/{{ inv.customer_id }}"
+             hx-get="/reconciliation/customers/{{ inv.customer_id }}"
+             hx-target="#main-content" hx-push-url="true">{{ inv.customer_name }}</a></td>
+      <td>{{ inv.amount | euro }}</td>
+      <td>{{ INVOICE_STATUS_LABELS.get(inv.effective_status, inv.effective_status) }}</td>
+      <td>{{ inv.matched_tx.debtor_name if inv.matched_tx else "—" }}</td>
+      <td>{{ inv.matched_tx.remittance_info if inv.matched_tx else "—" }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>Keine Rechnungen für diesen Monat.</p>
+{% endif %}

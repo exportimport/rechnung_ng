@@ -199,3 +199,23 @@ def test_no_duplicate_invoice_same_period():
     _run(s, 2024, 1)
     result = _run(s, 2024, 1)  # second run same month
     assert len(result) == 0
+
+
+def test_malformed_invoice_number_logs_warning(caplog):
+    """A pre-existing invoice with an unparseable invoice_number must log a warning."""
+    import logging
+    s = _make_store(contracts=[{
+        "id": 1, "customer_id": 1, "plan_id": 1,
+        "start_date": "2024-01-01", "end_date": None,
+        "billing_cycle": "monthly",
+    }])
+    # Seed a malformed invoice for the same period
+    s.save("invoices", [{
+        "id": 99, "contract_id": 1, "customer_id": 1,
+        "invoice_number": "INVALID", "year": 2024, "month": 3,
+        "amount": 30.00, "period_start": "2024-03-01", "period_end": "2024-03-31",
+        "status": "sent", "created_at": "2024-03-01T10:00:00",
+    }])
+    with caplog.at_level(logging.WARNING, logger="app.services.invoice_generator"):
+        _run(s, 2024, 3)
+    assert any("INVALID" in r.message or "malformed" in r.message.lower() for r in caplog.records)

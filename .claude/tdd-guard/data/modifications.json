@@ -1,0 +1,12 @@
+{
+  "session_id": "01d437aa-f670-443b-bf2b-8616882c5cbe",
+  "transcript_path": "/var/home/exportimport/.claude/projects/-var-home-exportimport-code-rechnung-ng-htmx/01d437aa-f670-443b-bf2b-8616882c5cbe.jsonl",
+  "hook_event_name": "PreToolUse",
+  "tool_name": "Edit",
+  "tool_input": {
+    "file_path": "/var/home/exportimport/code/rechnung_ng_htmx/backend/app/templates/fragments/reconciliation_monthly.html.j2",
+    "old_string": "{% include \"fragments/reconciliation_nav.html.j2\" %}\n\n<div class=\"page-header\">\n  <h1 class=\"page-title\">Zahlungsabgleich — {{ month | month_name }} {{ year }}</h1>\n</div>",
+    "new_string": "{% include \"fragments/reconciliation_nav.html.j2\" %}\n\n<div class=\"page-header\">\n  <h1 class=\"page-title\">Zahlungsabgleich — {{ month | month_name }} {{ year }}</h1>\n  <div class=\"month-nav\">\n    <a href=\"/reconciliation?year={{ prev_year }}&month={{ prev_month }}\"\n       hx-get=\"/reconciliation?year={{ prev_year }}&month={{ prev_month }}\"\n       hx-target=\"#main-content\" hx-push-url=\"true\"\n       class=\"btn btn-secondary\">&#8592;</a>\n    <a href=\"/reconciliation?year={{ next_year }}&month={{ next_month }}\"\n       hx-get=\"/reconciliation?year={{ next_year }}&month={{ next_month }}\"\n       hx-target=\"#main-content\" hx-push-url=\"true\"\n       class=\"btn btn-secondary\">&#8594;</a>\n  </div>\n</div>",
+    "replace_all": false
+  }
+}

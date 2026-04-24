@@ -106,3 +106,13 @@ async def test_delete_customer(client, csrf):
 async def test_customer_not_found(client):
     r = await client.get("/customers/999")
     assert r.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_customer_list_has_zahlungsdaten_link(client, csrf):
+    await client.post(
+        "/customers", data=CUSTOMER_DATA,
+        headers={"HX-Request": "true", "X-CSRF-Token": csrf},
+    )
+    r = await client.get("/customers")
+    assert "/reconciliation/customers/1" in r.text
