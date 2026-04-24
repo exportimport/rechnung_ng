@@ -28,23 +28,38 @@ templates = Environment(
 )
 
 # Filters
-templates.filters["euro"] = (
-    lambda v: f"{float(v):,.2f} €".replace(",", "X").replace(".", ",").replace("X", ".")
+templates.filters["euro"] = lambda v: (
+    f"{float(v):,.2f} €".replace(",", "X").replace(".", ",").replace("X", ".")
     if v is not None
     else "—"
 )
+
+
 def _date_de(v):
-    from datetime import date, datetime
+    from datetime import datetime
+
     if not v:
         return "—"
     if isinstance(v, str):
         v = datetime.fromisoformat(v)
     return v.strftime("%d.%m.%Y")
 
+
 templates.filters["date_de"] = _date_de
 templates.filters["month_name"] = lambda v: [
-    "", "Januar", "Februar", "März", "April", "Mai", "Juni",
-    "Juli", "August", "September", "Oktober", "November", "Dezember",
+    "",
+    "Januar",
+    "Februar",
+    "März",
+    "April",
+    "Mai",
+    "Juni",
+    "Juli",
+    "August",
+    "September",
+    "Oktober",
+    "November",
+    "Dezember",
 ][int(v)]
 
 # Globals
@@ -55,7 +70,7 @@ templates.globals["CONTRACT_STATUS_LABELS"] = {
     ContractStatus.not_yet_active: "Noch nicht aktiv",
     ContractStatus.cancelled: "Gekündigt",
 }
-templates.globals["csrf_token"] = ""   # overridden per-request in render()
+templates.globals["csrf_token"] = ""  # overridden per-request in render()
 templates.globals["INVOICE_STATUS_LABELS"] = {
     InvoiceStatus.draft: "Entwurf",
     InvoiceStatus.sent: "Versendet",
@@ -68,6 +83,7 @@ templates.globals["INVOICE_STATUS_LABELS"] = {
 # Render helper
 # ---------------------------------------------------------------------------
 
+
 def render(
     request: Request,
     page_template: str,
@@ -76,6 +92,7 @@ def render(
 ) -> HTMLResponse:
     """Returns fragment for HTMX requests, full page for direct browser access."""
     from app.config import get_config
+
     csrf_token = _get_or_create_csrf(request)
     ctx = {
         "request": request,
@@ -99,9 +116,7 @@ def set_toast(response: Response, message: str, ok: bool = True) -> None:
     """Sets HX-Trigger header to show a toast notification.
     Pass the HTMLResponse you are about to return, not the injected Response param.
     """
-    response.headers["HX-Trigger"] = json.dumps(
-        {"showToast": {"message": message, "ok": ok}}
-    )
+    response.headers["HX-Trigger"] = json.dumps({"showToast": {"message": message, "ok": ok}})
 
 
 # ---------------------------------------------------------------------------
@@ -124,6 +139,7 @@ def validate_csrf(request: Request) -> bool:
 # ---------------------------------------------------------------------------
 # Lifespan
 # ---------------------------------------------------------------------------
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

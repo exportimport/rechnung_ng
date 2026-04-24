@@ -6,12 +6,12 @@ import magic
 from fastapi import APIRouter, HTTPException, Request, Response, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse
 
-logger = logging.getLogger(__name__)
-
 from app.config import UPLOADS_DIR as _UPLOADS_BASE
 from app.db.yaml_store import store
 from app.models.contract import Contract, ContractStatus, compute_status
 from app.models.plan import Plan, current_price
+
+logger = logging.getLogger(__name__)
 
 UPLOADS_DIR = _UPLOADS_BASE / "contracts"
 
@@ -107,9 +107,13 @@ async def create_contract(request: Request, response: Response):
     if errors:
         customers, plans = _load_lookups()
         html = jinja_env.get_template("pages/contract_form.html.j2").render(
-            request=request, active_page="contracts", contract=None,
-            customers=list(customers.values()), plans=list(plans.values()),
-            form_data=data, errors=errors,
+            request=request,
+            active_page="contracts",
+            contract=None,
+            customers=list(customers.values()),
+            plans=list(plans.values()),
+            form_data=data,
+            errors=errors,
         )
         return HTMLResponse(html, status_code=422)
 
@@ -128,15 +132,18 @@ async def create_contract(request: Request, response: Response):
             detail=f"Tarif hat am {start} keinen gültigen Preis.",
         )
 
-    store.create("contracts", {
-        "customer_id": customer_id,
-        "plan_id": plan_id,
-        "start_date": data["start_date"],
-        "end_date": data.get("end_date") or None,
-        "billing_cycle": data.get("billing_cycle", "monthly"),
-        "reference": data.get("reference") or None,
-        "comment": data.get("comment") or None,
-    })
+    store.create(
+        "contracts",
+        {
+            "customer_id": customer_id,
+            "plan_id": plan_id,
+            "start_date": data["start_date"],
+            "end_date": data.get("end_date") or None,
+            "billing_cycle": data.get("billing_cycle", "monthly"),
+            "reference": data.get("reference") or None,
+            "comment": data.get("comment") or None,
+        },
+    )
     _r = HTMLResponse("", status_code=200)
     set_toast(_r, "Vertrag erstellt.")
     _r.headers["HX-Redirect"] = "/contracts"
@@ -158,22 +165,29 @@ async def update_contract(request: Request, response: Response, contract_id: int
     if errors:
         customers, plans = _load_lookups()
         html = jinja_env.get_template("pages/contract_form.html.j2").render(
-            request=request, active_page="contracts",
+            request=request,
+            active_page="contracts",
             contract=_enrich(Contract(**d), customers, plans),
-            customers=list(customers.values()), plans=list(plans.values()),
-            form_data=data, errors=errors,
+            customers=list(customers.values()),
+            plans=list(plans.values()),
+            form_data=data,
+            errors=errors,
         )
         return HTMLResponse(html, status_code=422)
 
-    store.update("contracts", contract_id, {
-        "customer_id": int(data["customer_id"]),
-        "plan_id": int(data["plan_id"]),
-        "start_date": data["start_date"],
-        "end_date": data.get("end_date") or None,
-        "billing_cycle": data.get("billing_cycle", "monthly"),
-        "reference": data.get("reference") or None,
-        "comment": data.get("comment") or None,
-    })
+    store.update(
+        "contracts",
+        contract_id,
+        {
+            "customer_id": int(data["customer_id"]),
+            "plan_id": int(data["plan_id"]),
+            "start_date": data["start_date"],
+            "end_date": data.get("end_date") or None,
+            "billing_cycle": data.get("billing_cycle", "monthly"),
+            "reference": data.get("reference") or None,
+            "comment": data.get("comment") or None,
+        },
+    )
     _r = HTMLResponse("", status_code=200)
     set_toast(_r, "Vertrag aktualisiert.")
     _r.headers["HX-Redirect"] = "/contracts"
@@ -216,7 +230,9 @@ async def cancel_contract(request: Request, response: Response, contract_id: int
         pdf_path = generate_cancellation(contract_id, end_date, store)
         store.update("contracts", contract_id, {"cancellation_pdf": str(pdf_path)})
     except Exception:
-        logger.warning("Cancellation PDF generation failed for contract %d", contract_id, exc_info=True)
+        logger.warning(
+            "Cancellation PDF generation failed for contract %d", contract_id, exc_info=True
+        )
 
     _r = HTMLResponse("", status_code=200)
     set_toast(_r, "Vertrag gekündigt.")
@@ -259,8 +275,9 @@ def download_scan(contract_id: int):
     contract = Contract(**d)
     if not contract.scan_file or not Path(contract.scan_file).exists():
         raise HTTPException(status_code=404, detail="Kein Scan vorhanden")
-    return FileResponse(contract.scan_file, media_type="application/pdf",
-                        filename=f"vertrag-{contract_id}.pdf")
+    return FileResponse(
+        contract.scan_file, media_type="application/pdf", filename=f"vertrag-{contract_id}.pdf"
+    )
 
 
 @router.get("/{contract_id}/cancellation-pdf")
@@ -271,8 +288,11 @@ def download_cancellation_pdf(contract_id: int):
     contract = Contract(**d)
     if not contract.cancellation_pdf or not Path(contract.cancellation_pdf).exists():
         raise HTTPException(status_code=404, detail="Kein Kündigungsdokument vorhanden")
-    return FileResponse(contract.cancellation_pdf, media_type="application/pdf",
-                        filename=f"kuendigung-{contract_id}.pdf")
+    return FileResponse(
+        contract.cancellation_pdf,
+        media_type="application/pdf",
+        filename=f"kuendigung-{contract_id}.pdf",
+    )
 
 
 def _validate_contract(data: dict) -> dict:

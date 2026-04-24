@@ -25,9 +25,9 @@ def monthly_view(request: Request, year: int | None = None, month: int | None = 
     customers = {c["id"]: c for c in store.load("customers")}
     all_invoices = [Invoice(**d) for d in store.load("invoices")]
     month_invoices = [
-        inv for inv in all_invoices
-        if inv.year == year and inv.month == month
-        and inv.status != InvoiceStatus.draft
+        inv
+        for inv in all_invoices
+        if inv.year == year and inv.month == month and inv.status != InvoiceStatus.draft
     ]
 
     tx_by_id = {t["transaction_id"]: t for t in store.load("camt_transactions")}
@@ -40,7 +40,9 @@ def monthly_view(request: Request, year: int | None = None, month: int | None = 
             f"{customer['vorname']} {customer['nachname']}" if customer else "Unbekannt"
         )
         data["effective_status"] = effective_status(inv, today, payment_terms)
-        data["matched_tx"] = tx_by_id.get(inv.payment_transaction_id) if inv.payment_transaction_id else None
+        data["matched_tx"] = (
+            tx_by_id.get(inv.payment_transaction_id) if inv.payment_transaction_id else None
+        )
         rows.append(data)
 
     prev_year, prev_month = (year, month - 1) if month > 1 else (year - 1, 12)
@@ -49,11 +51,18 @@ def monthly_view(request: Request, year: int | None = None, month: int | None = 
     invoice_years = sorted({inv.year for inv in all_invoices}) or [today.year]
     available_years = list(range(min(invoice_years), today.year + 1))
 
-    ctx = {"active_page": "reconciliation", "recon_page": "monthly",
-           "year": year, "month": month, "invoices": rows,
-           "prev_year": prev_year, "prev_month": prev_month,
-           "next_year": next_year, "next_month": next_month,
-           "available_years": available_years}
+    ctx = {
+        "active_page": "reconciliation",
+        "recon_page": "monthly",
+        "year": year,
+        "month": month,
+        "invoices": rows,
+        "prev_year": prev_year,
+        "prev_month": prev_month,
+        "next_year": next_year,
+        "next_month": next_month,
+        "available_years": available_years,
+    }
     return render(request, "base.html.j2", "fragments/reconciliation_monthly.html.j2", ctx)
 
 
@@ -61,10 +70,14 @@ SEARCHABLE_COLS = {"debtor_name", "debtor_iban", "remittance_info", "transaction
 
 
 @router.get("/customers/{customer_id}")
-def customer_view(request: Request, customer_id: int,
-                  tx_year: str | None = None, tx_month: str | None = None,
-                  tx_search: str | None = None,
-                  tx_cols: list[str] | None = None):
+def customer_view(
+    request: Request,
+    customer_id: int,
+    tx_year: str | None = None,
+    tx_month: str | None = None,
+    tx_search: str | None = None,
+    tx_cols: list[str] | None = None,
+):
     from app.config import get_config
     from app.main import render
     from app.models.invoice import Invoice, InvoiceStatus
@@ -74,12 +87,14 @@ def customer_view(request: Request, customer_id: int,
     cfg = get_config()
     payment_terms = cfg.invoice.payment_terms_days
 
-
     customers = {c["id"]: c for c in store.load("customers")}
     customer = customers.get(customer_id)
     all_invoices = [Invoice(**d) for d in store.load("invoices")]
-    cust_invoices = [inv for inv in all_invoices
-                     if inv.customer_id == customer_id and inv.status != InvoiceStatus.draft]
+    cust_invoices = [
+        inv
+        for inv in all_invoices
+        if inv.customer_id == customer_id and inv.status != InvoiceStatus.draft
+    ]
 
     tx_by_id = {t["transaction_id"]: t for t in store.load("camt_transactions")}
 
@@ -87,10 +102,13 @@ def customer_view(request: Request, customer_id: int,
     for inv in sorted(cust_invoices, key=lambda i: (i.year, i.month), reverse=True):
         data = inv.model_dump(mode="json")
         data["effective_status"] = effective_status(inv, today, payment_terms)
-        data["matched_tx"] = tx_by_id.get(inv.payment_transaction_id) if inv.payment_transaction_id else None
+        data["matched_tx"] = (
+            tx_by_id.get(inv.payment_transaction_id) if inv.payment_transaction_id else None
+        )
         rows.append(data)
 
     from app.models.camt import CamtTransaction, MatchStatus
+
     all_tx = [CamtTransaction(**d) for d in store.load("camt_transactions")]
     unmatched = [tx for tx in all_tx if tx.match_status == MatchStatus.unmatched]
     _yr = int(tx_year) if tx_year else None
@@ -103,7 +121,8 @@ def customer_view(request: Request, customer_id: int,
         needle = tx_search.lower()
         cols = [c for c in (tx_cols or []) if c in SEARCHABLE_COLS] or list(SEARCHABLE_COLS)
         unmatched = [
-            tx for tx in unmatched
+            tx
+            for tx in unmatched
             if any(needle in (getattr(tx, col) or "").lower() for col in cols)
         ]
     unmatched_tx = sorted(unmatched, key=lambda t: t.booking_date, reverse=True)
@@ -114,22 +133,37 @@ def customer_view(request: Request, customer_id: int,
     tx_months = sorted({tx.booking_date.month for tx in tx_months_src})
 
     open_invoices = [
-        inv for inv in all_invoices
+        inv
+        for inv in all_invoices
         if inv.customer_id == customer_id and inv.status == InvoiceStatus.sent
     ]
 
-    return render(request, "base.html.j2", "fragments/reconciliation_customer.html.j2",
-                  {"active_page": "reconciliation", "recon_page": "customer",
-                   "customer_id": customer_id, "customer": customer, "invoices": rows,
-                   "unmatched_tx": [tx.model_dump(mode="json") for tx in unmatched_tx],
-                   "open_invoices": [inv.model_dump(mode="json") for inv in open_invoices],
-                   "tx_years": tx_years, "tx_months": tx_months, "tx_year": _yr, "tx_month": _mo,
-                   "tx_search": tx_search or "", "tx_cols": tx_cols or []})
+    return render(
+        request,
+        "base.html.j2",
+        "fragments/reconciliation_customer.html.j2",
+        {
+            "active_page": "reconciliation",
+            "recon_page": "customer",
+            "customer_id": customer_id,
+            "customer": customer,
+            "invoices": rows,
+            "unmatched_tx": [tx.model_dump(mode="json") for tx in unmatched_tx],
+            "open_invoices": [inv.model_dump(mode="json") for inv in open_invoices],
+            "tx_years": tx_years,
+            "tx_months": tx_months,
+            "tx_year": _yr,
+            "tx_month": _mo,
+            "tx_search": tx_search or "",
+            "tx_cols": tx_cols or [],
+        },
+    )
 
 
 @router.post("/customers/{customer_id}/match")
 async def manual_match(customer_id: int, request: Request):
     from datetime import datetime
+
     from app.models.camt import CamtTransaction, MatchStatus
     from app.models.invoice import Invoice
 
@@ -141,22 +175,29 @@ async def manual_match(customer_id: int, request: Request):
     tx = next((t for t in all_tx if t.transaction_id == transaction_id), None)
     if tx is None:
         from fastapi import HTTPException
+
         raise HTTPException(status_code=404)
 
     tx.match_status = MatchStatus.manually_matched
     tx.matched_invoice_id = invoice_id
     tx.matched_at = datetime.now()
-    store.update_by("camt_transactions", "transaction_id", transaction_id, tx.model_dump(mode="json"))
+    store.update_by(
+        "camt_transactions", "transaction_id", transaction_id, tx.model_dump(mode="json")
+    )
 
     all_invoices = [Invoice(**d) for d in store.load("invoices")]
     inv = next((i for i in all_invoices if i.id == invoice_id), None)
     if inv is not None:
-        store.update("invoices", inv.id, {
-            **inv.model_dump(mode="json"),
-            "status": "paid",
-            "paid_at": tx.booking_date.isoformat(),
-            "payment_transaction_id": tx.transaction_id,
-        })
+        store.update(
+            "invoices",
+            inv.id,
+            {
+                **inv.model_dump(mode="json"),
+                "status": "paid",
+                "paid_at": tx.booking_date.isoformat(),
+                "payment_transaction_id": tx.transaction_id,
+            },
+        )
 
     return HTMLResponse("<tr><td colspan='6'>Zugeordnet</td></tr>")
 
@@ -168,9 +209,16 @@ def unmatched_list(request: Request):
 
     all_tx = [CamtTransaction(**d) for d in store.load("camt_transactions")]
     unmatched = [tx for tx in all_tx if tx.match_status == MatchStatus.unmatched]
-    return render(request, "base.html.j2", "fragments/reconciliation_unmatched.html.j2",
-                  {"active_page": "reconciliation", "recon_page": "unmatched",
-                   "transactions": [tx.model_dump(mode="json") for tx in unmatched]})
+    return render(
+        request,
+        "base.html.j2",
+        "fragments/reconciliation_unmatched.html.j2",
+        {
+            "active_page": "reconciliation",
+            "recon_page": "unmatched",
+            "transactions": [tx.model_dump(mode="json") for tx in unmatched],
+        },
+    )
 
 
 @router.get("/review")
@@ -179,16 +227,27 @@ def review_queue(request: Request):
     from app.models.camt import CamtTransaction, MatchStatus
 
     all_tx = [CamtTransaction(**d) for d in store.load("camt_transactions")]
-    review = [tx for tx in all_tx
-              if tx.match_status == MatchStatus.unmatched and tx.match_confidence is not None]
-    return render(request, "base.html.j2", "fragments/reconciliation_review.html.j2",
-                  {"active_page": "reconciliation", "recon_page": "review",
-                   "transactions": [tx.model_dump(mode="json") for tx in review]})
+    review = [
+        tx
+        for tx in all_tx
+        if tx.match_status == MatchStatus.unmatched and tx.match_confidence is not None
+    ]
+    return render(
+        request,
+        "base.html.j2",
+        "fragments/reconciliation_review.html.j2",
+        {
+            "active_page": "reconciliation",
+            "recon_page": "review",
+            "transactions": [tx.model_dump(mode="json") for tx in review],
+        },
+    )
 
 
 @router.post("/review/{transaction_id}/confirm")
 def confirm_match(transaction_id: str):
     from datetime import datetime
+
     from app.models.camt import CamtTransaction, MatchStatus
     from app.models.invoice import Invoice
 
@@ -196,22 +255,29 @@ def confirm_match(transaction_id: str):
     tx = next((t for t in all_tx if t.transaction_id == transaction_id), None)
     if tx is None:
         from fastapi import HTTPException
+
         raise HTTPException(status_code=404)
 
     tx.match_status = MatchStatus.manually_matched
     tx.matched_at = datetime.now()
-    store.update_by("camt_transactions", "transaction_id", transaction_id, tx.model_dump(mode="json"))
+    store.update_by(
+        "camt_transactions", "transaction_id", transaction_id, tx.model_dump(mode="json")
+    )
 
     if tx.matched_invoice_id is not None:
         all_invoices = [Invoice(**d) for d in store.load("invoices")]
         inv = next((i for i in all_invoices if i.id == tx.matched_invoice_id), None)
         if inv is not None:
-            store.update("invoices", inv.id, {
-                **inv.model_dump(mode="json"),
-                "status": "paid",
-                "paid_at": tx.booking_date.isoformat(),
-                "payment_transaction_id": tx.transaction_id,
-            })
+            store.update(
+                "invoices",
+                inv.id,
+                {
+                    **inv.model_dump(mode="json"),
+                    "status": "paid",
+                    "paid_at": tx.booking_date.isoformat(),
+                    "payment_transaction_id": tx.transaction_id,
+                },
+            )
 
     return HTMLResponse("<tr><td colspan='7'>Abgeglichen</td></tr>")
 
@@ -224,11 +290,14 @@ def reject_suggestion(transaction_id: str):
     tx = next((t for t in all_tx if t.transaction_id == transaction_id), None)
     if tx is None:
         from fastapi import HTTPException
+
         raise HTTPException(status_code=404)
 
     tx.match_confidence = None
     tx.matched_invoice_id = None
-    store.update_by("camt_transactions", "transaction_id", transaction_id, tx.model_dump(mode="json"))
+    store.update_by(
+        "camt_transactions", "transaction_id", transaction_id, tx.model_dump(mode="json")
+    )
 
     return HTMLResponse("<tr><td colspan='7'>Vorschlag abgelehnt</td></tr>")
 
@@ -241,10 +310,13 @@ def ignore_transaction(transaction_id: str):
     tx = next((t for t in all_tx if t.transaction_id == transaction_id), None)
     if tx is None:
         from fastapi import HTTPException
+
         raise HTTPException(status_code=404)
 
     tx.match_status = MatchStatus.ignored
-    store.update_by("camt_transactions", "transaction_id", transaction_id, tx.model_dump(mode="json"))
+    store.update_by(
+        "camt_transactions", "transaction_id", transaction_id, tx.model_dump(mode="json")
+    )
 
     return HTMLResponse("<tr><td colspan='6'>Ignoriert</td></tr>")
 
@@ -253,8 +325,12 @@ def ignore_transaction(transaction_id: str):
 def import_form(request: Request):
     from app.main import render
 
-    return render(request, "base.html.j2", "fragments/reconciliation_import.html.j2",
-                  {"active_page": "reconciliation", "recon_page": "import"})
+    return render(
+        request,
+        "base.html.j2",
+        "fragments/reconciliation_import.html.j2",
+        {"active_page": "reconciliation", "recon_page": "import"},
+    )
 
 
 @router.post("/import")

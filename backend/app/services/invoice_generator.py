@@ -6,8 +6,6 @@ from decimal import Decimal
 from multiprocessing import get_context
 from pathlib import Path
 
-logger = logging.getLogger(__name__)
-
 from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML
 
@@ -17,6 +15,8 @@ from app.models.contract import BillingCycle, Contract
 from app.models.customer import Customer
 from app.models.invoice import Invoice, InvoiceStatus
 from app.models.plan import Plan, current_price
+
+logger = logging.getLogger(__name__)
 
 ASSETS_DIR = Path(__file__).parent.parent.parent / "assets"
 OUTPUT_DIR = Path(__file__).parent.parent.parent / "output"
@@ -42,7 +42,8 @@ def _next_seq(all_invoices: list[dict], year: int, month: int) -> int:
             except (KeyError, ValueError, IndexError):
                 logger.warning(
                     "Malformed invoice_number %r on invoice id=%s — skipping for sequence",
-                    inv.get("invoice_number"), inv.get("id"),
+                    inv.get("invoice_number"),
+                    inv.get("id"),
                 )
     return max(seqs, default=0) + 1
 
@@ -88,6 +89,7 @@ def _render_worker(args: tuple) -> tuple[int, str]:
     plan = Plan(**plan_dict)
     customer = Customer(**customer_dict)
     from app.services.invoice_generator import render_invoice_pdf as _render
+
     path = _render(invoice, contract, plan, customer, None)  # type: ignore[arg-type]
     return invoice.id, str(path)
 
@@ -174,12 +176,14 @@ def generate_invoices(year: int, month: int, s: YamlStore) -> list[Invoice]:
         }
         new_records.append(data)
         invoice = Invoice(**data)
-        worker_args.append((
-            invoice.model_dump(mode="json"),
-            contract.model_dump(mode="json"),
-            plan.model_dump(mode="json"),
-            customer.model_dump(mode="json"),
-        ))
+        worker_args.append(
+            (
+                invoice.model_dump(mode="json"),
+                contract.model_dump(mode="json"),
+                plan.model_dump(mode="json"),
+                customer.model_dump(mode="json"),
+            )
+        )
         seq += 1
 
     if not worker_args:
