@@ -1,8 +1,6 @@
 <img src="assets/logo.svg" alt="rechnung_ng" width="160">
 
-# rechnung_ng
-
-Contract and invoice management for small service businesses. Single-user, self-hosted, no cloud dependency.
+Web based contract and invoice management with payment reconciliation of Camt0.53 imports.
 
 <video src="https://github.com/user-attachments/assets/a1631864-5f57-4c5d-b72b-ce8f1920a045" autoplay loop muted playsinline width="100%"></video>
 
@@ -87,7 +85,7 @@ invoice:
   vat_rate: 0.19
 ```
 
-Set `SMTP_PASSWORD` in `.env` (never committed).
+Set `SMTP_PASSWORD` in `.env` 
 
 ## Development
 
@@ -99,6 +97,3 @@ ruff format app/        # format
 
 CI runs lint → tests → Docker build → deploy on every push to `main`.
 
-## License
-
-MIT
