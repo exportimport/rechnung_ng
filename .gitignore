@@ -23,3 +23,7 @@ backend/.env
 .idea/
 .vscode/
 *.swp
+
+# Claude Code / TDD-guard
+.claude/
+.tdd-guard.json

@@ -1,38 +1,104 @@
-<img src="assets/logo.svg" alt="rechnung_ng" width="200">
+<img src="assets/logo.svg" alt="rechnung_ng" width="160">
 
-Web-based contract and invoice management system. Single-user, local deployment.
+# rechnung_ng
+
+Contract and invoice management for small service businesses. Single-user, self-hosted, no cloud dependency.
+
+<!-- Add GIF screenshots here once recorded — see bottom of this file -->
+
+---
 
 ## Features
 
-- Customer, contract, and plan management
-- Automatic invoice generation as PDF
-- Email dispatch with configurable templates
-- Dashboard for open and overdue invoices
+- **Customers & Contracts** — manage customer data with monthly or quarterly billing cycles
+- **Automatic invoice generation** — generates PDFs for all active contracts in one click, rendered in parallel
+- **Mail dispatch** — sends invoices via SMTP with per-customer Jinja2 mail templates
+- **Payment reconciliation** — import CAMT.053 v8 bank exports; transactions are auto-matched to invoices by invoice number, IBAN, or fuzzy name; unmatched ones can be reviewed or manually assigned
+- **Cancellation letters** — generate PDF cancellation notices for ended contracts
+- **Dashboard** — live overview of open, overdue, and paid invoices
 
-## Tech Stack
+## Stack
 
-- **Backend**: Python 3.12+, FastAPI, WeasyPrint, Jinja2
-- **Frontend**: HTMX 2.x + Jinja2 templates (no npm, no build step)
-- **Storage**: Flat-file YAML
+| Layer | Technology |
+|---|---|
+| Backend | FastAPI + Uvicorn |
+| Templating | Jinja2 (server-rendered) |
+| Interactivity | HTMX 2.x — no build step, no npm |
+| PDF generation | WeasyPrint |
+| Storage | YAML flat-files |
+| Email | smtplib |
 
-## Getting Started
+No Node.js. No database server. No frontend build pipeline. Client-side footprint: two local JS files (~53 KB total).
+
+## Self-hosting
+
+### Docker
+
+```bash
+docker run -d \
+  --name rechnung-ng \
+  -p 8000:8000 \
+  -v /your/data:/app/data \
+  -v /your/output:/app/output \
+  -v /your/uploads:/app/uploads \
+  --env-file /your/env \
+  ghcr.io/exportimport/rechnung-ng:latest
+```
+
+Copy `example/config.yaml` to `/your/data/config.yaml` and fill in your company and SMTP details.
+
+### Local development
 
 ```bash
 cd backend
-python -m venv .venv
-source .venv/bin/activate
+python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-cp .env.example .env  # add your SMTP password
 uvicorn app.main:app --reload --port 8000
 ```
 
-App runs on `http://localhost:8000`.
+Open `http://localhost:8000`.
 
 ## Configuration
 
-Edit `backend/data/config.yaml` for company info, SMTP settings, and invoice number format.
-Set `SMTP_PASSWORD` in `backend/.env` (never committed).
+`data/config.yaml`:
 
-## Storage
+```yaml
+company:
+  name: Musterfirma GmbH
+  street: Musterstraße
+  house_number: "1"
+  postcode: "12345"
+  city: Berlin
+  email: kontakt@musterfirma.de
+  iban: DE00 1234 5678 9012 3456 78
+  bic: BELADEBEXXX
 
-Data is stored as YAML files (`invoices.yaml`, `customers.yaml`, etc.). Fine for years of normal use. If the dashboard starts feeling slow, the fix is SQLite — a ~50-line migration script would do it.
+smtp:
+  host: smtp.example.com
+  port: 587
+  username: user@example.com
+  use_tls: true
+  sender_name: Musterfirma
+  sender_email: rechnungen@musterfirma.de
+
+invoice:
+  number_format: "{customer_id}-{contract_id}-{year}-{month:02d}-{seq:04d}"
+  payment_terms_days: 14
+  vat_rate: 0.19
+```
+
+Set `SMTP_PASSWORD` in `.env` (never committed).
+
+## Development
+
+```bash
+pytest                  # run tests
+ruff check app/         # lint
+ruff format app/        # format
+```
+
+CI runs lint → tests → Docker build → deploy on every push to `main`.
+
+## License
+
+MIT
