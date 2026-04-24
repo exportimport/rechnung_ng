@@ -30,6 +30,9 @@
         <button hx-post="/reconciliation/review/{{ tx.transaction_id }}/confirm"
                 hx-target="closest tr" hx-swap="outerHTML"
                 class="btn btn-primary btn-sm">Bestätigen</button>
+        <button hx-post="/reconciliation/review/{{ tx.transaction_id }}/reject"
+                hx-target="closest tr" hx-swap="outerHTML"
+                class="btn btn-secondary btn-sm">Ablehnen</button>
       </td>
     </tr>
     {% endfor %}

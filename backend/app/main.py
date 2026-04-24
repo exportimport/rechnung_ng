@@ -60,6 +60,7 @@ templates.globals["INVOICE_STATUS_LABELS"] = {
     InvoiceStatus.draft: "Entwurf",
     InvoiceStatus.sent: "Versendet",
     InvoiceStatus.paid: "Bezahlt",
+    "overdue": "Überfällig",
 }
 
 

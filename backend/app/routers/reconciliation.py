@@ -138,6 +138,28 @@ def confirm_match(transaction_id: str):
     return HTMLResponse("<tr><td colspan='7'>Abgeglichen</td></tr>")
 
 
+@router.post("/review/{transaction_id}/reject")
+def reject_suggestion(transaction_id: str):
+    from app.models.camt import CamtTransaction
+
+    all_tx = [CamtTransaction(**d) for d in store.load("camt_transactions")]
+    tx = next((t for t in all_tx if t.transaction_id == transaction_id), None)
+    if tx is None:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404)
+
+    tx.match_confidence = None
+    tx.matched_invoice_id = None
+    all_records = store.load("camt_transactions")
+    for i, r in enumerate(all_records):
+        if r["transaction_id"] == transaction_id:
+            all_records[i] = tx.model_dump(mode="json")
+            break
+    store.save("camt_transactions", all_records)
+
+    return HTMLResponse("<tr><td colspan='7'>Vorschlag abgelehnt</td></tr>")
+
+
 @router.post("/unmatched/{transaction_id}/ignore")
 def ignore_transaction(transaction_id: str):
     from app.models.camt import CamtTransaction, MatchStatus
