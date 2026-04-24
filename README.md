@@ -2,7 +2,7 @@
 
 Web based contract and invoice management with payment reconciliation of Camt0.53 imports.
 
-<video src="https://github.com/user-attachments/assets/a1631864-5f57-4c5d-b72b-ce8f1920a045" autoplay loop muted playsinline width="100%"></video>
+![Demo](assets/dummycast.gif)
 
 ---
 
