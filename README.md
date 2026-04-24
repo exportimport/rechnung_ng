@@ -4,7 +4,7 @@
 
 Contract and invoice management for small service businesses. Single-user, self-hosted, no cloud dependency.
 
-<video src="assets/dummycast.webm" autoplay loop muted playsinline width="100%"></video>
+<!-- Demo video: drag dummycast.webm into a GitHub issue to get a CDN URL, then replace this comment with the <video> tag -->
 
 ---
 
