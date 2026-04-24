@@ -13,6 +13,7 @@
       <th>Auftraggeber</th>
       <th>IBAN</th>
       <th>Verwendungszweck</th>
+      <th>Aktion</th>
     </tr>
   </thead>
   <tbody>
@@ -23,6 +24,11 @@
       <td>{{ tx.debtor_name or "—" }}</td>
       <td>{{ tx.debtor_iban or "—" }}</td>
       <td>{{ tx.remittance_info or "—" }}</td>
+      <td>
+        <button hx-post="/reconciliation/unmatched/{{ tx.transaction_id }}/ignore"
+                hx-target="closest tr" hx-swap="outerHTML"
+                class="btn btn-secondary btn-sm">Ignorieren</button>
+      </td>
     </tr>
     {% endfor %}
   </tbody>

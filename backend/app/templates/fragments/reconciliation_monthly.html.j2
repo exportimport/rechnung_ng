@@ -29,9 +29,11 @@
     {% for inv in invoices %}
     <tr>
       <td>{{ inv.invoice_number }}</td>
-      <td>{{ inv.customer_name }}</td>
+      <td><a href="/reconciliation/customers/{{ inv.customer_id }}"
+             hx-get="/reconciliation/customers/{{ inv.customer_id }}"
+             hx-target="#main-content" hx-push-url="true">{{ inv.customer_name }}</a></td>
       <td>{{ inv.amount | euro }}</td>
-      <td>{{ inv.effective_status }}</td>
+      <td>{{ INVOICE_STATUS_LABELS.get(inv.effective_status, inv.effective_status) }}</td>
       <td>{% if inv.effective_status == "paid" %}Abgeglichen{% else %}Offen{% endif %}</td>
     </tr>
     {% endfor %}

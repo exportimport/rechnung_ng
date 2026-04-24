@@ -103,6 +103,62 @@ def review_queue(request: Request):
                    "transactions": [tx.model_dump(mode="json") for tx in review]})
 
 
+@router.post("/review/{transaction_id}/confirm")
+def confirm_match(transaction_id: str):
+    from datetime import datetime
+    from app.models.camt import CamtTransaction, MatchStatus
+    from app.models.invoice import Invoice
+
+    all_tx = [CamtTransaction(**d) for d in store.load("camt_transactions")]
+    tx = next((t for t in all_tx if t.transaction_id == transaction_id), None)
+    if tx is None:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404)
+
+    tx.match_status = MatchStatus.manually_matched
+    tx.matched_at = datetime.now()
+    all_records = store.load("camt_transactions")
+    for i, r in enumerate(all_records):
+        if r["transaction_id"] == transaction_id:
+            all_records[i] = tx.model_dump(mode="json")
+            break
+    store.save("camt_transactions", all_records)
+
+    if tx.matched_invoice_id is not None:
+        all_invoices = [Invoice(**d) for d in store.load("invoices")]
+        inv = next((i for i in all_invoices if i.id == tx.matched_invoice_id), None)
+        if inv is not None:
+            store.update("invoices", inv.id, {
+                **inv.model_dump(mode="json"),
+                "status": "paid",
+                "paid_at": tx.booking_date.isoformat(),
+                "payment_transaction_id": tx.transaction_id,
+            })
+
+    return HTMLResponse("<tr><td colspan='7'>Abgeglichen</td></tr>")
+
+
+@router.post("/unmatched/{transaction_id}/ignore")
+def ignore_transaction(transaction_id: str):
+    from app.models.camt import CamtTransaction, MatchStatus
+
+    all_tx = [CamtTransaction(**d) for d in store.load("camt_transactions")]
+    tx = next((t for t in all_tx if t.transaction_id == transaction_id), None)
+    if tx is None:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404)
+
+    tx.match_status = MatchStatus.ignored
+    all_records = store.load("camt_transactions")
+    for i, r in enumerate(all_records):
+        if r["transaction_id"] == transaction_id:
+            all_records[i] = tx.model_dump(mode="json")
+            break
+    store.save("camt_transactions", all_records)
+
+    return HTMLResponse("<tr><td colspan='6'>Ignoriert</td></tr>")
+
+
 @router.get("/import")
 def import_form(request: Request):
     from app.main import render

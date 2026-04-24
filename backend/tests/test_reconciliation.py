@@ -49,6 +49,44 @@ async def test_monthly_view_shows_sent_invoices(client, csrf):
 
 
 @pytest.mark.asyncio
+async def test_monthly_view_shows_bezahlt_for_paid_invoice(client):
+    import app.db.yaml_store as ys
+    ys.store.create("customers", {
+        "id": 1, "vorname": "Max", "nachname": "Mustermann",
+        "street": "Musterstr", "house_number": "1", "postcode": "12345",
+        "city": "Berlin", "iban": "DE89370400440532013000", "email": "max@example.com",
+    })
+    ys.store.create("invoices", {
+        "id": 1, "contract_id": 1, "customer_id": 1,
+        "invoice_number": "2025-03-0001", "year": 2025, "month": 3,
+        "amount": 119.00, "period_start": "2025-03-01", "period_end": "2025-03-31",
+        "status": "paid", "created_at": "2025-03-01T10:00:00",
+        "sent_at": "2025-03-01T10:00:00", "paid_at": "2025-03-20",
+    })
+    r = await client.get("/reconciliation?year=2025&month=3")
+    assert "Bezahlt" in r.text
+
+
+@pytest.mark.asyncio
+async def test_monthly_view_customer_name_links_to_customer_view(client):
+    import app.db.yaml_store as ys
+    ys.store.create("customers", {
+        "id": 1, "vorname": "Max", "nachname": "Mustermann",
+        "street": "Musterstr", "house_number": "1", "postcode": "12345",
+        "city": "Berlin", "iban": "DE89370400440532013000", "email": "max@example.com",
+    })
+    ys.store.create("invoices", {
+        "id": 1, "contract_id": 1, "customer_id": 1,
+        "invoice_number": "2025-03-0001", "year": 2025, "month": 3,
+        "amount": 119.00, "period_start": "2025-03-01", "period_end": "2025-03-31",
+        "status": "sent", "created_at": "2025-03-01T10:00:00",
+        "sent_at": "2025-03-01T10:00:00",
+    })
+    r = await client.get("/reconciliation?year=2025&month=3")
+    assert "/reconciliation/customers/1" in r.text
+
+
+@pytest.mark.asyncio
 async def test_import_get_returns_200(client):
     r = await client.get("/reconciliation/import")
     assert r.status_code == 200
@@ -128,6 +166,117 @@ async def test_review_shows_medium_confidence_transactions(client, csrf):
     })
     r = await client.get("/reconciliation/review")
     assert "TX-REVIEW-001" in r.text
+
+
+@pytest.mark.asyncio
+async def test_review_has_confirm_button(client, csrf):
+    import app.db.yaml_store as ys
+    ys.store.create("camt_transactions", {
+        "transaction_id": "TX-CONFIRM-001",
+        "booking_date": "2026-04-05", "value_date": "2026-04-05",
+        "amount": 119.00, "currency": "EUR", "credit_debit": "CRDT",
+        "debtor_name": "Max Mustermann", "debtor_iban": "DE89370400440532013000",
+        "remittance_info": "Monatsbeitrag", "imported_at": "2026-04-22T08:00:00",
+        "source_file": "test.xml", "match_status": "unmatched",
+        "matched_invoice_id": 1, "matched_at": None, "match_confidence": "medium",
+    })
+    r = await client.get("/reconciliation/review")
+    assert "Bestätigen" in r.text
+
+
+@pytest.mark.asyncio
+async def test_review_confirm_post_marks_matched(client, csrf):
+    import app.db.yaml_store as ys
+    ys.store.create("camt_transactions", {
+        "transaction_id": "TX-CONFIRM-002",
+        "booking_date": "2026-04-05", "value_date": "2026-04-05",
+        "amount": 119.00, "currency": "EUR", "credit_debit": "CRDT",
+        "debtor_name": "Max Mustermann", "debtor_iban": "DE89370400440532013000",
+        "remittance_info": "Monatsbeitrag", "imported_at": "2026-04-22T08:00:00",
+        "source_file": "test.xml", "match_status": "unmatched",
+        "matched_invoice_id": 1, "matched_at": None, "match_confidence": "medium",
+    })
+    ys.store.create("invoices", {
+        "id": 1, "contract_id": 1, "customer_id": 1,
+        "invoice_number": "2026-04-0001", "year": 2026, "month": 4,
+        "amount": 119.00, "period_start": "2026-04-01", "period_end": "2026-04-30",
+        "status": "sent", "created_at": "2026-04-01T10:00:00",
+        "sent_at": "2026-04-01T10:00:00",
+    })
+    r = await client.post(
+        "/reconciliation/review/TX-CONFIRM-002/confirm",
+        headers={"X-CSRF-Token": csrf},
+    )
+    assert r.status_code == 200
+    txs = ys.store.load("camt_transactions")
+    tx = next(t for t in txs if t["transaction_id"] == "TX-CONFIRM-002")
+    assert tx["match_status"] == "manually_matched"
+
+
+@pytest.mark.asyncio
+async def test_review_confirm_marks_invoice_paid(client, csrf):
+    import app.db.yaml_store as ys
+    ys.store.create("camt_transactions", {
+        "transaction_id": "TX-CONFIRM-003",
+        "booking_date": "2026-04-05", "value_date": "2026-04-05",
+        "amount": 119.00, "currency": "EUR", "credit_debit": "CRDT",
+        "debtor_name": "Max Mustermann", "debtor_iban": "DE89370400440532013000",
+        "remittance_info": "Monatsbeitrag", "imported_at": "2026-04-22T08:00:00",
+        "source_file": "test.xml", "match_status": "unmatched",
+        "matched_invoice_id": 1, "matched_at": None, "match_confidence": "medium",
+    })
+    ys.store.create("invoices", {
+        "id": 1, "contract_id": 1, "customer_id": 1,
+        "invoice_number": "2026-04-0001", "year": 2026, "month": 4,
+        "amount": 119.00, "period_start": "2026-04-01", "period_end": "2026-04-30",
+        "status": "sent", "created_at": "2026-04-01T10:00:00",
+        "sent_at": "2026-04-01T10:00:00",
+    })
+    await client.post(
+        "/reconciliation/review/TX-CONFIRM-003/confirm",
+        headers={"X-CSRF-Token": csrf},
+    )
+    invoices = ys.store.load("invoices")
+    inv = next(i for i in invoices if i["id"] == 1)
+    assert inv["status"] == "paid"
+
+
+@pytest.mark.asyncio
+async def test_unmatched_has_ignore_button(client, csrf):
+    import app.db.yaml_store as ys
+    ys.store.create("camt_transactions", {
+        "transaction_id": "TX-IGNORE-001",
+        "booking_date": "2026-04-05", "value_date": "2026-04-05",
+        "amount": 55.00, "currency": "EUR", "credit_debit": "CRDT",
+        "debtor_name": "Unknown", "debtor_iban": None,
+        "remittance_info": None, "imported_at": "2026-04-22T08:00:00",
+        "source_file": "test.xml", "match_status": "unmatched",
+        "matched_invoice_id": None, "matched_at": None, "match_confidence": None,
+    })
+    r = await client.get("/reconciliation/unmatched")
+    assert "Ignorieren" in r.text
+
+
+@pytest.mark.asyncio
+async def test_ignore_post_marks_transaction_ignored(client, csrf):
+    import app.db.yaml_store as ys
+    ys.store.create("camt_transactions", {
+        "transaction_id": "TX-IGNORE-002",
+        "booking_date": "2026-04-05", "value_date": "2026-04-05",
+        "amount": 55.00, "currency": "EUR", "credit_debit": "CRDT",
+        "debtor_name": "Unknown", "debtor_iban": None,
+        "remittance_info": None, "imported_at": "2026-04-22T08:00:00",
+        "source_file": "test.xml", "match_status": "unmatched",
+        "matched_invoice_id": None, "matched_at": None, "match_confidence": None,
+    })
+    r = await client.post(
+        "/reconciliation/unmatched/TX-IGNORE-002/ignore",
+        headers={"X-CSRF-Token": csrf},
+    )
+    assert r.status_code == 200
+    txs = ys.store.load("camt_transactions")
+    tx = next(t for t in txs if t["transaction_id"] == "TX-IGNORE-002")
+    assert tx["match_status"] == "ignored"
 
 
 @pytest.mark.asyncio

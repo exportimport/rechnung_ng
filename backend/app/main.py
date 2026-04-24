@@ -59,6 +59,7 @@ templates.globals["csrf_token"] = ""   # overridden per-request in render()
 templates.globals["INVOICE_STATUS_LABELS"] = {
     InvoiceStatus.draft: "Entwurf",
     InvoiceStatus.sent: "Versendet",
+    InvoiceStatus.paid: "Bezahlt",
 }
 
 
