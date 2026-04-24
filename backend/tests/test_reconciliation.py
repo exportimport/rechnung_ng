@@ -539,6 +539,46 @@ async def test_customer_view_shows_paid_at(client):
 
 
 @pytest.mark.asyncio
+async def test_customer_view_unmatched_search_filters_results(client):
+    import app.db.yaml_store as ys
+    ys.store.create("camt_transactions", {
+        "transaction_id": "TX-MUELLER", "booking_date": "2026-04-01",
+        "value_date": "2026-04-01", "amount": 100.00, "currency": "EUR",
+        "credit_debit": "CRDT", "debtor_name": "Hans Müller", "debtor_iban": None,
+        "remittance_info": None, "imported_at": "2026-04-01T10:00:00",
+        "source_file": "bank.xml", "match_status": "unmatched",
+        "matched_invoice_id": None, "matched_at": None, "match_confidence": None,
+    })
+    ys.store.create("camt_transactions", {
+        "transaction_id": "TX-SCHMIDT", "booking_date": "2026-04-02",
+        "value_date": "2026-04-02", "amount": 200.00, "currency": "EUR",
+        "credit_debit": "CRDT", "debtor_name": "Anna Schmidt", "debtor_iban": None,
+        "remittance_info": None, "imported_at": "2026-04-02T10:00:00",
+        "source_file": "bank.xml", "match_status": "unmatched",
+        "matched_invoice_id": None, "matched_at": None, "match_confidence": None,
+    })
+    r = await client.get("/reconciliation/customers/1?tx_search=müller&tx_cols=debtor_name")
+    assert "TX-MUELLER" in r.text
+    assert "TX-SCHMIDT" not in r.text
+
+
+@pytest.mark.asyncio
+async def test_customer_view_has_search_field(client):
+    r = await client.get("/reconciliation/customers/1")
+    assert 'name="tx_search"' in r.text
+
+
+@pytest.mark.asyncio
+async def test_customer_view_has_column_checkboxes(client):
+    r = await client.get("/reconciliation/customers/1")
+    assert 'name="tx_cols"' in r.text
+    assert 'value="debtor_name"' in r.text
+    assert 'value="debtor_iban"' in r.text
+    assert 'value="remittance_info"' in r.text
+    assert 'value="transaction_id"' in r.text
+
+
+@pytest.mark.asyncio
 async def test_customer_view_returns_200(client, csrf):
     await client.post("/customers", data={
         "vorname": "Max", "nachname": "Mustermann",

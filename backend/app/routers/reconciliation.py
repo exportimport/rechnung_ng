@@ -57,9 +57,14 @@ def monthly_view(request: Request, year: int | None = None, month: int | None = 
     return render(request, "base.html.j2", "fragments/reconciliation_monthly.html.j2", ctx)
 
 
+SEARCHABLE_COLS = {"debtor_name", "debtor_iban", "remittance_info", "transaction_id"}
+
+
 @router.get("/customers/{customer_id}")
 def customer_view(request: Request, customer_id: int,
-                  tx_year: int | None = None, tx_month: int | None = None):
+                  tx_year: int | None = None, tx_month: int | None = None,
+                  tx_search: str | None = None,
+                  tx_cols: list[str] | None = None):
     from app.config import get_config
     from app.main import render
     from app.models.invoice import Invoice, InvoiceStatus
@@ -91,6 +96,13 @@ def customer_view(request: Request, customer_id: int,
         unmatched = [tx for tx in unmatched if tx.booking_date.year == tx_year]
     if tx_month is not None:
         unmatched = [tx for tx in unmatched if tx.booking_date.month == tx_month]
+    if tx_search:
+        needle = tx_search.lower()
+        cols = [c for c in (tx_cols or []) if c in SEARCHABLE_COLS] or list(SEARCHABLE_COLS)
+        unmatched = [
+            tx for tx in unmatched
+            if any(needle in (getattr(tx, col) or "").lower() for col in cols)
+        ]
     unmatched_tx = sorted(unmatched, key=lambda t: t.booking_date, reverse=True)
 
     tx_years = sorted({tx.booking_date.year for tx in all_tx if tx.match_status == MatchStatus.unmatched}, reverse=True)
@@ -105,7 +117,8 @@ def customer_view(request: Request, customer_id: int,
                    "customer_id": customer_id, "customer": customer, "invoices": rows,
                    "unmatched_tx": [tx.model_dump(mode="json") for tx in unmatched_tx],
                    "open_invoices": [inv.model_dump(mode="json") for inv in open_invoices],
-                   "tx_years": tx_years, "tx_year": tx_year, "tx_month": tx_month})
+                   "tx_years": tx_years, "tx_year": tx_year, "tx_month": tx_month,
+                   "tx_search": tx_search or "", "tx_cols": tx_cols or []})
 
 
 @router.post("/customers/{customer_id}/match")
