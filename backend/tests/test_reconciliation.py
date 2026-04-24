@@ -176,7 +176,7 @@ async def test_import_post_shows_imported_count(client, csrf):
         headers={"X-CSRF-Token": csrf},
     )
     assert r.status_code == 200
-    assert "Importiert: 4" in r.text
+    assert "Importiert: 5" in r.text
 
 
 @pytest.mark.asyncio
@@ -213,4 +213,4 @@ async def test_import_post_shows_skipped_count(client, csrf):
         files={"file": ("sample.xml", xml, "application/xml")},
         headers={"X-CSRF-Token": csrf},
     )
-    assert "Übersprungen: 4" in r.text
+    assert "Übersprungen: 5" in r.text

@@ -35,7 +35,7 @@ def test_crdt_count():
     """Sample has 4 CRDT entries and 1 DBIT — expect 4."""
     xml = _load("camt053_v8_sample.xml")
     result = parse_camt053(xml, source_file="sample.xml")
-    assert len(result) == 4
+    assert len(result) == 5
 
 
 def _first(xml: bytes):

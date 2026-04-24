@@ -68,7 +68,7 @@
         </NtryDtls>
       </Ntry>
 
-      <!-- T04: CRDT, no debtor IBAN, no remittance info -->
+      <!-- T04: CRDT, no debtor IBAN, no remittance info — index 2 for parser tests -->
       <Ntry>
         <Amt Ccy="EUR">59.50</Amt>
         <CdtDbtInd>CRDT</CdtDbtInd>
@@ -76,7 +76,7 @@
         <ValDt><Dt>2025-03-26</Dt></ValDt>
         <NtryDtls>
           <TxDtls>
-            <Refs><AcctSvcrRef>ACCTSVR-003</AcctSvcrRef></Refs>
+            <Refs><AcctSvcrRef>ACCTSVR-NOIBAN</AcctSvcrRef></Refs>
             <RltdPties>
               <Dbtr><Pty><Nm>Unknown Payer</Nm></Pty></Dbtr>
             </RltdPties>
@@ -84,7 +84,7 @@
         </NtryDtls>
       </Ntry>
 
-      <!-- T05: CRDT, no AcctSvcrRef and no EndToEndId — fallback transaction_id -->
+      <!-- T05: CRDT, no AcctSvcrRef and no EndToEndId — fallback transaction_id (index 3) -->
       <Ntry>
         <Amt Ccy="EUR">99.00</Amt>
         <CdtDbtInd>CRDT</CdtDbtInd>
@@ -98,6 +98,24 @@
               <DbtrAcct><Id><IBAN>DE11222233334444555500</IBAN></Id></DbtrAcct>
             </RltdPties>
             <RmtInf><Ustrd>Zahlung ohne Referenz</Ustrd></RmtInf>
+          </TxDtls>
+        </NtryDtls>
+      </Ntry>
+
+      <!-- T06: CRDT, debtor IBAN matches customer, no invoice number → Tier 2 candidate -->
+      <Ntry>
+        <Amt Ccy="EUR">119.00</Amt>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <BookgDt><Dt>2025-03-29</Dt></BookgDt>
+        <ValDt><Dt>2025-03-29</Dt></ValDt>
+        <NtryDtls>
+          <TxDtls>
+            <Refs><AcctSvcrRef>ACCTSVR-003</AcctSvcrRef></Refs>
+            <RltdPties>
+              <Dbtr><Pty><Nm>Max Mustermann</Nm></Pty></Dbtr>
+              <DbtrAcct><Id><IBAN>DE89370400440532013000</IBAN></Id></DbtrAcct>
+            </RltdPties>
+            <RmtInf><Ustrd>Monatsbeitrag</Ustrd></RmtInf>
           </TxDtls>
         </NtryDtls>
       </Ntry>

@@ -1,5 +1,7 @@
+from datetime import datetime
+
 from app.db.yaml_store import YamlStore
-from app.models.camt import ImportSummary, MatchConfidence
+from app.models.camt import ImportSummary, MatchConfidence, MatchStatus
 from app.models.customer import Customer
 from app.models.invoice import Invoice
 from app.services.camt_parser import parse_camt053
@@ -21,6 +23,10 @@ def import_camt_file(xml_bytes: bytes, filename: str, store: YamlStore) -> Impor
         result = match_transaction(tx, invoices, customers)
         if result.confidence == MatchConfidence.high:
             auto_matched += 1
+            tx.match_status = MatchStatus.auto_matched
+            tx.matched_invoice_id = result.invoice_id
+            tx.match_confidence = result.confidence
+            tx.matched_at = datetime.now()
             matched_inv = next(inv for inv in invoices if inv.id == result.invoice_id)
             store.update("invoices", matched_inv.id, {
                 **matched_inv.model_dump(mode="json"),
@@ -28,6 +34,9 @@ def import_camt_file(xml_bytes: bytes, filename: str, store: YamlStore) -> Impor
                 "paid_at": tx.booking_date.isoformat(),
                 "payment_transaction_id": tx.transaction_id,
             })
+        elif result.confidence is not None:
+            tx.match_confidence = result.confidence
+            tx.matched_invoice_id = result.invoice_id
         store.create("camt_transactions", tx.model_dump(mode="json"))
 
     return ImportSummary(
