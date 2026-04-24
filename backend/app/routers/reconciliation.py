@@ -83,9 +83,62 @@ def customer_view(request: Request, customer_id: int):
         data["matched_tx"] = tx_by_id.get(inv.payment_transaction_id) if inv.payment_transaction_id else None
         rows.append(data)
 
+    from app.models.camt import CamtTransaction, MatchStatus
+    all_tx = [CamtTransaction(**d) for d in store.load("camt_transactions")]
+    unmatched_tx = sorted(
+        [tx for tx in all_tx if tx.match_status == MatchStatus.unmatched],
+        key=lambda t: t.booking_date, reverse=True,
+    )
+
+    open_invoices = [
+        inv for inv in all_invoices
+        if inv.customer_id == customer_id and inv.status == InvoiceStatus.sent
+    ]
+
     return render(request, "base.html.j2", "fragments/reconciliation_customer.html.j2",
                   {"active_page": "reconciliation", "recon_page": "customer",
-                   "customer_id": customer_id, "customer": customer, "invoices": rows})
+                   "customer_id": customer_id, "customer": customer, "invoices": rows,
+                   "unmatched_tx": [tx.model_dump(mode="json") for tx in unmatched_tx],
+                   "open_invoices": [inv.model_dump(mode="json") for inv in open_invoices]})
+
+
+@router.post("/customers/{customer_id}/match")
+async def manual_match(customer_id: int, request: Request):
+    from datetime import datetime
+    from app.models.camt import CamtTransaction, MatchStatus
+    from app.models.invoice import Invoice
+
+    form = await request.form()
+    transaction_id = str(form["transaction_id"])
+    invoice_id = int(form["invoice_id"])
+
+    all_tx = [CamtTransaction(**d) for d in store.load("camt_transactions")]
+    tx = next((t for t in all_tx if t.transaction_id == transaction_id), None)
+    if tx is None:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404)
+
+    tx.match_status = MatchStatus.manually_matched
+    tx.matched_invoice_id = invoice_id
+    tx.matched_at = datetime.now()
+    all_records = store.load("camt_transactions")
+    for i, r in enumerate(all_records):
+        if r["transaction_id"] == transaction_id:
+            all_records[i] = tx.model_dump(mode="json")
+            break
+    store.save("camt_transactions", all_records)
+
+    all_invoices = [Invoice(**d) for d in store.load("invoices")]
+    inv = next((i for i in all_invoices if i.id == invoice_id), None)
+    if inv is not None:
+        store.update("invoices", inv.id, {
+            **inv.model_dump(mode="json"),
+            "status": "paid",
+            "paid_at": tx.booking_date.isoformat(),
+            "payment_transaction_id": tx.transaction_id,
+        })
+
+    return HTMLResponse("<tr><td colspan='6'>Zugeordnet</td></tr>")
 
 
 @router.get("/unmatched")

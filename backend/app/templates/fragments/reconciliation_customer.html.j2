@@ -35,3 +35,48 @@
 {% else %}
 <p>Keine Rechnungen für diesen Kunden.</p>
 {% endif %}
+
+<h2 class="section-title">Nicht zugeordnete Transaktionen</h2>
+{% if unmatched_tx %}
+<table class="table">
+  <thead>
+    <tr>
+      <th>Datum</th>
+      <th>Betrag</th>
+      <th>Auftraggeber</th>
+      <th>IBAN</th>
+      <th>Verwendungszweck</th>
+      <th>ID</th>
+      <th>Zuweisen</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for tx in unmatched_tx %}
+    <tr>
+      <td>{{ tx.booking_date | date_de }}</td>
+      <td>{{ tx.amount | euro }}</td>
+      <td>{{ tx.debtor_name or "—" }}</td>
+      <td>{{ tx.debtor_iban or "—" }}</td>
+      <td>{{ tx.remittance_info or "—" }}</td>
+      <td><code>{{ tx.transaction_id }}</code></td>
+      <td>
+        {% if open_invoices | default([]) %}
+        <form hx-post="/reconciliation/customers/{{ customer_id }}/match"
+              hx-target="closest tr" hx-swap="outerHTML" class="assign-form">
+          <input type="hidden" name="transaction_id" value="{{ tx.transaction_id }}">
+          <select name="invoice_id" class="form-input form-input--sm">
+            {% for inv in open_invoices | default([]) %}
+            <option value="{{ inv.id }}">{{ inv.invoice_number }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="btn btn-primary btn-sm">Zuweisen</button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>Keine offenen Transaktionen.</p>
+{% endif %}
