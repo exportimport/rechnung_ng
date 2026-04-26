@@ -246,8 +246,12 @@ def mark_paid(invoice_id: int, request: Request):
         raise HTTPException(status_code=404, detail="Rechnung nicht gefunden")
     invoice = Invoice(**d)
     if invoice.status not in (InvoiceStatus.sent,):
-        raise HTTPException(status_code=409, detail="Nur versendete Rechnungen können als bezahlt markiert werden")
-    updated = store.update("invoices", invoice_id, {"status": InvoiceStatus.paid, "paid_at": date.today().isoformat()})
+        raise HTTPException(
+            status_code=409, detail="Nur versendete Rechnungen können als bezahlt markiert werden"
+        )
+    updated = store.update(
+        "invoices", invoice_id, {"status": InvoiceStatus.paid, "paid_at": date.today().isoformat()}
+    )
     from app.main import templates as jinja_env
 
     html = jinja_env.get_template("fragments/invoice_row.html.j2").render(

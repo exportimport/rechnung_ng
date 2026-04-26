@@ -49,11 +49,14 @@ def import_camt_file(xml_bytes: bytes, filename: str, store: YamlStore) -> Impor
         skipped_duplicates=skipped,
         auto_matched=auto_matched,
     )
-    store.create("camt_imports", {
-        "filename": filename,
-        "imported_at": datetime.now().isoformat(),
-        "count_new": len(new_transactions),
-        "count_matched": auto_matched,
-        "count_skipped": skipped,
-    })
+    store.create(
+        "camt_imports",
+        {
+            "filename": filename,
+            "imported_at": datetime.now().isoformat(),
+            "count_new": len(new_transactions),
+            "count_matched": auto_matched,
+            "count_skipped": skipped,
+        },
+    )
     return summary
