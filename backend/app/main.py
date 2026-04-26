@@ -213,6 +213,7 @@ from app.routers import (  # noqa: E402
     mail_templates,
     plans,
     reconciliation,
+    search,
     settings,
 )
 
@@ -223,4 +224,5 @@ app.include_router(contracts.router)
 app.include_router(invoices.router)
 app.include_router(mail_templates.router)
 app.include_router(reconciliation.router)
+app.include_router(search.router)
 app.include_router(settings.router)

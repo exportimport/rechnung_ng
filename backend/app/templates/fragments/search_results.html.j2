@@ -1,0 +1,36 @@
+{% if customers %}
+<div class="search-results__group">
+  <div class="search-results__label">Kunden</div>
+  {% for c in customers %}
+  <a href="/customers/{{ c.id }}" class="search-results__item"
+     hx-get="/customers/{{ c.id }}" hx-target="#main-content" hx-push-url="true">
+    {{ c.vorname }} {{ c.nachname }} <span class="text-muted">{{ c.email }}</span>
+  </a>
+  {% endfor %}
+</div>
+{% endif %}
+{% if invoices %}
+<div class="search-results__group">
+  <div class="search-results__label">Rechnungen</div>
+  {% for inv in invoices %}
+  <a href="/invoices?year={{ inv.year }}&month={{ inv.month }}" class="search-results__item"
+     hx-get="/invoices?year={{ inv.year }}&month={{ inv.month }}" hx-target="#main-content" hx-push-url="true">
+    {{ inv.invoice_number }} <span class="text-muted">{{ inv.amount | euro }}</span>
+  </a>
+  {% endfor %}
+</div>
+{% endif %}
+{% if transactions %}
+<div class="search-results__group">
+  <div class="search-results__label">Transaktionen</div>
+  {% for tx in transactions %}
+  <a href="/reconciliation/unmatched" class="search-results__item"
+     hx-get="/reconciliation/unmatched" hx-target="#main-content" hx-push-url="true">
+    {{ tx.debtor_name }} <span class="text-muted">{{ tx.booking_date | date_de }}</span>
+  </a>
+  {% endfor %}
+</div>
+{% endif %}
+{% if q and q|length >= 2 and not customers and not invoices and not transactions %}
+<p class="search-results__empty">Keine Ergebnisse für „{{ q }}".</p>
+{% endif %}

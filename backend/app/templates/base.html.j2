@@ -17,6 +17,12 @@
       <img src="/static/img/logo.svg" alt="Logo" class="sidebar__logo-img">
       <span class="sidebar__logo-text">{{ company_name }}</span>
     </div>
+    <div class="sidebar__search">
+      <input type="search" placeholder="Suchen…" class="form-input form-input--sm"
+             hx-get="/search" hx-trigger="input changed delay:300ms" name="q"
+             hx-target="#search-results" autocomplete="off">
+      <div id="search-results" class="search-results__dropdown"></div>
+    </div>
     <ul class="sidebar__nav">
       <li class="sidebar__item">
         <a href="/" class="sidebar__link {% if active_page == 'dashboard' %}sidebar__link--active{% endif %}"
