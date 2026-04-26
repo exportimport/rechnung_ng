@@ -1,0 +1,66 @@
+<div class="page-header">
+  <h1 class="page-title">Kontoauszug – {{ customer.vorname }} {{ customer.nachname }}</h1>
+  <button onclick="window.print()" class="btn btn--secondary no-print">Drucken</button>
+</div>
+
+<div class="summary-bar mt-1">
+  <span>Gesamt fakturiert: <strong>{{ total_invoiced | euro }}</strong></span>
+  <span>Bezahlt: <strong>{{ total_paid | euro }}</strong></span>
+  <span>Offen: <strong>{{ balance_open | euro }}</strong></span>
+</div>
+
+{% if invoice_rows %}
+<div class="table-wrapper mt-2">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Nummer</th>
+        <th>Zeitraum</th>
+        <th>Betrag</th>
+        <th>Status</th>
+        <th>Zahlung</th>
+        <th>Zahler</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in invoice_rows %}
+      <tr>
+        <td class="text-mono">{{ row.invoice_number }}</td>
+        <td>{{ row.period_start }} – {{ row.period_end }}</td>
+        <td class="text-right">{{ row.amount | euro }}</td>
+        <td>
+          {% if row.status == 'paid' %}
+            <span class="badge badge--paid">Bezahlt</span>
+          {% elif row.status == 'sent' %}
+            <span class="badge badge--sent">Versendet</span>
+          {% else %}
+            <span class="badge badge--draft">Entwurf</span>
+          {% endif %}
+        </td>
+        <td class="text-muted">
+          {% if row.matched_tx %}{{ row.matched_tx.booking_date | date_de }}{% endif %}
+        </td>
+        <td class="text-muted">
+          {% if row.matched_tx %}{{ row.matched_tx.debtor_name }}{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="table-wrapper mt-2">
+  <table class="table">
+    <tbody class="table--empty">
+      <tr><td>Keine Rechnungen vorhanden.</td></tr>
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<style>
+@media print {
+  .no-print, .sidebar, nav { display: none !important; }
+  .summary-bar { margin-bottom: 1rem; }
+}
+</style>

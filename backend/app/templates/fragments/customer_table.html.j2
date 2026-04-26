@@ -42,6 +42,10 @@
                  hx-get="/customers/{{ c.id }}" hx-target="#main-content" hx-push-url="true">
                 Bearbeiten
               </a>
+              <a href="/customers/{{ c.id }}/statement" class="btn btn--sm btn--secondary"
+                 hx-get="/customers/{{ c.id }}/statement" hx-target="#main-content" hx-push-url="true">
+                Kontoauszug
+              </a>
               <a href="/reconciliation/customers/{{ c.id }}" class="btn btn--sm btn--secondary"
                  hx-get="/reconciliation/customers/{{ c.id }}" hx-target="#main-content" hx-push-url="true">
                 Zahlungsdaten

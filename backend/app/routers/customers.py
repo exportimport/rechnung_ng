@@ -129,6 +129,48 @@ def delete_customer(customer_id: int):
     return _r
 
 
+@router.get("/{customer_id}/statement")
+def customer_statement(request: Request, customer_id: int):
+    from app.main import render
+    from app.models.invoice import Invoice
+
+    d = store.get_by_id("customers", customer_id)
+    if not d:
+        raise HTTPException(status_code=404, detail="Kunde nicht gefunden")
+    customer = Customer(**d)
+
+    invoices = sorted(
+        [Invoice(**r) for r in store.load("invoices") if r.get("customer_id") == customer_id],
+        key=lambda i: (i.year, i.month),
+        reverse=True,
+    )
+    tx_by_id = {t["transaction_id"]: t for t in store.load("camt_transactions")}
+
+    rows = []
+    for inv in invoices:
+        rows.append(
+            {
+                **inv.model_dump(mode="json"),
+                "matched_tx": tx_by_id.get(inv.payment_transaction_id)
+                if inv.payment_transaction_id
+                else None,
+            }
+        )
+
+    total_invoiced = sum(inv.amount for inv in invoices if inv.status != "draft")
+    total_paid = sum(inv.amount for inv in invoices if inv.status == "paid")
+
+    ctx = {
+        "active_page": "customers",
+        "customer": customer,
+        "invoice_rows": rows,
+        "total_invoiced": total_invoiced,
+        "total_paid": total_paid,
+        "balance_open": total_invoiced - total_paid,
+    }
+    return render(request, "base.html.j2", "fragments/customer_statement.html.j2", ctx)
+
+
 def _validate_customer(data: dict) -> dict:
     errors = {}
     required = (
