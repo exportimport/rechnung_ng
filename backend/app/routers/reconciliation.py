@@ -325,11 +325,14 @@ def ignore_transaction(transaction_id: str):
 def import_form(request: Request):
     from app.main import render
 
+    history = sorted(
+        store.load("camt_imports"), key=lambda r: r.get("imported_at", ""), reverse=True
+    )
     return render(
         request,
         "base.html.j2",
         "fragments/reconciliation_import.html.j2",
-        {"active_page": "reconciliation", "recon_page": "import"},
+        {"active_page": "reconciliation", "recon_page": "import", "history": history},
     )
 
 

@@ -751,3 +751,17 @@ def test_invoice_generator_does_not_hardcode_vat_rate():
 def test_invoice_generator_has_max_pdf_workers_constant():
     from app.services.invoice_generator import MAX_PDF_WORKERS
     assert isinstance(MAX_PDF_WORKERS, int) and MAX_PDF_WORKERS > 0
+
+
+@pytest.mark.asyncio
+async def test_import_history_shown_on_import_page(client, csrf):
+    """After uploading a CAMT file, the import page shows the filename in the history."""
+    xml = (FIXTURES / "camt053_v8_sample.xml").read_bytes()
+    await client.post(
+        "/reconciliation/import",
+        files={"file": ("januar.xml", xml, "application/xml")},
+        headers={"HX-Request": "true", "X-CSRF-Token": csrf},
+    )
+    r = await client.get("/reconciliation/import")
+    assert r.status_code == 200
+    assert "januar.xml" in r.text

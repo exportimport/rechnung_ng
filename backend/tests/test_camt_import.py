@@ -81,7 +81,7 @@ def test_tier2_match_stores_confidence_for_review():
     # ACCTSVR-003 in the fixture: amount=119, IBAN=DE89..., no invoice number
     import_camt_file(_load("camt053_v8_sample.xml"), "sample.xml", store)
     # Find the stored transaction for ACCTSVR-003
-    calls = {c[0][1]["transaction_id"]: c[0][1] for c in store.create.call_args_list}
+    calls = {c[0][1]["transaction_id"]: c[0][1] for c in store.create.call_args_list if c[0][0] == "camt_transactions"}
     tx = calls.get("ACCTSVR-003")
     assert tx is not None
     assert tx["match_confidence"] == "medium"
@@ -122,3 +122,16 @@ def test_tier1_match_marks_invoice_paid():
     assert call_args[0][0] == "invoices"
     assert call_args[0][1] == 1
     assert call_args[0][2]["status"] == "paid"
+
+
+def test_import_records_history_entry():
+    store = _mock_store()
+    import_camt_file(_load("camt053_v8_sample.xml"), "myfile.xml", store)
+    history_calls = [c for c in store.create.call_args_list if c[0][0] == "camt_imports"]
+    assert len(history_calls) == 1
+    entry = history_calls[0][0][1]
+    assert entry["filename"] == "myfile.xml"
+    assert entry["count_new"] == 5
+    assert entry["count_skipped"] == 0
+    assert entry["count_matched"] == 0
+    assert "imported_at" in entry

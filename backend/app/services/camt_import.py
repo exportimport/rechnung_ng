@@ -43,9 +43,17 @@ def import_camt_file(xml_bytes: bytes, filename: str, store: YamlStore) -> Impor
             tx.matched_invoice_id = result.invoice_id
         store.create("camt_transactions", tx.model_dump(mode="json"))
 
-    return ImportSummary(
+    summary = ImportSummary(
         total_parsed=len(transactions),
         imported=len(new_transactions),
         skipped_duplicates=skipped,
         auto_matched=auto_matched,
     )
+    store.create("camt_imports", {
+        "filename": filename,
+        "imported_at": datetime.now().isoformat(),
+        "count_new": len(new_transactions),
+        "count_matched": auto_matched,
+        "count_skipped": skipped,
+    })
+    return summary
