@@ -107,6 +107,14 @@
                 Löschen
               </button>
               {% endif %}
+              {% if inv.status == 'sent' %}
+              <button class="btn btn--sm btn--secondary"
+                      hx-post="/invoices/{{ inv.id }}/mark-paid"
+                      hx-target="#invoice-row-{{ inv.id }}"
+                      hx-swap="outerHTML">
+                Bezahlt
+              </button>
+              {% endif %}
             </div>
           </td>
         </tr>

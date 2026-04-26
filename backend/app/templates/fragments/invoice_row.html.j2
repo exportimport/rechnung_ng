@@ -18,6 +18,12 @@
       {% if invoice.pdf_path %}
       <a href="/invoices/{{ invoice.id }}/pdf" class="btn btn--sm btn--secondary">PDF</a>
       {% endif %}
+      {% if invoice.status == 'sent' %}
+      <button hx-post="/invoices/{{ invoice.id }}/mark-paid"
+              hx-target="#invoice-row-{{ invoice.id }}"
+              hx-swap="outerHTML"
+              class="btn btn--sm btn--secondary">Bezahlt</button>
+      {% endif %}
     </div>
   </td>
 </tr>

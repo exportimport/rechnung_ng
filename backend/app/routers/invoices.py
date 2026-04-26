@@ -237,6 +237,27 @@ async def send_invoice(request: Request, response: Response, invoice_id: int):
     return _r
 
 
+@router.post("/{invoice_id}/mark-paid")
+def mark_paid(invoice_id: int, request: Request):
+    from app.main import set_toast
+
+    d = store.get_by_id("invoices", invoice_id)
+    if not d:
+        raise HTTPException(status_code=404, detail="Rechnung nicht gefunden")
+    invoice = Invoice(**d)
+    if invoice.status not in (InvoiceStatus.sent,):
+        raise HTTPException(status_code=409, detail="Nur versendete Rechnungen können als bezahlt markiert werden")
+    updated = store.update("invoices", invoice_id, {"status": InvoiceStatus.paid, "paid_at": date.today().isoformat()})
+    from app.main import templates as jinja_env
+
+    html = jinja_env.get_template("fragments/invoice_row.html.j2").render(
+        request=request, invoice=_enrich_invoice(Invoice(**updated))
+    )
+    _r = HTMLResponse(html, status_code=200)
+    set_toast(_r, "Rechnung als bezahlt markiert.")
+    return _r
+
+
 @router.post("/send-batch")
 async def send_batch(request: Request):
     from app.main import set_toast
