@@ -191,3 +191,51 @@ async def test_mark_paid_rejected_for_draft(client, csrf):
         headers={"HX-Request": "true", "X-CSRF-Token": csrf},
     )
     assert r.status_code == 409
+
+
+@pytest.mark.asyncio
+async def test_paid_invoice_shows_bezahlt_badge(client, csrf):
+    """Paid invoices must display badge--paid CSS class, not badge--sent."""
+    import app.db.yaml_store as ys
+
+    ys.store.create("invoices", {
+        "id": 45, "contract_id": 1, "customer_id": 1,
+        "invoice_number": "1-1-2024-06-0001", "year": 2024, "month": 6,
+        "amount": 29.99, "period_start": "2024-06-01", "period_end": "2024-06-30",
+        "status": "paid", "pdf_path": None, "mail_template": None,
+        "created_at": "2024-06-01T10:00:00", "sent_at": "2024-06-02T09:00:00",
+        "paid_at": "2024-06-15", "payment_transaction_id": None,
+    })
+    r = await client.get("/invoices?year=2024&month=6")
+    assert r.status_code == 200
+    assert "badge--paid" in r.text
+    assert "badge--sent" not in r.text
+
+
+@pytest.mark.asyncio
+async def test_invoice_filter_has_paid_option(client):
+    """Status filter dropdown must include a 'Bezahlt' option."""
+    r = await client.get("/invoices")
+    assert r.status_code == 200
+    assert 'value="paid"' in r.text
+
+
+@pytest.mark.asyncio
+async def test_mark_paid_response_shows_bezahlt_badge(client, csrf):
+    """The row fragment returned by mark-paid must show badge--paid."""
+    import app.db.yaml_store as ys
+
+    ys.store.create("invoices", {
+        "id": 46, "contract_id": 1, "customer_id": 1,
+        "invoice_number": "1-1-2024-07-0001", "year": 2024, "month": 7,
+        "amount": 29.99, "period_start": "2024-07-01", "period_end": "2024-07-31",
+        "status": "sent", "pdf_path": None, "mail_template": None,
+        "created_at": "2024-07-01T10:00:00", "sent_at": "2024-07-02T09:00:00",
+        "paid_at": None, "payment_transaction_id": None,
+    })
+    r = await client.post(
+        "/invoices/46/mark-paid",
+        headers={"HX-Request": "true", "X-CSRF-Token": csrf},
+    )
+    assert r.status_code == 200
+    assert "badge--paid" in r.text

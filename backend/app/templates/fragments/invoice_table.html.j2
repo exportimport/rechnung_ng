@@ -24,6 +24,7 @@
     <option value="" {% if not filter_status %}selected{% endif %}>Alle Status</option>
     <option value="draft" {% if filter_status == 'draft' %}selected{% endif %}>Entwurf</option>
     <option value="sent" {% if filter_status == 'sent' %}selected{% endif %}>Versendet</option>
+    <option value="paid" {% if filter_status == 'paid' %}selected{% endif %}>Bezahlt</option>
   </select>
 
   <div class="filter-bar__sep"></div>
@@ -81,6 +82,8 @@
           <td>
             {% if inv.status == 'draft' %}
               <span class="badge badge--draft">Entwurf</span>
+            {% elif inv.status == 'paid' %}
+              <span class="badge badge--paid">Bezahlt</span>
             {% else %}
               <span class="badge badge--sent">Versendet</span>
             {% endif %}

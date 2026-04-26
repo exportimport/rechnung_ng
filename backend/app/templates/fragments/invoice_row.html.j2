@@ -6,7 +6,9 @@
   <td>{{ invoice.period_start }} – {{ invoice.period_end }}</td>
   <td class="text-right">{{ invoice.amount | euro }}</td>
   <td>
-    {% if invoice.status == 'sent' %}
+    {% if invoice.status == 'paid' %}
+      <span class="badge badge--paid">Bezahlt</span>
+    {% elif invoice.status == 'sent' %}
       <span class="badge badge--sent">Versendet</span>
     {% else %}
       <span class="badge badge--draft">Entwurf</span>

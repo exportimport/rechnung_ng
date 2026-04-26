@@ -531,6 +531,7 @@ input, select, textarea, button { font: inherit; }
 .badge--pending   { background: var(--color-warning-bg); color: var(--color-warning); }
 .badge--draft     { background: rgba(217,119,6,0.12);    color: #b45309; } /* amber */
 .badge--sent      { background: var(--color-primary-light); color: var(--color-primary); }
+.badge--paid      { background: var(--color-success-bg);  color: var(--color-success); }
 
 /* ---------------------------------------------------------
    Toasts
