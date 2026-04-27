@@ -9,7 +9,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from app.config import TEMPLATES_DIR
+from app.config import BUILD_NUMBER, BUILD_SHA, TEMPLATES_DIR
 from app.models.contract import ContractStatus
 from app.models.invoice import InvoiceStatus
 
@@ -71,6 +71,8 @@ templates.globals["CONTRACT_STATUS_LABELS"] = {
     ContractStatus.cancelled: "Gekündigt",
 }
 templates.globals["csrf_token"] = ""  # overridden per-request in render()
+templates.globals["BUILD_NUMBER"] = BUILD_NUMBER
+templates.globals["BUILD_SHA"] = BUILD_SHA
 templates.globals["INVOICE_STATUS_LABELS"] = {
     InvoiceStatus.draft: "Entwurf",
     InvoiceStatus.sent: "Versendet",
