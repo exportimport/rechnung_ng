@@ -69,6 +69,59 @@ async def test_add_price_to_plan(client, csrf):
 
 
 @pytest.mark.asyncio
+async def test_edit_plan_form(client, csrf):
+    await client.post("/plans", data=PLAN_DATA,
+                      headers={"HX-Request": "true", "X-CSRF-Token": csrf})
+    r = await client.get("/plans/1")
+    assert r.status_code == 200
+    assert "Basis" in r.text
+
+
+@pytest.mark.asyncio
+async def test_edit_plan_form_not_found(client):
+    r = await client.get("/plans/999")
+    assert r.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_create_plan_invalid_price(client, csrf):
+    r = await client.post(
+        "/plans", data={"name": "X", "initial_price": "abc", "valid_from": "2024-01-01"},
+        headers={"HX-Request": "true", "X-CSRF-Token": csrf},
+    )
+    assert r.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_update_plan_not_found(client, csrf):
+    r = await client.put(
+        "/plans/999", data={"name": "X"},
+        headers={"HX-Request": "true", "X-CSRF-Token": csrf},
+    )
+    assert r.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_add_price_validation_error(client, csrf):
+    await client.post("/plans", data=PLAN_DATA,
+                      headers={"HX-Request": "true", "X-CSRF-Token": csrf})
+    r = await client.post(
+        "/plans/1/price", data={"amount": "", "valid_from": ""},
+        headers={"HX-Request": "true", "X-CSRF-Token": csrf},
+    )
+    assert r.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_delete_plan_not_found(client, csrf):
+    r = await client.delete(
+        "/plans/999",
+        headers={"HX-Request": "true", "X-CSRF-Token": csrf},
+    )
+    assert r.status_code == 404
+
+
+@pytest.mark.asyncio
 async def test_delete_plan(client, csrf):
     await client.post(
         "/plans", data=PLAN_DATA,
