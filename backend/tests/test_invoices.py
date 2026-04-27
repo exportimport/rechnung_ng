@@ -24,6 +24,21 @@ async def _seed(client, csrf):
 
 
 @pytest.mark.asyncio
+async def test_customer_name_is_link_in_invoice_list(client, csrf):
+    import app.db.yaml_store as ys
+    ys.store.create("invoices", {
+        "id": 80, "contract_id": 1, "customer_id": 5,
+        "invoice_number": "5-1-2024-01-0001", "year": 2024, "month": 1,
+        "amount": 29.99, "period_start": "2024-01-01", "period_end": "2024-01-31",
+        "status": "sent", "pdf_path": None, "mail_template": None,
+        "created_at": "2024-01-01T10:00:00", "sent_at": None,
+        "paid_at": None, "payment_transaction_id": None,
+    })
+    r = await client.get("/invoices?year=2024&month=1")
+    assert "/customers/5" in r.text
+
+
+@pytest.mark.asyncio
 async def test_invoices_page_empty(client):
     r = await client.get("/invoices")
     assert r.status_code == 200

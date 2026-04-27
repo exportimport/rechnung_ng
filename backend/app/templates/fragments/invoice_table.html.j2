@@ -75,7 +75,13 @@
             {% endif %}
           </td>
           <td class="text-mono">{{ inv.invoice_number }}</td>
-          <td>{{ inv.customer_name }}</td>
+          <td>
+            <a href="/customers/{{ inv.customer_id }}"
+               hx-get="/customers/{{ inv.customer_id }}"
+               hx-target="#main-content" hx-push-url="true">
+              {{ inv.customer_name }}
+            </a>
+          </td>
           <td>{{ inv.plan_name }}</td>
           <td>{{ inv.period_start }} – {{ inv.period_end }}</td>
           <td class="text-right">{{ inv.amount | euro }}</td>
