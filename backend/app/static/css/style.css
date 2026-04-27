@@ -202,6 +202,17 @@ input, select, textarea, button { font: inherit; }
   color: #5b21b6;
   box-shadow: var(--shadow-sm);
 }
+.sidebar__build {
+  padding: 0.5rem 1rem 0.75rem;
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  border-top: 1px solid var(--color-border);
+  margin-top: 0.5rem;
+}
+.sidebar__build-sha {
+  font-family: monospace;
+  opacity: 0.7;
+}
 
 /* ---------------------------------------------------------
    Page Header

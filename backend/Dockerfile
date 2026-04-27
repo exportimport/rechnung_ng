@@ -1,5 +1,10 @@
 FROM python:3.12-slim
 
+ARG BUILD_NUMBER=dev
+ARG BUILD_SHA=local
+ENV BUILD_NUMBER=${BUILD_NUMBER}
+ENV BUILD_SHA=${BUILD_SHA}
+
 RUN apt-get update && apt-get install -y \
     libpango-1.0-0 \
     libharfbuzz0b \
