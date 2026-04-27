@@ -27,6 +27,8 @@ class Invoice(BaseModel):
     sent_at: datetime | None = None
     paid_at: date | None = None
     payment_transaction_id: str | None = None
+    dunning_level: int = 0
+    last_reminded_at: date | None = None
 
 
 class GenerateRequest(BaseModel):

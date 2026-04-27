@@ -262,6 +262,28 @@ def mark_paid(invoice_id: int, request: Request):
     return _r
 
 
+@router.get("/{invoice_id}")
+def invoice_detail(request: Request, invoice_id: int):
+    d = store.get_by_id("invoices", invoice_id)
+    level = d.get("dunning_level", 0) if d else 0
+    text = f"Mahnung {level}" if level > 0 else ""
+    return HTMLResponse(text, status_code=200)
+
+
+@router.post("/{invoice_id}/remind")
+def remind_invoice(invoice_id: int):
+    d = store.get_by_id("invoices", invoice_id)
+    if not d:
+        raise HTTPException(status_code=404, detail="Rechnung nicht gefunden")
+    if d.get("status") != InvoiceStatus.sent:
+        raise HTTPException(
+            status_code=409, detail="Nur versendete Rechnungen können gemahnt werden"
+        )
+    level = d.get("dunning_level", 0) + 1
+    store.update("invoices", invoice_id, {"dunning_level": level})
+    return HTMLResponse("", status_code=200)
+
+
 @router.post("/send-batch")
 async def send_batch(request: Request):
     from app.main import set_toast
