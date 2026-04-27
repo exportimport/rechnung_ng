@@ -289,6 +289,21 @@ async def test_bulk_delete_drafts(client, csrf):
 
 
 @pytest.mark.asyncio
+async def test_pdf_no_path_returns_404(client, csrf):
+    import app.db.yaml_store as ys
+    ys.store.create("invoices", {
+        "id": 60, "contract_id": 1, "customer_id": 1,
+        "invoice_number": "1-1-2024-04-0001", "year": 2024, "month": 4,
+        "amount": 29.99, "period_start": "2024-04-01", "period_end": "2024-04-30",
+        "status": "sent", "pdf_path": None, "mail_template": None,
+        "created_at": "2024-04-01T10:00:00", "sent_at": None,
+        "paid_at": None, "payment_transaction_id": None,
+    })
+    r = await client.get("/invoices/60/pdf")
+    assert r.status_code == 404
+
+
+@pytest.mark.asyncio
 async def test_bulk_delete_non_drafts_returns_409(client, csrf):
     import app.db.yaml_store as ys
     ys.store.create("invoices", {
@@ -305,3 +320,99 @@ async def test_bulk_delete_non_drafts_returns_409(client, csrf):
         headers={"HX-Request": "true", "X-CSRF-Token": csrf},
     )
     assert r.status_code == 409
+
+
+@pytest.mark.asyncio
+async def test_delete_all_drafts(client, csrf):
+    import app.db.yaml_store as ys
+    for i in (61, 62):
+        ys.store.create("invoices", {
+            "id": i, "contract_id": 1, "customer_id": 1,
+            "invoice_number": f"1-1-2024-05-00{i}", "year": 2024, "month": 5,
+            "amount": 29.99, "period_start": "2024-05-01", "period_end": "2024-05-31",
+            "status": "draft", "pdf_path": None, "mail_template": None,
+            "created_at": "2024-05-01T10:00:00", "sent_at": None,
+            "paid_at": None, "payment_transaction_id": None,
+        })
+    r = await client.post(
+        "/invoices/delete-all-drafts",
+        data={"year": "2024", "month": "5"},
+        headers={"HX-Request": "true", "X-CSRF-Token": csrf},
+    )
+    assert r.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_mark_paid_not_found(client, csrf):
+    r = await client.post(
+        "/invoices/999/mark-paid",
+        headers={"HX-Request": "true", "X-CSRF-Token": csrf},
+    )
+    assert r.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_send_invoice_success(client, csrf, monkeypatch):
+    import app.db.yaml_store as ys
+    import app.services.mail_service as ms
+    ys.store.create("invoices", {
+        "id": 70, "contract_id": 1, "customer_id": 1,
+        "invoice_number": "1-1-2024-06-0001", "year": 2024, "month": 6,
+        "amount": 29.99, "period_start": "2024-06-01", "period_end": "2024-06-30",
+        "status": "draft", "pdf_path": None, "mail_template": None,
+        "created_at": "2024-06-01T10:00:00", "sent_at": None,
+        "paid_at": None, "payment_transaction_id": None,
+    })
+    monkeypatch.setattr(ms, "send_invoice", lambda inv, tmpl, store: None)
+    monkeypatch.setattr(ms, "select_template", lambda inv, store: "default")
+    r = await client.post(
+        "/invoices/70/send",
+        data={"template_id": "default"},
+        headers={"HX-Request": "true", "X-CSRF-Token": csrf},
+    )
+    assert r.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_send_invoice_smtp_error(client, csrf, monkeypatch):
+    import smtplib
+    import app.db.yaml_store as ys
+    import app.services.mail_service as ms
+    ys.store.create("invoices", {
+        "id": 71, "contract_id": 1, "customer_id": 1,
+        "invoice_number": "1-1-2024-07-0001", "year": 2024, "month": 7,
+        "amount": 29.99, "period_start": "2024-07-01", "period_end": "2024-07-31",
+        "status": "draft", "pdf_path": None, "mail_template": None,
+        "created_at": "2024-07-01T10:00:00", "sent_at": None,
+        "paid_at": None, "payment_transaction_id": None,
+    })
+    monkeypatch.setattr(ms, "send_invoice", lambda inv, tmpl, s: (_ for _ in ()).throw(smtplib.SMTPException("fail")))
+    monkeypatch.setattr(ms, "select_template", lambda inv, store: "default")
+    r = await client.post(
+        "/invoices/71/send",
+        data={"template_id": "default"},
+        headers={"HX-Request": "true", "X-CSRF-Token": csrf},
+    )
+    assert r.status_code == 502
+
+
+@pytest.mark.asyncio
+async def test_send_batch(client, csrf, monkeypatch):
+    import app.db.yaml_store as ys
+    import app.services.mail_service as ms
+    ys.store.create("invoices", {
+        "id": 72, "contract_id": 1, "customer_id": 1,
+        "invoice_number": "1-1-2024-08-0001", "year": 2024, "month": 8,
+        "amount": 29.99, "period_start": "2024-08-01", "period_end": "2024-08-31",
+        "status": "draft", "pdf_path": None, "mail_template": None,
+        "created_at": "2024-08-01T10:00:00", "sent_at": None,
+        "paid_at": None, "payment_transaction_id": None,
+    })
+    monkeypatch.setattr(ms, "send_invoice", lambda inv, tmpl, store: None)
+    monkeypatch.setattr(ms, "select_template", lambda inv, store: "default")
+    r = await client.post(
+        "/invoices/send-batch",
+        data={"year": "2024", "month": "8"},
+        headers={"HX-Request": "true", "X-CSRF-Token": csrf},
+    )
+    assert r.status_code == 200
