@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/github/exportimport/rechnung_ng/graph/badge.svg?token=TTUISNH491)](https://codecov.io/github/exportimport/rechnung_ng)
+
 <img src="assets/logo.svg" alt="rechnung_ng" width="160">
 
 Web based contract and invoice management with payment reconciliation of Camt0.53 imports.
