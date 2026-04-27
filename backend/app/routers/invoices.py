@@ -264,14 +264,26 @@ def mark_paid(invoice_id: int, request: Request):
 
 @router.get("/{invoice_id}")
 def invoice_detail(request: Request, invoice_id: int):
+    from app.main import render
+
     d = store.get_by_id("invoices", invoice_id)
-    level = d.get("dunning_level", 0) if d else 0
-    text = f"Mahnung {level}" if level > 0 else ""
-    return HTMLResponse(text, status_code=200)
+    if not d:
+        raise HTTPException(status_code=404, detail="Rechnung nicht gefunden")
+    invoice = Invoice(**d)
+    ctx = {
+        "active_page": "invoices",
+        "invoice": _enrich_invoice(invoice),
+        "dunning_level": d.get("dunning_level", 0),
+        "last_reminded_at": d.get("last_reminded_at"),
+    }
+    return render(request, "base.html.j2", "fragments/invoice_detail.html.j2", ctx)
 
 
 @router.post("/{invoice_id}/remind")
-def remind_invoice(invoice_id: int):
+def remind_invoice(invoice_id: int, request: Request):
+    from app.main import set_toast
+    from app.main import templates as jinja_env
+
     d = store.get_by_id("invoices", invoice_id)
     if not d:
         raise HTTPException(status_code=404, detail="Rechnung nicht gefunden")
@@ -280,8 +292,20 @@ def remind_invoice(invoice_id: int):
             status_code=409, detail="Nur versendete Rechnungen können gemahnt werden"
         )
     level = d.get("dunning_level", 0) + 1
-    store.update("invoices", invoice_id, {"dunning_level": level})
-    return HTMLResponse("", status_code=200)
+    updated = store.update(
+        "invoices",
+        invoice_id,
+        {
+            "dunning_level": level,
+            "last_reminded_at": date.today().isoformat(),
+        },
+    )
+    html = jinja_env.get_template("fragments/invoice_row.html.j2").render(
+        request=request, invoice=_enrich_invoice(Invoice(**updated))
+    )
+    _r = HTMLResponse(html, status_code=200)
+    set_toast(_r, f"Mahnung {level} gesetzt.")
+    return _r
 
 
 @router.post("/send-batch")

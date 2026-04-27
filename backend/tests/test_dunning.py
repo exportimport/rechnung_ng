@@ -68,3 +68,39 @@ async def test_overdue_invoice_shown_in_list(client, csrf):
                       headers={"HX-Request": "true", "X-CSRF-Token": csrf})
     r = await client.get("/invoices?year=2024&month=1")
     assert "mahnung" in r.text.lower()
+
+
+@pytest.mark.asyncio
+async def test_remind_sets_last_reminded_at(client, csrf):
+    from datetime import date
+    import app.db.yaml_store as ys
+    _seed_sent_invoice(ys.store)
+    await client.post("/invoices/1/remind",
+                      headers={"HX-Request": "true", "X-CSRF-Token": csrf})
+    d = ys.store.get_by_id("invoices", 1)
+    assert d.get("last_reminded_at") == date.today().isoformat()
+
+
+@pytest.mark.asyncio
+async def test_mahnen_button_shown_for_sent_invoice(client, csrf):
+    import app.db.yaml_store as ys
+    _seed_sent_invoice(ys.store)
+    r = await client.get("/invoices?year=2024&month=1")
+    assert "Mahnen" in r.text
+
+
+@pytest.mark.asyncio
+async def test_invoice_detail_shows_invoice_info(client, csrf):
+    import app.db.yaml_store as ys
+    _seed_sent_invoice(ys.store)
+    r = await client.get("/invoices/1")
+    assert r.status_code == 200
+    assert "1-1-2024-01-0001" in r.text
+
+
+@pytest.mark.asyncio
+async def test_invoice_detail_full_page_has_sidebar(client, csrf):
+    import app.db.yaml_store as ys
+    _seed_sent_invoice(ys.store)
+    r = await client.get("/invoices/1")
+    assert "sidebar" in r.text

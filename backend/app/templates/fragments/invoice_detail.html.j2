@@ -1,0 +1,64 @@
+<div class="page-header">
+  <h1 class="page-title">Rechnung {{ invoice.invoice_number }}</h1>
+  <a href="/invoices" class="btn btn--secondary"
+     hx-get="/invoices" hx-target="#main-content" hx-push-url="true">
+    Zurück
+  </a>
+</div>
+
+<div class="card mt-2">
+  <div class="card__body">
+    <dl class="detail-list">
+      <dt>Kunde</dt>
+      <dd>{{ invoice.customer_name }}</dd>
+      <dt>Tarif</dt>
+      <dd>{{ invoice.plan_name }}</dd>
+      <dt>Zeitraum</dt>
+      <dd>{{ invoice.period_start }} – {{ invoice.period_end }}</dd>
+      <dt>Betrag</dt>
+      <dd>{{ invoice.amount | euro }}</dd>
+      <dt>Status</dt>
+      <dd>
+        {% if invoice.status == 'paid' %}
+          <span class="badge badge--paid">Bezahlt</span>
+        {% elif invoice.status == 'sent' %}
+          <span class="badge badge--sent">Versendet</span>
+          {% if dunning_level %}
+            <span class="badge badge--warning">Mahnung {{ dunning_level }}</span>
+          {% endif %}
+        {% else %}
+          <span class="badge badge--draft">Entwurf</span>
+        {% endif %}
+      </dd>
+      <dt>Versendet</dt>
+      <dd>{{ invoice.sent_at | date_de }}</dd>
+      {% if invoice.paid_at %}
+      <dt>Bezahlt am</dt>
+      <dd>{{ invoice.paid_at | date_de }}</dd>
+      {% endif %}
+      {% if last_reminded_at %}
+      <dt>Letzte Mahnung</dt>
+      <dd>{{ last_reminded_at | date_de }}</dd>
+      {% endif %}
+    </dl>
+
+    <div class="table__actions mt-2">
+      {% if invoice.pdf_path %}
+      <a href="/invoices/{{ invoice.id }}/pdf" class="btn btn--secondary">PDF</a>
+      {% endif %}
+      {% if invoice.status == 'sent' %}
+      <button type="button" class="btn btn--secondary"
+              hx-post="/invoices/{{ invoice.id }}/mark-paid"
+              hx-target="#main-content" hx-push-url="/invoices">
+        Bezahlt
+      </button>
+      <button type="button" class="btn btn--warning"
+              hx-post="/invoices/{{ invoice.id }}/remind"
+              hx-target="#main-content"
+              hx-confirm="Mahnung {{ dunning_level + 1 }} setzen?">
+        Mahnen
+      </button>
+      {% endif %}
+    </div>
+  </div>
+</div>

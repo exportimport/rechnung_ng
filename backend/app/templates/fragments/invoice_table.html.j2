@@ -120,6 +120,13 @@
                       hx-swap="outerHTML">
                 Bezahlt
               </button>
+              <button type="button" class="btn btn--sm btn--warning"
+                      hx-post="/invoices/{{ inv.id }}/remind"
+                      hx-target="#invoice-row-{{ inv.id }}"
+                      hx-swap="outerHTML"
+                      hx-confirm="Mahnung senden?">
+                Mahnen
+              </button>
               {% endif %}
             </div>
           </td>
