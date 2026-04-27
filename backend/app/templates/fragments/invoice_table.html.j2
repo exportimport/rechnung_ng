@@ -98,14 +98,14 @@
               <a href="/invoices/{{ inv.id }}/pdf" class="btn btn--sm btn--secondary">PDF</a>
               {% endif %}
               {% if inv.status == 'draft' %}
-              <button class="btn btn--sm btn--primary"
+              <button type="button" class="btn btn--sm btn--primary"
                       hx-post="/invoices/{{ inv.id }}/send"
                       hx-target="#invoice-row-{{ inv.id }}"
                       hx-swap="outerHTML"
                       hx-confirm="Rechnung {{ inv.invoice_number }} jetzt versenden?">
                 Senden
               </button>
-              <button class="btn btn--sm btn--danger"
+              <button type="button" class="btn btn--sm btn--danger"
                       hx-delete="/invoices/{{ inv.id }}"
                       hx-confirm="Rechnung löschen?"
                       hx-target="#invoice-row-{{ inv.id }}"
@@ -114,7 +114,7 @@
               </button>
               {% endif %}
               {% if inv.status == 'sent' %}
-              <button class="btn btn--sm btn--secondary"
+              <button type="button" class="btn btn--sm btn--secondary"
                       hx-post="/invoices/{{ inv.id }}/mark-paid"
                       hx-target="#invoice-row-{{ inv.id }}"
                       hx-swap="outerHTML">
