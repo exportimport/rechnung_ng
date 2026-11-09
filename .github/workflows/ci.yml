@@ -84,19 +84,21 @@ jobs:
     permissions:
       contents: write
     steps:
+      # The deploy key on urserver is gated by a ForceCommand wrapper:
+      # one command per ssh call, no shell (urserver: services/shared/deploy-wrapper.sh).
       - name: Deploy to server
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: deploy
-          key: ${{ secrets.URSERVER_DEPLOY_KEY }}
-          envs: GITHUB_TOKEN
-          script: |
-            echo "$GITHUB_TOKEN" | sudo podman login ghcr.io -u ${{ github.actor }} --password-stdin --authfile /etc/containers/auth.json
-            sudo podman pull --authfile /etc/containers/auth.json ghcr.io/exportimport/rechnung-ng:latest
-            sudo systemctl restart rechnung-ng-backend
         env:
+          SSH_KEY: ${{ secrets.URSERVER_DEPLOY_KEY }}
+          HOST: ${{ secrets.DEPLOY_HOST }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy && chmod 600 ~/.ssh/deploy
+          echo '* ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEWV/FHlapLbH+szU5sxvKObtSF6YEZphf1WjHV39ecD' > ~/.ssh/known_hosts
+          r() { ssh -i ~/.ssh/deploy -o BatchMode=yes -o StrictHostKeyChecking=yes "deploy@$HOST" "$1"; }
+          printf '%s' "$GITHUB_TOKEN" | r "sudo podman login ghcr.io -u exportimport --password-stdin --authfile /etc/containers/auth.json"
+          r "sudo podman pull --authfile /etc/containers/auth.json ghcr.io/exportimport/rechnung-ng:latest"
+          r "sudo systemctl restart rechnung-ng-backend"
 
       - name: Create GitHub Release
         uses: actions/github-script@v7
